@@ -95,7 +95,7 @@ export interface UpdateClientInput {
 // ============================================================================
 
 export interface FindClientsResult {
-  readonly items: ClientSummary[];
+  readonly items: readonly ClientSummary[];
 
   readonly meta: {
     readonly page: number;
@@ -690,6 +690,70 @@ async function mutateClient(
   }
 
   return body.data as Client;
+}
+
+// ============================================================================
+// Delete client
+// ============================================================================
+
+export async function deleteClient(
+  id: string,
+): Promise<void> {
+  const response =
+    await fetch(
+      `${getApiBaseUrl()}/clients/${encodeURIComponent(
+        id,
+      )}`,
+      {
+        method: "DELETE",
+
+        credentials:
+          "include",
+
+        cache:
+          "no-store",
+      },
+    );
+
+  const body =
+    (await response
+      .json()
+      .catch(
+        () => null,
+      )) as unknown;
+
+  // --------------------------------------------------------------------------
+  // API error
+  // --------------------------------------------------------------------------
+
+  if (!response.ok) {
+    throw new ClientsApiError(
+      getClientErrorMessage(
+        body,
+        "Unable to delete client.",
+      ),
+      response.status,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Successful deletion
+  //
+  // DELETE /clients/:id returns 204 No Content, so there is no response
+  // envelope to validate.
+  // --------------------------------------------------------------------------
+
+  if (
+    response.status !==
+    204 &&
+    response.status !==
+    200
+  ) {
+    throw new ClientsApiError(
+      "Invalid delete client response.",
+      response.status,
+    );
+  }
 }
 
 // ============================================================================

@@ -4,6 +4,10 @@ import {
   hasPermission,
 } from "@/lib/authorization/authorization";
 
+import {
+  PERMISSIONS,
+} from "@/lib/authorization/permissions";
+
 import type {
   NavigationIconName,
 } from "@/components/layout/navigation-icon";
@@ -27,8 +31,7 @@ export interface NavigationItem {
 
   badge?: string | number;
 
-  children?:
-  readonly NavigationItem[];
+  children?: readonly NavigationItem[];
 }
 
 export interface NavigationSection {
@@ -36,16 +39,14 @@ export interface NavigationSection {
 
   label?: string;
 
-  items:
-  readonly NavigationItem[];
+  items: readonly NavigationItem[];
 }
 
 interface NavigationDefinition
   extends NavigationItem {
   permission?: string;
 
-  children?:
-  readonly NavigationDefinition[];
+  children?: readonly NavigationDefinition[];
 }
 
 // ============================================================================
@@ -61,8 +62,9 @@ interface NavigationDefinition
 
 const NAVIGATION:
   readonly NavigationDefinition[] = [
+
     // ==========================================================================
-    // Dashboard
+    // Overview
     // ==========================================================================
 
     {
@@ -97,7 +99,7 @@ const NAVIGATION:
           icon: "messages",
 
           permission:
-            "messages.read",
+            PERMISSIONS.MESSAGES_READ,
         },
 
         {
@@ -105,12 +107,12 @@ const NAVIGATION:
 
           label: "Sender IDs",
 
-          href: "/messaging/sender-ids",
+          href: "/sender-ids",
 
           icon: "sender",
 
           permission:
-            "sender_ids.read",
+            PERMISSIONS.SENDER_IDS_READ,
         },
 
         {
@@ -123,7 +125,60 @@ const NAVIGATION:
           icon: "smpp",
 
           permission:
-            "smpp_accounts.read",
+            PERMISSIONS.SMPP_ACCOUNTS_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
+    // Network & Routing
+    // ==========================================================================
+
+    {
+      key: "network-routing",
+
+      label: "Network & Routing",
+
+      icon: "network",
+
+      children: [
+        {
+          key: "mobile-networks",
+
+          label: "Mobile Networks",
+
+          href: "/mobile-networks",
+
+          icon: "mobile-network",
+
+          permission:
+            PERMISSIONS.MOBILE_NETWORKS_READ,
+        },
+
+        {
+          key: "connectors",
+
+          label: "Connectors",
+
+          href: "/connectors",
+
+          icon: "connector",
+
+          permission:
+            PERMISSIONS.CONNECTORS_READ,
+        },
+
+        {
+          key: "routes",
+
+          label: "Routes",
+
+          href: "/routes",
+
+          icon: "route",
+
+          permission:
+            PERMISSIONS.ROUTES_READ,
         },
       ],
     },
@@ -142,132 +197,150 @@ const NAVIGATION:
       icon: "clients",
 
       permission:
-        "clients.read",
+        PERMISSIONS.CLIENTS_READ,
     },
 
     // ==========================================================================
-    // Float
+    // Finance
     // ==========================================================================
 
     {
-      key: "float",
+      key: "finance",
 
-      label: "Float",
-
-      href: "/float",
+      label: "Finance",
 
       icon: "wallet",
 
-      permission:
-        "float.read",
-    },
-
-    // ==========================================================================
-    // Webhooks
-    // ==========================================================================
-
-    {
-      key: "webhooks",
-
-      label: "Webhooks",
-
-      href: "/webhooks",
-
-      icon: "webhook",
-
-      permission:
-        "webhooks:read",
-    },
-
-    // ==========================================================================
-    // Users
-    // ==========================================================================
-
-    {
-      key: "users",
-
-      label: "Users",
-
-      href: "/users",
-
-      icon: "users",
-
-      permission:
-        "users.read",
-    },
-
-    // ==========================================================================
-    // Access Control
-    // ==========================================================================
-
-    {
-      key: "access-control",
-
-      label: "Access Control",
-
-      icon: "shield",
-
       children: [
         {
-          key: "roles",
+          key: "float",
 
-          label: "Roles",
+          label: "Float",
 
-          href: "/access-control/roles",
+          href: "/float",
 
-          icon: "roles",
-
-          permission:
-            "roles.read",
-        },
-
-        {
-          key: "permissions",
-
-          label: "Permissions",
-
-          href: "/access-control/permissions",
-
-          icon: "permissions",
+          icon: "wallet",
 
           permission:
-            "permissions.read",
+            PERMISSIONS.FLOAT_READ,
         },
       ],
     },
 
     // ==========================================================================
-    // API Keys
+    // Integrations
     // ==========================================================================
 
     {
-      key: "api-keys",
+      key: "integrations",
 
-      label: "API Keys",
+      label: "Integrations",
 
-      href: "/api-keys",
+      icon: "integrations",
 
-      icon: "key",
+      children: [
+        {
+          key: "webhooks",
 
-      permission:
-        "api_keys.read",
+          label: "Webhooks",
+
+          href: "/webhooks",
+
+          icon: "webhook",
+
+          permission:
+            PERMISSIONS.WEBHOOKS_READ,
+        },
+
+        {
+          key: "api-keys",
+
+          label: "API Keys",
+
+          href: "/api-keys",
+
+          icon: "key",
+
+          permission:
+            PERMISSIONS.API_KEYS_READ,
+        },
+      ],
     },
 
     // ==========================================================================
-    // Audit Logs
+    // Administration
     // ==========================================================================
 
     {
-      key: "audit",
+      key: "administration",
 
-      label: "Audit Logs",
+      label: "Administration",
 
-      href: "/audit",
+      icon: "settings",
 
-      icon: "audit",
+      children: [
+        {
+          key: "users",
 
-      permission:
-        "audit_logs.read",
+          label: "Users",
+
+          href: "/users",
+
+          icon: "users",
+
+          permission:
+            PERMISSIONS.USERS_READ,
+        },
+
+        {
+          key: "access-control",
+
+          label: "Access Control",
+
+          icon: "shield",
+
+          children: [
+            {
+              key: "roles",
+
+              label: "Roles",
+
+              href: "/access-control/roles",
+
+              icon: "roles",
+
+              permission:
+                PERMISSIONS.ROLES_READ,
+            },
+
+            {
+              key: "permissions",
+
+              label: "Permissions",
+
+              href: "/access-control/permissions",
+
+              icon: "permissions",
+
+              permission:
+                PERMISSIONS.PERMISSIONS_READ,
+            },
+          ],
+        },
+
+        {
+          key: "audit",
+
+          label: "Audit Logs",
+
+          href: "/audit",
+
+          icon: "audit",
+
+          permission:
+            PERMISSIONS.AUDIT_LOGS_READ,
+        },
+      ],
     },
   ];
 
@@ -311,6 +384,7 @@ function filterNavigationItem(
   user: CurrentUser,
   item: NavigationDefinition,
 ): NavigationItem | null {
+
   // ==========================================================================
   // Permission
   // ==========================================================================

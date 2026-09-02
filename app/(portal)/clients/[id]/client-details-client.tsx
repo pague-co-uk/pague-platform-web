@@ -28,12 +28,17 @@ import {
   useToast,
 } from "@/components/ui/toast";
 
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import {
   activateClient,
+  deleteClient,
   disableClient,
   suspendClient,
   type Client,
 } from "@/features/clients/api/clients-api";
+import { formatDate } from "@/lib/date/format-date";
+
+
 
 // ============================================================================
 // Types
@@ -49,6 +54,8 @@ interface ClientDetailsClientProps {
   readonly canSuspendClient: boolean;
 
   readonly canDisableClient: boolean;
+
+  readonly canDeleteClient: boolean;
 }
 
 // ============================================================================
@@ -61,6 +68,7 @@ export default function ClientDetailsClient({
   canActivateClient,
   canSuspendClient,
   canDisableClient,
+  canDeleteClient,
 }: ClientDetailsClientProps) {
   const router =
     useRouter();
@@ -76,6 +84,15 @@ export default function ClientDetailsClient({
   ] = useState<Client>(
     initialClient,
   );
+  const [
+    deleting,
+    setDeleting,
+  ] = useState(false);
+
+  const [
+    showDeleteModal,
+    setShowDeleteModal,
+  ] = useState(false);
 
   const [
     actionLoading,
@@ -159,6 +176,47 @@ export default function ClientDetailsClient({
     }
   }
 
+  async function handleDelete() {
+    if (
+      deleting ||
+      actionLoading ||
+      !client
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      await deleteClient(
+        client.id,
+      );
+
+      success(
+        "Client deleted",
+        `${client.displayName || client.companyName} has been deleted successfully.`,
+      );
+
+      setShowDeleteModal(false);
+
+      router.push("/clients");
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "[Clients] Unable to delete client.",
+        error,
+      );
+
+      showError(
+        "Unable to delete client",
+        error instanceof Error
+          ? error.message
+          : "Unable to delete client.",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
   // ==========================================================================
   // Render
   // ==========================================================================
@@ -334,6 +392,21 @@ export default function ClientDetailsClient({
                     : "Disable"}
                 </button>
               )}
+            {canDeleteClient && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowDeleteModal(true)
+                }
+                disabled={
+                  deleting ||
+                  actionLoading
+                }
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-red-200 px-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Delete client
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -469,6 +542,38 @@ export default function ClientDetailsClient({
           </div>
         </section>
       </div>
+      {/* ======================================================================
+          Delete confirmation
+      ======================================================================= */}
+
+      <ConfirmModal
+        open={
+          showDeleteModal
+        }
+        title="Delete client?"
+        description={
+          `This will permanently delete ${client.displayName ||
+          client.companyName
+          }. This action cannot be undone.`
+        }
+        confirmLabel={
+          deleting
+            ? "Deleting…"
+            : "Delete client"
+        }
+        cancelLabel="Cancel"
+        destructive
+        onConfirm={
+          handleDelete
+        }
+        onCancel={() => {
+          if (!deleting) {
+            setShowDeleteModal(
+              false,
+            );
+          }
+        }}
+      />
     </PageContainer>
   );
 }
@@ -672,31 +777,6 @@ function getInitials(
     .join("");
 }
 
-function formatDate(
-  value: string | Date,
-): string {
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
-    return String(value);
-  }
-
-  return new Intl.DateTimeFormat(
-    "en-GB",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  ).format(date);
-}
 
 // ============================================================================
 // Action messages

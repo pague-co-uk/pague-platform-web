@@ -100,6 +100,16 @@ export default async function ClientDetailsPage({
       PERMISSIONS.CLIENTS_DISABLE,
     );
 
+  const canDeleteClient =
+    authenticatedUser.roles.some(
+      (role) =>
+        role.permissions.some(
+          (permission) =>
+            permission.name ===
+            PERMISSIONS.CLIENTS_DELETE,
+        ),
+    );
+
   // ==========================================================================
   // Render
   // ==========================================================================
@@ -118,6 +128,9 @@ export default async function ClientDetailsPage({
       }
       canDisableClient={
         canDisableClient
+      }
+      canDeleteClient={
+        canDeleteClient
       }
     />
   );

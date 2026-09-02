@@ -18,6 +18,8 @@ export interface ConfirmModalProps {
 
   confirmLabel?: string;
 
+  confirmingLabel?: string;
+
   cancelLabel?: string;
 
   confirming?: boolean;
@@ -38,6 +40,7 @@ export function ConfirmModal({
   title,
   description,
   confirmLabel = "Confirm",
+  confirmingLabel = "Confirming…",
   cancelLabel = "Cancel",
   confirming = false,
   destructive = false,
@@ -192,7 +195,7 @@ export function ConfirmModal({
             )}
 
             {confirming
-              ? "Deleting…"
+              ? confirmingLabel
               : confirmLabel}
           </button>
         </div>
