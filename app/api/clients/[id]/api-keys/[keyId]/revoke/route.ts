@@ -1,0 +1,89 @@
+import { getControlPlaneUrl } from "@/lib/control-plane";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
+
+
+interface RouteContext {
+  params: Promise<{
+    id: string;
+    keyId: string;
+  }>;
+}
+
+// ============================================================================
+// POST /api/clients/:id/api-keys/:keyId/revoke
+// ============================================================================
+
+export async function POST(
+  request: NextRequest,
+  context: RouteContext,
+) {
+  const {
+    id: clientId,
+    keyId,
+  } = await context.params;
+
+  const targetUrl =
+    `${getControlPlaneUrl()}/api/clients/${encodeURIComponent(
+      clientId,
+    )}/api-keys/${encodeURIComponent(
+      keyId,
+    )}/revoke`;
+
+  const headers =
+    new Headers();
+
+  const session =
+    request.cookies.get(
+      "session",
+    )?.value;
+
+  if (session) {
+    headers.set(
+      "Cookie",
+      `session=${session}`,
+    );
+  }
+
+  const response =
+    await fetch(
+      targetUrl,
+      {
+        method: "POST",
+        headers,
+        cache: "no-store",
+      },
+    );
+
+  if (
+    response.status ===
+    204
+  ) {
+    return new NextResponse(
+      null,
+      {
+        status: 204,
+      },
+    );
+  }
+
+  const body =
+    await response.text();
+
+  return new NextResponse(
+    body,
+    {
+      status:
+        response.status,
+      headers: {
+        "content-type":
+          response.headers.get(
+            "content-type",
+          ) ??
+          "application/json",
+      },
+    },
+  );
+}

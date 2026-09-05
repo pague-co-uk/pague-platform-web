@@ -36,7 +36,7 @@ export default function CreateSenderIdClient() {
   const [
     clients,
     setClients,
-  ] = useState<ClientSummary[]>([]);
+  ] = useState<readonly ClientSummary[]>([]);
 
   const [
     clientsLoading,

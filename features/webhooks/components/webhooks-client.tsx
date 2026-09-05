@@ -25,7 +25,8 @@ interface ClientOption {
 }
 
 interface WebhooksClientProps {
-  clients: ClientOption[];
+  client?: ClientOption;
+  clients?: ClientOption[];
   webhooks: Webhook[];
   pagination: WebhookPagination | null;
   canCreateWebhooks: boolean;
@@ -41,6 +42,7 @@ function formatDate(value: string): string {
 }
 
 export function WebhooksClient({
+  client,
   clients = [],
   webhooks = [],
   pagination,
@@ -49,11 +51,11 @@ export function WebhooksClient({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const clientId = searchParams.get("clientId") ?? "";
+  const clientId = client?.id ?? searchParams.get("clientId") ?? "";
 
   const selectedClient = useMemo(
-    () => clients.find((client) => client.id === clientId),
-    [clients, clientId],
+    () => client ?? clients.find((entry) => entry.id === clientId),
+    [client, clients, clientId],
   );
 
   const clientOptions = useMemo(
@@ -128,10 +130,10 @@ export function WebhooksClient({
 
     params.delete("page");
 
-    router.push(`/webhooks?${params.toString()}`);
+    router.push(`/clients/${encodeURIComponent(value)}/webhooks?${params.toString()}`);
   }
 
-  if (!clients.length) {
+  if (!client && !clients.length && !clientId) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-sm font-semibold text-slate-900">
@@ -161,44 +163,78 @@ export function WebhooksClient({
 
   return (
     <div className="space-y-6 px-6 pt-6 pb-6">
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-          <div>
-            <label
-              htmlFor="webhook-client"
-              className="mb-1.5 block text-sm font-medium text-slate-700"
-            >
-              Client
-            </label>
+      {!client ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <div>
+              <label
+                htmlFor="webhook-client"
+                className="mb-1.5 block text-sm font-medium text-slate-700"
+              >
+                Client
+              </label>
 
-            <select
-              id="webhook-client"
-              value={clientId}
-              onChange={(event) =>
-                handleClientChange(event.target.value)
-              }
-              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              <option value="">Select a client</option>
+              <select
+                id="webhook-client"
+                value={clientId}
+                onChange={(event) =>
+                  handleClientChange(event.target.value)
+                }
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">Select a client</option>
 
-              {clientOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+                {clientOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {clientId && canCreateWebhooks ? (
+              <Link
+                href={`/clients/${encodeURIComponent(clientId)}/webhooks/create`}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+              >
+                Create Webhook
+              </Link>
+            ) : null}
           </div>
-
-          {clientId && canCreateWebhooks ? (
-            <Link
-              href={`/webhooks/new?clientId=${encodeURIComponent(clientId)}`}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
-            >
-              Create Webhook
-            </Link>
-          ) : null}
         </div>
-      </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Client
+              </p>
+
+              <div className="mt-1 flex items-center gap-2">
+                <Link
+                  href={`/clients/${encodeURIComponent(client.id)}`}
+                  className="text-sm font-semibold text-slate-900 transition hover:text-blue-600"
+                >
+                  {client.displayName || client.companyName}
+                </Link>
+
+                <span className="font-mono text-xs text-slate-400">
+                  {client.publicId}
+                </span>
+              </div>
+            </div>
+
+            {canCreateWebhooks ? (
+              <Link
+                href={`/clients/${encodeURIComponent(client.id)}/webhooks/create`}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+              >
+                Create Webhook
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {!clientId ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
@@ -251,9 +287,9 @@ export function WebhooksClient({
             getRowKey={(webhook) => webhook.id}
             onRowClick={(webhook) =>
               router.push(
-                `/webhooks/${webhook.id}?clientId=${encodeURIComponent(
+                `/clients/${encodeURIComponent(
                   clientId,
-                )}`,
+                )}/webhooks/${encodeURIComponent(webhook.id)}`,
               )
             }
           />

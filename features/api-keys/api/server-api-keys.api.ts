@@ -8,6 +8,10 @@ import type {
   ApiKeyPagination,
 } from "./api-keys-api";
 
+// ============================================================================
+// Types
+// ============================================================================
+
 type ApiKeyStatus =
   | "ACTIVE"
   | "EXPIRED"
@@ -23,6 +27,10 @@ interface ApiResponse<T> {
   data: T;
 }
 
+// ============================================================================
+// Configuration
+// ============================================================================
+
 const getApiUrl = (): string => {
   const value =
     process.env.CONTROL_PLANE_API_URL?.trim();
@@ -33,12 +41,20 @@ const getApiUrl = (): string => {
     );
   }
 
-  return value.replace(/\/+$/, "");
+  return value.replace(
+    /\/+$/,
+    "",
+  );
 };
+
+// ============================================================================
+// Authentication
+// ============================================================================
 
 const getCookieHeader =
   async (): Promise<string> => {
-    const cookieStore = await cookies();
+    const cookieStore =
+      await cookies();
 
     return cookieStore
       .getAll()
@@ -49,22 +65,30 @@ const getCookieHeader =
       .join("; ");
   };
 
+// ============================================================================
+// Request
+// ============================================================================
+
 const request = async <T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> => {
-  const response = await fetch(
-    `${getApiUrl()}${path}`,
-    {
-      ...init,
-      headers: {
-        ...(init?.headers ?? {}),
-        cookie:
-          await getCookieHeader(),
+  const response =
+    await fetch(
+      `${getApiUrl()}${path}`,
+      {
+        ...init,
+
+        headers: {
+          ...(init?.headers ?? {}),
+
+          cookie:
+            await getCookieHeader(),
+        },
+
+        cache: "no-store",
       },
-      cache: "no-store",
-    },
-  );
+    );
 
   const body =
     await response.text();
@@ -76,7 +100,10 @@ const request = async <T>(
     );
   }
 
-  if (response.status === 204) {
+  if (
+    response.status ===
+    204
+  ) {
     return undefined as T;
   }
 
@@ -84,8 +111,14 @@ const request = async <T>(
     return undefined as T;
   }
 
-  return JSON.parse(body) as T;
+  return JSON.parse(
+    body,
+  ) as T;
 };
+
+// ============================================================================
+// Response helpers
+// ============================================================================
 
 const extractData = <T>(
   response: ApiResponse<T>,
@@ -116,13 +149,20 @@ const extractPaginatedData = <T>(
   }
 
   return {
-    data: Array.isArray(response.data)
+    data: Array.isArray(
+      response.data,
+    )
       ? response.data
       : [],
+
     pagination:
       response.pagination,
   };
 };
+
+// ============================================================================
+// Find API keys
+// ============================================================================
 
 export async function findApiKeys(
   clientId: string,
@@ -135,7 +175,10 @@ export async function findApiKeys(
   const params =
     new URLSearchParams();
 
-  if (options?.page !== undefined) {
+  if (
+    options?.page !==
+    undefined
+  ) {
     params.set(
       "page",
       String(options.page),
@@ -143,7 +186,8 @@ export async function findApiKeys(
   }
 
   if (
-    options?.pageSize !== undefined
+    options?.pageSize !==
+    undefined
   ) {
     params.set(
       "pageSize",
@@ -151,7 +195,10 @@ export async function findApiKeys(
     );
   }
 
-  if (options?.status !== undefined) {
+  if (
+    options?.status !==
+    undefined
+  ) {
     params.set(
       "status",
       options.status,
@@ -169,7 +216,9 @@ export async function findApiKeys(
     }>(
       `/api/clients/${encodeURIComponent(
         clientId,
-      )}/api-keys${query ? `?${query}` : ""
+      )}/api-keys${query
+        ? `?${query}`
+        : ""
       }`,
     );
 
@@ -177,6 +226,36 @@ export async function findApiKeys(
     response,
   );
 }
+
+// ============================================================================
+// Find API key
+//
+// Server-side only.
+// ============================================================================
+
+export async function findApiKey(
+  clientId: string,
+  apiKeyId: string,
+): Promise<ApiKey> {
+  const response =
+    await request<
+      ApiResponse<ApiKey>
+    >(
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/api-keys/${encodeURIComponent(
+        apiKeyId,
+      )}`,
+    );
+
+  return extractData(
+    response,
+  );
+}
+
+// ============================================================================
+// Create API key
+// ============================================================================
 
 export async function createApiKey(
   clientId: string,
@@ -195,16 +274,27 @@ export async function createApiKey(
       )}/api-keys`,
       {
         method: "POST",
+
         headers: {
           "content-type":
             "application/json",
         },
-        body: JSON.stringify(input),
+
+        body:
+          JSON.stringify(
+            input,
+          ),
       },
     );
 
-  return extractData(response);
+  return extractData(
+    response,
+  );
 }
+
+// ============================================================================
+// Revoke API key
+// ============================================================================
 
 export async function revokeApiKey(
   clientId: string,

@@ -1,13 +1,5 @@
 import "server-only";
 
-import {
-  hasPermission,
-} from "@/lib/authorization/authorization";
-
-import {
-  PERMISSIONS,
-} from "@/lib/authorization/permissions";
-
 import type {
   NavigationIconName,
 } from "@/components/layout/navigation-icon";
@@ -16,43 +8,54 @@ import type {
   CurrentUser,
 } from "@/lib/auth/get-current-user";
 
+import {
+  hasPermission,
+} from "@/lib/authorization/authorization";
+
+import {
+  PERMISSIONS,
+} from "@/lib/authorization/permissions";
+
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface NavigationItem {
   key: string;
-
   label: string;
-
   href?: string;
-
   icon: NavigationIconName;
-
   badge?: string | number;
-
   children?: readonly NavigationItem[];
 }
 
 export interface NavigationSection {
   key: string;
-
   label?: string;
-
   items: readonly NavigationItem[];
 }
 
 interface NavigationDefinition
   extends NavigationItem {
   permission?: string;
-
   children?: readonly NavigationDefinition[];
 }
 
 // ============================================================================
-// Navigation definition
+// Navigation Definition
 //
-// This is the complete platform navigation.
+// Global navigation is defined from the authenticated user's context.
+//
+// Client-scoped resources:
+//
+//   /clients/:clientId/messages
+//   /clients/:clientId/sender-ids
+//   /clients/:clientId/api-keys
+//   /clients/:clientId/webhooks
+//   /clients/:clientId/smpp-accounts
+//   /clients/:clientId/float
+//
+// use the authenticated user's clientId.
 //
 // Permission checks happen exclusively on the server.
 //
@@ -60,8 +63,10 @@ interface NavigationDefinition
 // client.
 // ============================================================================
 
-const NAVIGATION:
-  readonly NavigationDefinition[] = [
+function getNavigationDefinition(
+  user: CurrentUser,
+): readonly NavigationDefinition[] {
+  return [
 
     // ==========================================================================
     // Overview
@@ -75,59 +80,6 @@ const NAVIGATION:
       href: "/",
 
       icon: "dashboard",
-    },
-
-    // ==========================================================================
-    // Messaging
-    // ==========================================================================
-
-    {
-      key: "messaging",
-
-      label: "Messaging",
-
-      icon: "messages",
-
-      children: [
-        {
-          key: "messages",
-
-          label: "Messages",
-
-          href: "/messaging/messages",
-
-          icon: "messages",
-
-          permission:
-            PERMISSIONS.MESSAGES_READ,
-        },
-
-        {
-          key: "sender-ids",
-
-          label: "Sender IDs",
-
-          href: "/sender-ids",
-
-          icon: "sender",
-
-          permission:
-            PERMISSIONS.SENDER_IDS_READ,
-        },
-
-        {
-          key: "smpp-accounts",
-
-          label: "SMPP Accounts",
-
-          href: "/messaging/smpp-accounts",
-
-          icon: "smpp",
-
-          permission:
-            PERMISSIONS.SMPP_ACCOUNTS_READ,
-        },
-      ],
     },
 
     // ==========================================================================
@@ -185,6 +137,8 @@ const NAVIGATION:
 
     // ==========================================================================
     // Clients
+    //
+    // The authenticated user's clientId is used for client-scoped resources.
     // ==========================================================================
 
     {
@@ -192,59 +146,71 @@ const NAVIGATION:
 
       label: "Clients",
 
-      href: "/clients",
-
       icon: "clients",
-
-      permission:
-        PERMISSIONS.CLIENTS_READ,
-    },
-
-    // ==========================================================================
-    // Finance
-    // ==========================================================================
-
-    {
-      key: "finance",
-
-      label: "Finance",
-
-      icon: "wallet",
 
       children: [
         {
-          key: "float",
+          key: "clients-list",
 
-          label: "Float",
+          label: "Clients",
 
-          href: "/float",
+          href: "/clients",
 
-          icon: "wallet",
+          icon: "clients",
 
           permission:
-            PERMISSIONS.FLOAT_READ,
+            PERMISSIONS.CLIENTS_READ,
         },
-      ],
-    },
 
-    // ==========================================================================
-    // Integrations
-    // ==========================================================================
+        {
+          key: "messages",
 
-    {
-      key: "integrations",
+          label: "Messages",
 
-      label: "Integrations",
+          href:
+            `/clients/${user.clientId}/messages`,
 
-      icon: "integrations",
+          icon: "messages",
 
-      children: [
+          permission:
+            PERMISSIONS.MESSAGES_READ,
+        },
+
+        {
+          key: "sender-ids",
+
+          label: "Sender IDs",
+
+          href:
+            `/clients/${user.clientId}/sender-ids`,
+
+          icon: "sender",
+
+          permission:
+            PERMISSIONS.SENDER_IDS_READ,
+        },
+
+        {
+          key: "api-keys",
+
+          label: "API Keys",
+
+          href:
+            `/clients/${user.clientId}/api-keys`,
+
+          icon: "key",
+
+          permission:
+            PERMISSIONS.API_KEYS_READ,
+        },
+
         {
           key: "webhooks",
 
           label: "Webhooks",
 
-          href: "/webhooks",
+          href:
+            `/clients/${user.clientId}/webhooks`,
 
           icon: "webhook",
 
@@ -253,16 +219,31 @@ const NAVIGATION:
         },
 
         {
-          key: "api-keys",
+          key: "smpp-accounts",
 
-          label: "API Keys",
+          label: "SMPP Accounts",
 
-          href: "/api-keys",
+          href:
+            `/clients/${user.clientId}/smpp-accounts`,
 
-          icon: "key",
+          icon: "smpp",
 
           permission:
-            PERMISSIONS.API_KEYS_READ,
+            PERMISSIONS.SMPP_ACCOUNTS_READ,
+        },
+
+        {
+          key: "float",
+
+          label: "Float",
+
+          href:
+            `/clients/${user.clientId}/float`,
+
+          icon: "wallet",
+
+          permission:
+            PERMISSIONS.FLOAT_READ,
         },
       ],
     },
@@ -293,39 +274,16 @@ const NAVIGATION:
         },
 
         {
-          key: "access-control",
+          key: "roles",
 
-          label: "Access Control",
+          label: "Roles",
 
-          icon: "shield",
+          href: "/access-control/roles",
 
-          children: [
-            {
-              key: "roles",
+          icon: "roles",
 
-              label: "Roles",
-
-              href: "/access-control/roles",
-
-              icon: "roles",
-
-              permission:
-                PERMISSIONS.ROLES_READ,
-            },
-
-            {
-              key: "permissions",
-
-              label: "Permissions",
-
-              href: "/access-control/permissions",
-
-              icon: "permissions",
-
-              permission:
-                PERMISSIONS.PERMISSIONS_READ,
-            },
-          ],
+          permission:
+            PERMISSIONS.ROLES_READ,
         },
 
         {
@@ -343,22 +301,22 @@ const NAVIGATION:
       ],
     },
   ];
+}
 
 // ============================================================================
-// Get navigation
+// Get Navigation
 // ============================================================================
 
 export function getNavigation(
   user: CurrentUser,
 ): readonly NavigationSection[] {
   const items =
-    NAVIGATION
-      .map(
-        (item) =>
-          filterNavigationItem(
-            user,
-            item,
-          ),
+    getNavigationDefinition(user)
+      .map((item) =>
+        filterNavigationItem(
+          user,
+          item,
+        ),
       )
       .filter(
         (
@@ -377,7 +335,7 @@ export function getNavigation(
 }
 
 // ============================================================================
-// Filter navigation item
+// Filter Navigation Item
 // ============================================================================
 
 function filterNavigationItem(
@@ -405,12 +363,11 @@ function filterNavigationItem(
 
   const children =
     item.children
-      ?.map(
-        (child) =>
-          filterNavigationItem(
-            user,
-            child,
-          ),
+      ?.map((child) =>
+        filterNavigationItem(
+          user,
+          child,
+        ),
       )
       .filter(
         (
@@ -420,7 +377,7 @@ function filterNavigationItem(
       );
 
   // ==========================================================================
-  // Parent with children but no accessible children
+  // Parent With No Accessible Children
   // ==========================================================================
 
   if (
@@ -432,10 +389,10 @@ function filterNavigationItem(
   }
 
   // ==========================================================================
-  // Client-safe navigation item
+  // Client-Safe Navigation Item
   //
-  // Deliberately do not return `permission`.
-  // The client must never receive authorization rules.
+  // Deliberately omit `permission`.
+  // Authorization rules remain server-side.
   // ==========================================================================
 
   return {

@@ -48,7 +48,8 @@ interface ApiKeyResponse<T> {
 const parseResponse = async <T>(
   response: Response,
 ): Promise<T> => {
-  const body = await response.text();
+  const body =
+    await response.text();
 
   if (!response.ok) {
     throw new Error(
@@ -67,6 +68,10 @@ const parseResponse = async <T>(
   return JSON.parse(body) as T;
 };
 
+// ============================================================================
+// Find API keys
+// ============================================================================
+
 export async function findApiKeys(
   clientId: string,
   options?: {
@@ -81,7 +86,9 @@ export async function findApiKeys(
   const searchParams =
     new URLSearchParams();
 
-  if (options?.page !== undefined) {
+  if (
+    options?.page !== undefined
+  ) {
     searchParams.set(
       "page",
       String(options.page),
@@ -97,7 +104,9 @@ export async function findApiKeys(
     );
   }
 
-  if (options?.status !== undefined) {
+  if (
+    options?.status !== undefined
+  ) {
     searchParams.set(
       "status",
       options.status,
@@ -117,6 +126,7 @@ export async function findApiKeys(
       }`,
       {
         method: "GET",
+        credentials: "include",
         cache: "no-store",
       },
     );
@@ -141,26 +151,71 @@ export async function findApiKeys(
   };
 }
 
-export async function createApiKey(
+// ============================================================================
+// Revoke API key
+// ============================================================================
+
+export async function revokeApiKey(
   clientId: string,
-  input: {
-    name: string;
-    capabilities: readonly string[];
-    expiresAt?: string;
-  },
-): Promise<ApiKeyCreatedResponse> {
+  apiKeyId: string,
+): Promise<void> {
   const response =
     await fetch(
       `/api/clients/${encodeURIComponent(
         clientId,
+      )}/api-keys/${encodeURIComponent(
+        apiKeyId,
+      )}/revoke`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  await parseResponse<void>(
+    response,
+  );
+}
+
+// ============================================================================
+// Create API key
+// ============================================================================
+
+export interface CreateApiKeyInput {
+  clientId: string;
+  name: string;
+  expiresAt?: string;
+  capabilities: readonly string[];
+}
+
+export async function createApiKey(
+  input: CreateApiKeyInput,
+): Promise<ApiKeyCreatedResponse> {
+  const response =
+    await fetch(
+      `/api/clients/${encodeURIComponent(
+        input.clientId,
       )}/api-keys`,
       {
         method: "POST",
+        credentials: "include",
+        cache: "no-store",
         headers: {
-          "content-type":
+          "Content-Type":
             "application/json",
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          name: input.name,
+          capabilities:
+            input.capabilities,
+          ...(input.expiresAt
+            ? {
+              expiresAt:
+                input.expiresAt,
+            }
+            : {}),
+        }),
       },
     );
 
@@ -178,23 +233,38 @@ export async function createApiKey(
   return body.data;
 }
 
-export async function revokeApiKey(
+// ============================================================================
+// Find API key
+// ============================================================================
+
+export async function findApiKey(
   clientId: string,
   apiKeyId: string,
-): Promise<void> {
+): Promise<ApiKey> {
   const response =
     await fetch(
       `/api/clients/${encodeURIComponent(
         clientId,
       )}/api-keys/${encodeURIComponent(
         apiKeyId,
-      )}/revoke`,
+      )}`,
       {
-        method: "POST",
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
       },
     );
 
-  await parseResponse<void>(
-    response,
-  );
+  const body =
+    await parseResponse<
+      ApiKeyResponse<ApiKey>
+    >(response);
+
+  if (!body.success) {
+    throw new Error(
+      "Unable to retrieve API key.",
+    );
+  }
+
+  return body.data;
 }

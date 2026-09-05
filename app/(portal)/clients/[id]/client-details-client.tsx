@@ -4,11 +4,11 @@ import {
   useState,
 } from "react";
 
+import Link from "next/link";
+
 import {
   useRouter,
 } from "next/navigation";
-
-import Link from "next/link";
 
 import {
   PageContainer,
@@ -22,13 +22,14 @@ import {
   StatusBadge,
 } from "@/components/ui/status-badge";
 
-
-
 import {
   useToast,
 } from "@/components/ui/toast";
 
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import {
+  ConfirmModal,
+} from "@/components/ui/confirm-modal";
+
 import {
   activateClient,
   deleteClient,
@@ -36,9 +37,20 @@ import {
   suspendClient,
   type Client,
 } from "@/features/clients/api/clients-api";
-import { formatDate } from "@/lib/date/format-date";
 
+import type {
+  ApiKey,
+  ApiKeyPagination,
+} from "@/features/api-keys/api/api-keys-api";
 
+import type {
+  Webhook,
+  WebhookPagination,
+} from "@/features/webhooks/api/webhooks-api";
+
+import {
+  formatDate,
+} from "@/lib/date/format-date";
 
 // ============================================================================
 // Types
@@ -56,6 +68,32 @@ interface ClientDetailsClientProps {
   readonly canDisableClient: boolean;
 
   readonly canDeleteClient: boolean;
+
+  readonly apiKeys: ApiKey[];
+
+  readonly apiKeysPagination: ApiKeyPagination | null;
+
+  readonly webhooks: Webhook[];
+
+  readonly webhooksPagination: WebhookPagination | null;
+
+  readonly canReadApiKeys: boolean;
+
+  readonly canCreateApiKeys: boolean;
+
+  readonly canRevokeApiKeys: boolean;
+
+  readonly canReadWebhooks: boolean;
+
+  readonly canCreateWebhooks: boolean;
+
+  readonly canUpdateWebhooks: boolean;
+
+  readonly canDeleteWebhooks: boolean;
+
+  readonly canRotateWebhookSecrets: boolean;
+
+  readonly canReadWebhookDeliveries: boolean;
 }
 
 // ============================================================================
@@ -69,6 +107,19 @@ export default function ClientDetailsClient({
   canSuspendClient,
   canDisableClient,
   canDeleteClient,
+  apiKeys,
+  apiKeysPagination,
+  webhooks,
+  webhooksPagination,
+  canReadApiKeys,
+  canCreateApiKeys,
+  canRevokeApiKeys,
+  canReadWebhooks,
+  canCreateWebhooks,
+  canUpdateWebhooks,
+  canDeleteWebhooks,
+  canRotateWebhookSecrets,
+  canReadWebhookDeliveries,
 }: ClientDetailsClientProps) {
   const router =
     useRouter();
@@ -84,6 +135,7 @@ export default function ClientDetailsClient({
   ] = useState<Client>(
     initialClient,
   );
+
   const [
     deleting,
     setDeleting,
@@ -176,6 +228,10 @@ export default function ClientDetailsClient({
     }
   }
 
+  // ==========================================================================
+  // Delete
+  // ==========================================================================
+
   async function handleDelete() {
     if (
       deleting ||
@@ -217,6 +273,7 @@ export default function ClientDetailsClient({
       setDeleting(false);
     }
   }
+
   // ==========================================================================
   // Render
   // ==========================================================================
@@ -392,11 +449,14 @@ export default function ClientDetailsClient({
                     : "Disable"}
                 </button>
               )}
+
             {canDeleteClient && (
               <button
                 type="button"
                 onClick={() =>
-                  setShowDeleteModal(true)
+                  setShowDeleteModal(
+                    true,
+                  )
                 }
                 disabled={
                   deleting ||
@@ -487,16 +547,12 @@ export default function ClientDetailsClient({
           <div className="space-y-4 p-5">
             <StatusRow
               label="Status"
-              value={
-                getStatusLabel(
-                  client.status,
-                )
-              }
-              tone={
-                getStatusTone(
-                  client.status,
-                )
-              }
+              value={getStatusLabel(
+                client.status,
+              )}
+              tone={getStatusTone(
+                client.status,
+              )}
             />
 
             <StatusRow
@@ -514,6 +570,263 @@ export default function ClientDetailsClient({
             />
           </div>
         </section>
+
+        {/* ====================================================================
+            API Keys
+        ===================================================================== */}
+
+        {canReadApiKeys && (
+          <section className="rounded-xl border border-slate-200 bg-white xl:col-span-3">
+            <SectionHeader
+              title="API Keys"
+              description="Credentials used by this client to access the platform API."
+              trailing={
+                <div className="flex shrink-0 items-center gap-2">
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/api-keys`}
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                  >
+                    Manage
+                  </Link>
+
+                  {canCreateApiKeys && (
+                    <Link
+                      href={`/clients/${encodeURIComponent(
+                        client.id,
+                      )}/api-keys/new`}
+                      className="inline-flex h-8 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white transition hover:bg-blue-700"
+                    >
+                      Create key
+                    </Link>
+                  )}
+                </div>
+              }
+            />
+
+            {apiKeys.length ===
+              0 ? (
+              <div className="px-5 py-8 text-center sm:px-6">
+                <p className="text-sm font-medium text-slate-700">
+                  No API keys
+                </p>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  This client does not have any API keys yet.
+                </p>
+
+                {canCreateApiKeys && (
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/api-keys/create`}
+                    className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+                  >
+                    Create API key
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {apiKeys.map(
+                  (apiKey) => (
+                    <div
+                      key={
+                        apiKey.id
+                      }
+                      className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {
+                            apiKey.name
+                          }
+                        </p>
+
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="font-mono text-xs text-slate-500">
+                            {
+                              apiKey.prefix
+                            }
+                            ••••••••
+                          </span>
+
+                          {apiKey.expiresAt && (
+                            <span className="text-xs text-slate-400">
+                              Expires{" "}
+                              {formatDate(
+                                apiKey.expiresAt,
+                              )}
+                            </span>
+                          )}
+
+                          {apiKey.lastUsedAt && (
+                            <span className="text-xs text-slate-400">
+                              Last used{" "}
+                              {formatDate(
+                                apiKey.lastUsedAt,
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <StatusBadge
+                        tone={getApiKeyStatusTone(
+                          apiKey.status,
+                        )}
+                        dot
+                      >
+                        {getApiKeyStatusLabel(
+                          apiKey.status,
+                        )}
+                      </StatusBadge>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
+
+            {apiKeysPagination &&
+              apiKeysPagination.totalItems >
+              apiKeys.length && (
+                <div className="border-t border-slate-100 px-5 py-3 sm:px-6">
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/api-keys`}
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                  >
+                    View all{" "}
+                    {
+                      apiKeysPagination.totalItems
+                    }{" "}
+                    API keys →
+                  </Link>
+                </div>
+              )}
+          </section>
+        )}
+
+        {/* ====================================================================
+            Webhooks
+        ===================================================================== */}
+
+        {canReadWebhooks && (
+          <section className="rounded-xl border border-slate-200 bg-white xl:col-span-3">
+            <SectionHeader
+              title="Webhooks"
+              description="HTTP endpoints used to notify this client about platform events."
+              trailing={
+                <div className="flex shrink-0 items-center gap-2">
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/webhooks`}
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                  >
+                    Manage
+                  </Link>
+
+                  {canCreateWebhooks && (
+                    <Link
+                      href={`/clients/${encodeURIComponent(
+                        client.id,
+                      )}/webhooks/create`}
+                      className="inline-flex h-8 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white transition hover:bg-blue-700"
+                    >
+                      Add webhook
+                    </Link>
+                  )}
+                </div>
+              }
+            />
+
+            {webhooks.length ===
+              0 ? (
+              <div className="px-5 py-8 text-center sm:px-6">
+                <p className="text-sm font-medium text-slate-700">
+                  No webhooks
+                </p>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  This client does not have any webhook endpoints yet.
+                </p>
+
+                {canCreateWebhooks && (
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/webhooks/create`}
+                    className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+                  >
+                    Add webhook
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {webhooks.map(
+                  (webhook) => (
+                    <div
+                      key={
+                        webhook.id
+                      }
+                      className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {
+                            webhook.name
+                          }
+                        </p>
+
+                        <p className="mt-1 truncate text-xs text-slate-500">
+                          {
+                            webhook.url
+                          }
+                        </p>
+                      </div>
+
+                      <StatusBadge
+                        tone={
+                          webhook.enabled
+                            ? "success"
+                            : "neutral"
+                        }
+                        dot
+                      >
+                        {webhook.enabled
+                          ? "Enabled"
+                          : "Disabled"}
+                      </StatusBadge>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
+
+            {webhooksPagination &&
+              webhooksPagination.totalItems >
+              webhooks.length && (
+                <div className="border-t border-slate-100 px-5 py-3 sm:px-6">
+                  <Link
+                    href={`/clients/${encodeURIComponent(
+                      client.id,
+                    )}/webhooks`}
+                    className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                  >
+                    View all{" "}
+                    {
+                      webhooksPagination.totalItems
+                    }{" "}
+                    webhooks →
+                  </Link>
+                </div>
+              )}
+          </section>
+        )}
 
         {/* ====================================================================
             Timestamps
@@ -542,6 +855,7 @@ export default function ClientDetailsClient({
           </div>
         </section>
       </div>
+
       {/* ======================================================================
           Delete confirmation
       ======================================================================= */}
@@ -551,11 +865,9 @@ export default function ClientDetailsClient({
           showDeleteModal
         }
         title="Delete client?"
-        description={
-          `This will permanently delete ${client.displayName ||
+        description={`This will permanently delete ${client.displayName ||
           client.companyName
-          }. This action cannot be undone.`
-        }
+          }. This action cannot be undone.`}
         confirmLabel={
           deleting
             ? "Deleting…"
@@ -673,9 +985,7 @@ function StatusRow({
         {label}
       </span>
 
-      <StatusBadge
-        tone={tone}
-      >
+      <StatusBadge tone={tone}>
         {value}
       </StatusBadge>
     </div>
@@ -683,7 +993,7 @@ function StatusRow({
 }
 
 // ============================================================================
-// Status badge
+// Client status badge
 // ============================================================================
 
 function ClientStatusBadge({
@@ -696,11 +1006,9 @@ function ClientStatusBadge({
 }) {
   return (
     <StatusBadge
-      tone={
-        getStatusTone(
-          status,
-        )
-      }
+      tone={getStatusTone(
+        status,
+      )}
     >
       {getStatusLabel(
         status,
@@ -749,6 +1057,49 @@ function getStatusTone(
 }
 
 // ============================================================================
+// API key helpers
+// ============================================================================
+
+function getApiKeyStatusLabel(
+  status:
+    | "ACTIVE"
+    | "EXPIRED"
+    | "REVOKED",
+): string {
+  switch (status) {
+    case "ACTIVE":
+      return "Active";
+
+    case "EXPIRED":
+      return "Expired";
+
+    case "REVOKED":
+      return "Revoked";
+  }
+}
+
+function getApiKeyStatusTone(
+  status:
+    | "ACTIVE"
+    | "EXPIRED"
+    | "REVOKED",
+):
+  | "success"
+  | "warning"
+  | "danger" {
+  switch (status) {
+    case "ACTIVE":
+      return "success";
+
+    case "EXPIRED":
+      return "warning";
+
+    case "REVOKED":
+      return "danger";
+  }
+}
+
+// ============================================================================
 // Helpers
 // ============================================================================
 
@@ -776,7 +1127,6 @@ function getInitials(
     )
     .join("");
 }
-
 
 // ============================================================================
 // Action messages

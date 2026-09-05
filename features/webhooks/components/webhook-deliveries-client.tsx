@@ -208,7 +208,13 @@ export function WebhookDeliveriesClient({
     );
 
   useEffect(() => {
-    void loadDeliveries();
+    const timeoutId = window.setTimeout(() => {
+      void loadDeliveries();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [loadDeliveries]);
 
   const columns =
@@ -355,8 +361,10 @@ export function WebhookDeliveriesClient({
 
       <div className="mb-6">
         <Link
-          href={`/webhooks/${webhook.id}?clientId=${encodeURIComponent(
+          href={`/clients/${encodeURIComponent(
             clientId,
+          )}/webhooks/${encodeURIComponent(
+            webhook.id,
           )}`}
           className="text-sm font-medium text-slate-600 hover:text-slate-900"
         >

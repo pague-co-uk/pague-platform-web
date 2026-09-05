@@ -477,7 +477,7 @@ export async function enableSenderId(
       data: SenderId;
     }>(
       response,
-      "Unable to disable Sender ID.",
+      "Unable to enable Sender ID.",
     );
 
   return body.data;

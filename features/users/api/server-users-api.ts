@@ -4,7 +4,42 @@ import { cookies } from "next/headers";
 
 import type {
   User,
+  UserSummary,
 } from "../types/user";
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface FindUsersParams {
+  readonly search?: string;
+
+  readonly status?: string;
+
+  readonly page?: number;
+
+  readonly pageSize?: number;
+
+  readonly sortBy?: string;
+
+  readonly sortDirection?:
+  | "asc"
+  | "desc";
+}
+
+export interface FindUsersResult {
+  readonly items: readonly UserSummary[];
+
+  readonly meta: {
+    readonly page: number;
+
+    readonly pageSize: number;
+
+    readonly total: number;
+
+    readonly totalPages: number;
+  };
+}
 
 // ============================================================================
 // Error
@@ -49,23 +84,13 @@ function getControlPlaneUrl(): string {
 }
 
 // ============================================================================
-// Find user by ID
+// Authentication
 // ============================================================================
 
-export async function findUserById(
-  id: string,
-): Promise<User | null> {
-  // ==========================================================================
-  // Authentication
-  // ==========================================================================
-
+async function getSessionCookie(): Promise<string> {
   const cookieStore =
     await cookies();
 
-  /*
-   * The Control Plane currently authenticates the request using the session
-   * cookie.
-   */
   const session =
     cookieStore.get(
       "session",
@@ -78,6 +103,268 @@ export async function findUserById(
     );
   }
 
+  return `${session.name}=${session.value}`;
+}
+
+// ============================================================================
+// Find users
+//
+// Server-side only.
+// ============================================================================
+
+export async function findUsers(
+  params: FindUsersParams = {},
+): Promise<FindUsersResult> {
+  const session =
+    await getSessionCookie();
+
+  const searchParams =
+    new URLSearchParams();
+
+  // --------------------------------------------------------------------------
+  // Search
+  // --------------------------------------------------------------------------
+
+  if (
+    params.search
+  ) {
+    searchParams.set(
+      "search",
+      params.search,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Status
+  // --------------------------------------------------------------------------
+
+  if (
+    params.status
+  ) {
+    searchParams.set(
+      "status",
+      params.status,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Pagination
+  // --------------------------------------------------------------------------
+
+  searchParams.set(
+    "page",
+    String(
+      params.page ?? 1,
+    ),
+  );
+
+  searchParams.set(
+    "pageSize",
+    String(
+      params.pageSize ?? 100,
+    ),
+  );
+
+  // --------------------------------------------------------------------------
+  // Sorting
+  // --------------------------------------------------------------------------
+
+  if (
+    params.sortBy
+  ) {
+    searchParams.set(
+      "sortBy",
+      params.sortBy,
+    );
+  }
+
+  if (
+    params.sortDirection
+  ) {
+    searchParams.set(
+      "sortDirection",
+      params.sortDirection,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Request
+  // --------------------------------------------------------------------------
+
+  let response: Response;
+
+  try {
+    response =
+      await fetch(
+        `${getControlPlaneUrl()}/api/users?${searchParams.toString()}`,
+        {
+          method: "GET",
+
+          headers: {
+            Cookie:
+              session,
+          },
+
+          cache:
+            "no-store",
+        },
+      );
+  } catch (error) {
+    console.error(
+      "[Users] Failed to connect to Control Plane.",
+      error,
+    );
+
+    throw new ServerUsersApiError(
+      "Unable to connect to the user service.",
+      502,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse response
+  // --------------------------------------------------------------------------
+
+  const text =
+    await response.text();
+
+  let body: unknown =
+    null;
+
+  if (text) {
+    try {
+      body =
+        JSON.parse(text);
+    } catch {
+      body =
+        text;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // API errors
+  // --------------------------------------------------------------------------
+
+  if (!response.ok) {
+    throw new ServerUsersApiError(
+      getErrorMessage(
+        body,
+        "Unable to load users.",
+      ),
+      response.status,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Validate response envelope
+  // --------------------------------------------------------------------------
+
+  if (
+    typeof body !==
+    "object" ||
+    body === null
+  ) {
+    throw new ServerUsersApiError(
+      "Invalid users response.",
+      response.status,
+    );
+  }
+
+  if (
+    !("success" in body) ||
+    body.success !== true
+  ) {
+    throw new ServerUsersApiError(
+      "Invalid users response.",
+      response.status,
+    );
+  }
+
+  if (
+    !("data" in body) ||
+    !Array.isArray(
+      body.data,
+    )
+  ) {
+    throw new ServerUsersApiError(
+      "Invalid users collection response.",
+      response.status,
+    );
+  }
+
+  if (
+    !("pagination" in body) ||
+    typeof body.pagination !==
+    "object" ||
+    body.pagination === null
+  ) {
+    throw new ServerUsersApiError(
+      "Invalid users pagination response.",
+      response.status,
+    );
+  }
+
+  const pagination =
+    body.pagination;
+
+  if (
+    !("page" in pagination) ||
+    !("pageSize" in pagination) ||
+    !("totalItems" in pagination) ||
+    !("totalPages" in pagination)
+  ) {
+    throw new ServerUsersApiError(
+      "Invalid users pagination response.",
+      response.status,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Normalize response
+  // --------------------------------------------------------------------------
+
+  return {
+    items:
+      body.data as UserSummary[],
+
+    meta: {
+      page:
+        Number(
+          pagination.page,
+        ),
+
+      pageSize:
+        Number(
+          pagination.pageSize,
+        ),
+
+      total:
+        Number(
+          pagination.totalItems,
+        ),
+
+      totalPages:
+        Number(
+          pagination.totalPages,
+        ),
+    },
+  };
+}
+
+// ============================================================================
+// Find user by ID
+// ============================================================================
+
+export async function findUserById(
+  id: string,
+): Promise<User | null> {
+  // ==========================================================================
+  // Authentication
+  // ==========================================================================
+
+  const session =
+    await getSessionCookie();
+
   // ==========================================================================
   // Request
   // ==========================================================================
@@ -87,16 +374,19 @@ export async function findUserById(
   try {
     response =
       await fetch(
-        `${getControlPlaneUrl()}/api/users/${encodeURIComponent(id)}`,
+        `${getControlPlaneUrl()}/api/users/${encodeURIComponent(
+          id,
+        )}`,
         {
           method: "GET",
 
           headers: {
             Cookie:
-              `${session.name}=${session.value}`,
+              session,
           },
 
-          cache: "no-store",
+          cache:
+            "no-store",
         },
       );
   } catch (error) {

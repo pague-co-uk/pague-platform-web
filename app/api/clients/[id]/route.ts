@@ -1,27 +1,9 @@
+import { getControlPlaneUrl } from "@/lib/control-plane";
 import {
   NextRequest,
   NextResponse,
 } from "next/server";
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
-function getControlPlaneUrl(): string {
-  const value =
-    process.env.CONTROL_PLANE_API_URL;
-
-  if (!value) {
-    throw new Error(
-      "CONTROL_PLANE_API_URL is not configured.",
-    );
-  }
-
-  return value.replace(
-    /\/+$/,
-    "",
-  );
-}
 
 // ============================================================================
 // Authentication cookies

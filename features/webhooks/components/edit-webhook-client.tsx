@@ -106,8 +106,10 @@ export function EditWebhookClient({
       );
 
       router.push(
-        `/webhooks/${webhook.id}?clientId=${encodeURIComponent(
+        `/clients/${encodeURIComponent(
           clientId,
+        )}/webhooks/${encodeURIComponent(
+          webhook.id,
         )}`,
       );
     } catch (error) {
@@ -144,8 +146,10 @@ export function EditWebhookClient({
 
       <div className="mb-6">
         <Link
-          href={`/webhooks/${webhook.id}?clientId=${encodeURIComponent(
+          href={`/clients/${encodeURIComponent(
             clientId,
+          )}/webhooks/${encodeURIComponent(
+            webhook.id,
           )}`}
           className="text-sm font-medium text-slate-600 hover:text-slate-900"
         >
@@ -257,8 +261,10 @@ export function EditWebhookClient({
 
             <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
               <Link
-                href={`/webhooks/${webhook.id}?clientId=${encodeURIComponent(
+                href={`/clients/${encodeURIComponent(
                   clientId,
+                )}/webhooks/${encodeURIComponent(
+                  webhook.id,
                 )}`}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >

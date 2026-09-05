@@ -165,9 +165,9 @@ export function CreateWebhookClient({
       <div className="mx-auto w-full max-w-2xl px-6 pb-6 pt-6">
         <div className="mb-6">
           <Link
-            href={`/webhooks?clientId=${encodeURIComponent(
+            href={`/clients/${encodeURIComponent(
               clientId,
-            )}`}
+            )}/webhooks`}
             className="text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             ← Back to Webhooks
@@ -211,8 +211,10 @@ export function CreateWebhookClient({
 
         <div className="mt-6 flex justify-end">
           <Link
-            href={`/webhooks/${createdWebhook.id}?clientId=${encodeURIComponent(
+            href={`/clients/${encodeURIComponent(
               clientId,
+            )}/webhooks/${encodeURIComponent(
+              createdWebhook.id,
             )}`}
             className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
           >
@@ -231,9 +233,9 @@ export function CreateWebhookClient({
     <div className="mx-auto w-full max-w-2xl px-6 pb-6 pt-6">
       <div className="mb-6">
         <Link
-          href={`/webhooks?clientId=${encodeURIComponent(
+          href={`/clients/${encodeURIComponent(
             clientId,
-          )}`}
+          )}/webhooks`}
           className="text-sm font-medium text-slate-600 hover:text-slate-900"
         >
           ← Back to Webhooks
@@ -323,9 +325,9 @@ export function CreateWebhookClient({
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
             <Link
-              href={`/webhooks?clientId=${encodeURIComponent(
+              href={`/clients/${encodeURIComponent(
                 clientId,
-              )}`}
+              )}/webhooks`}
               className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Cancel

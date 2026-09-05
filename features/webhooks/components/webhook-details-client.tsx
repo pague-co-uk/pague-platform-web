@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import {
+  useRouter,
+} from "next/navigation";
+import {
   useState,
 } from "react";
 
@@ -61,6 +64,8 @@ export function WebhookDetailsClient({
   canRotateSecret,
   canReadDeliveries,
 }: WebhookDetailsClientProps) {
+  const router = useRouter();
+
   const {
     success,
     error: showError,
@@ -171,10 +176,11 @@ export function WebhookDetailsClient({
           "The webhook endpoint has been deleted.",
         );
 
-        window.location.href =
-          `/webhooks?clientId=${encodeURIComponent(
+        router.push(
+          `/clients/${encodeURIComponent(
             clientId,
-          )}`;
+          )}/webhooks`,
+        );
 
         return;
       }
@@ -319,7 +325,7 @@ export function WebhookDetailsClient({
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-6 pt-6">
           <div className="absolute -left-80 top-6">
             <Link
-              href={`/webhooks?clientId=${encodeURIComponent(clientId)}`}
+              href={`/clients/${encodeURIComponent(clientId)}/webhooks`}
               className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               ← Back to Webhooks
@@ -502,11 +508,11 @@ export function WebhookDetailsClient({
 
             {canUpdate ? (
               <Link
-                href={`/webhooks/${encodeURIComponent(
-                  webhook.id,
-                )}/edit?clientId=${encodeURIComponent(
+                href={`/clients/${encodeURIComponent(
                   clientId,
-                )}`}
+                )}/webhooks/${encodeURIComponent(
+                  webhook.id,
+                )}/edit`}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Edit
@@ -529,11 +535,11 @@ export function WebhookDetailsClient({
 
             {canReadDeliveries ? (
               <Link
-                href={`/webhooks/${encodeURIComponent(
-                  webhook.id,
-                )}/deliveries?clientId=${encodeURIComponent(
+                href={`/clients/${encodeURIComponent(
                   clientId,
-                )}`}
+                )}/webhooks/${encodeURIComponent(
+                  webhook.id,
+                )}/deliveries`}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Delivery History
