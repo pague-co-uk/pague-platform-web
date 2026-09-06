@@ -11,66 +11,140 @@ export type MessageEncoding =
   | "UCS2"
   | "BINARY";
 
+// ============================================================================
+// Message
+// ============================================================================
+
 export interface Message {
   id: string;
+
   publicId: string;
+
   clientId: string;
+
   senderIdId: string | null;
 
+  senderId: {
+    id: string;
+    publicId: string;
+    sender: string;
+  } | null;
+
+  client: {
+    id: string;
+    publicId: string;
+    companyName: string;
+    displayName: string;
+  };
+
   destination: string;
+
   body: string;
+
   encoding: MessageEncoding;
+
   segmentCount: number;
+
   currentStatus: MessageStatus;
 
   submittedAt: string;
+
   createdAt: string;
+
   updatedAt: string;
 }
 
+// ============================================================================
+// Message Status Event
+// ============================================================================
+
 export interface MessageStatusEvent {
   id: string;
+
   messageId: string;
+
   attemptId: string | null;
 
   status: MessageStatus;
+
   source: string;
+
   description: string | null;
+
   rawData: unknown;
 
   createdAt: string;
 }
 
+// ============================================================================
+// Find Messages
+// ============================================================================
+
 export interface FindMessagesParams {
   page?: number;
+
   pageSize?: number;
+
+  clientId?: string;
+
   status?: MessageStatus;
+
   encoding?: MessageEncoding;
+
   search?: string;
+
   destination?: string;
+
   senderIdId?: string;
+
   submittedFrom?: string;
+
   submittedTo?: string;
 }
 
 export interface PaginationMeta {
   page: number;
+
   pageSize: number;
+
   total: number;
+
   totalPages: number;
 }
 
 export interface FindMessagesResult {
   items: Message[];
+
   meta: PaginationMeta;
 }
 
+// ============================================================================
+// Find Platform Messages
+// ============================================================================
+
+export interface FindPlatformMessagesResult {
+  items: Message[];
+
+  meta: PaginationMeta;
+}
+
+// ============================================================================
+// Create Message
+// ============================================================================
+
 export interface CreateMessageInput {
   senderIdId?: string;
+
   destination: string;
+
   body: string;
+
   encoding: MessageEncoding;
 }
+
+// ============================================================================
+// Bulk Messages
+// ============================================================================
 
 export interface BulkMessageUploadResult {
   messages: Message[];
@@ -78,18 +152,28 @@ export interface BulkMessageUploadResult {
 
 export interface SpreadsheetValidationError {
   row: number;
+
   field: string;
+
   message: string;
 }
 
 export interface BulkMessageValidationErrorResponse {
   message: string;
+
   errors: SpreadsheetValidationError[];
 }
 
-export class MessagesApiError extends Error {
+// ============================================================================
+// API Errors
+// ============================================================================
+
+export class MessagesApiError
+  extends Error {
   readonly status: number;
-  readonly errors: readonly SpreadsheetValidationError[];
+
+  readonly errors:
+    readonly SpreadsheetValidationError[];
 
   constructor(
     message: string,
@@ -98,9 +182,14 @@ export class MessagesApiError extends Error {
   ) {
     super(message);
 
-    this.name = "MessagesApiError";
-    this.status = status;
-    this.errors = errors;
+    this.name =
+      "MessagesApiError";
+
+    this.status =
+      status;
+
+    this.errors =
+      errors;
 
     Object.setPrototypeOf(
       this,
@@ -110,41 +199,58 @@ export class MessagesApiError extends Error {
 }
 
 // ============================================================================
-// API response types
+// API Response Types
 // ============================================================================
 
-interface PaginatedMessagesResponse {
+export interface PaginatedMessagesResponse<
+  T = Message,
+> {
   success: boolean;
-  data: Message[];
+
+  data: T[];
 
   pagination?: {
     page: number;
+
     pageSize: number;
+
     totalItems: number;
+
     totalPages: number;
+
     hasNext?: boolean;
+
     hasPrevious?: boolean;
   };
 
   meta?: {
     page: number;
+
     pageSize: number;
+
     totalItems: number;
+
     totalPages: number;
+
     hasNext?: boolean;
+
     hasPrevious?: boolean;
   };
 }
 
 // ============================================================================
-// Error handling
+// Error Handling
 // ============================================================================
 
 function isRecord(
   value: unknown,
-): value is Record<string, unknown> {
+): value is Record<
+  string,
+  unknown
+> {
   return (
-    typeof value === "object" &&
+    typeof value ===
+    "object" &&
     value !== null &&
     !Array.isArray(value)
   );
@@ -153,18 +259,29 @@ function isRecord(
 function getMessageFromValue(
   value: unknown,
 ): string | null {
-  if (typeof value === "string") {
+  if (
+    typeof value ===
+    "string"
+  ) {
     return value;
   }
 
   if (Array.isArray(value)) {
-    const messages = value.filter(
-      (item): item is string =>
-        typeof item === "string",
-    );
+    const messages =
+      value.filter(
+        (
+          item,
+        ): item is string =>
+          typeof item ===
+          "string",
+      );
 
-    if (messages.length > 0) {
-      return messages.join(", ");
+    if (
+      messages.length > 0
+    ) {
+      return messages.join(
+        ", ",
+      );
     }
 
     return null;
@@ -174,48 +291,90 @@ function getMessageFromValue(
     return null;
   }
 
-  if (typeof value.message === "string") {
+  if (
+    typeof value.message ===
+    "string"
+  ) {
     return value.message;
   }
 
-  if (Array.isArray(value.message)) {
-    const messages = value.message.filter(
-      (item): item is string =>
-        typeof item === "string",
-    );
+  if (
+    Array.isArray(
+      value.message,
+    )
+  ) {
+    const messages =
+      value.message.filter(
+        (
+          item,
+        ): item is string =>
+          typeof item ===
+          "string",
+      );
 
-    if (messages.length > 0) {
-      return messages.join(", ");
+    if (
+      messages.length > 0
+    ) {
+      return messages.join(
+        ", ",
+      );
     }
   }
 
-  if (typeof value.error === "string") {
+  if (
+    typeof value.error ===
+    "string"
+  ) {
     return value.error;
   }
 
-  if (Array.isArray(value.error)) {
-    const messages = value.error.filter(
-      (item): item is string =>
-        typeof item === "string",
-    );
+  if (
+    Array.isArray(
+      value.error,
+    )
+  ) {
+    const messages =
+      value.error.filter(
+        (
+          item,
+        ): item is string =>
+          typeof item ===
+          "string",
+      );
 
-    if (messages.length > 0) {
-      return messages.join(", ");
+    if (
+      messages.length > 0
+    ) {
+      return messages.join(
+        ", ",
+      );
     }
   }
 
-  if (isRecord(value.error)) {
+  if (
+    isRecord(
+      value.error,
+    )
+  ) {
     const nestedMessage =
-      getMessageFromValue(value.error);
+      getMessageFromValue(
+        value.error,
+      );
 
     if (nestedMessage) {
       return nestedMessage;
     }
   }
 
-  if (isRecord(value.data)) {
+  if (
+    isRecord(
+      value.data,
+    )
+  ) {
     const nestedMessage =
-      getMessageFromValue(value.data);
+      getMessageFromValue(
+        value.data,
+      );
 
     if (nestedMessage) {
       return nestedMessage;
@@ -230,7 +389,9 @@ function getMessageErrorMessage(
   fallback: string,
 ): string {
   return (
-    getMessageFromValue(body) ??
+    getMessageFromValue(
+      body,
+    ) ??
     fallback
   );
 }
@@ -243,19 +404,23 @@ function normalizeSpreadsheetValidationError(
   }
 
   const row =
-    typeof value.row === "number"
+    typeof value.row ===
+      "number"
       ? value.row
-      : typeof value.row === "string"
+      : typeof value.row ===
+        "string"
         ? Number(value.row)
         : NaN;
 
   const field =
-    typeof value.field === "string"
+    typeof value.field ===
+      "string"
       ? value.field
       : null;
 
   const message =
-    typeof value.message === "string"
+    typeof value.message ===
+      "string"
       ? value.message
       : null;
 
@@ -269,7 +434,9 @@ function normalizeSpreadsheetValidationError(
 
   return {
     row,
+
     field,
+
     message,
   };
 }
@@ -291,12 +458,58 @@ function extractSpreadsheetValidationErrors(
   //     details: [...]
   //   }
   //
-  if (isRecord(value.error)) {
+  if (
+    isRecord(
+      value.error,
+    )
+  ) {
     const details =
       value.error.details;
 
-    if (Array.isArray(details)) {
-      const errors = details
+    if (
+      Array.isArray(
+        details,
+      )
+    ) {
+      const errors =
+        details
+          .map(
+            normalizeSpreadsheetValidationError,
+          )
+          .filter(
+            (
+              error,
+            ): error is SpreadsheetValidationError =>
+              error !== null,
+          );
+
+      if (
+        errors.length > 0
+      ) {
+        return errors;
+      }
+    }
+
+    const nestedErrors =
+      extractSpreadsheetValidationErrors(
+        value.error,
+      );
+
+    if (
+      nestedErrors.length > 0
+    ) {
+      return nestedErrors;
+    }
+  }
+
+  // Direct errors array.
+  if (
+    Array.isArray(
+      value.errors,
+    )
+  ) {
+    const errors =
+      value.errors
         .map(
           normalizeSpreadsheetValidationError,
         )
@@ -307,48 +520,27 @@ function extractSpreadsheetValidationErrors(
             error !== null,
         );
 
-      if (errors.length > 0) {
-        return errors;
-      }
-    }
-
-    // Support nested error envelopes if ever required.
-    const nestedErrors =
-      extractSpreadsheetValidationErrors(
-        value.error,
-      );
-
-    if (nestedErrors.length > 0) {
-      return nestedErrors;
-    }
-  }
-
-  // Direct errors array.
-  if (Array.isArray(value.errors)) {
-    const errors = value.errors
-      .map(
-        normalizeSpreadsheetValidationError,
-      )
-      .filter(
-        (
-          error,
-        ): error is SpreadsheetValidationError =>
-          error !== null,
-      );
-
-    if (errors.length > 0) {
+    if (
+      errors.length > 0
+    ) {
       return errors;
     }
   }
 
   // Enveloped data response.
-  if (isRecord(value.data)) {
+  if (
+    isRecord(
+      value.data,
+    )
+  ) {
     const nestedErrors =
       extractSpreadsheetValidationErrors(
         value.data,
       );
 
-    if (nestedErrors.length > 0) {
+    if (
+      nestedErrors.length > 0
+    ) {
       return nestedErrors;
     }
   }
@@ -360,7 +552,8 @@ async function parseApiError(
   response: Response,
   fallback: string,
 ): Promise<MessagesApiError> {
-  let body: unknown = null;
+  let body: unknown =
+    null;
 
   try {
     body =
@@ -371,6 +564,7 @@ async function parseApiError(
       {
         status:
           response.status,
+
         error,
       },
     );
@@ -434,76 +628,7 @@ async function parseApiError(
 }
 
 // ============================================================================
-// Bulk message upload
-// ============================================================================
-
-export async function createMessagesFromSpreadsheet(
-  clientId: string,
-  file: File,
-): Promise<Message[]> {
-  const formData =
-    new FormData();
-
-  formData.append(
-    "file",
-    file,
-  );
-
-  const response =
-    await fetch(
-      `/api/clients/${encodeURIComponent(
-        clientId,
-      )}/messages/bulk`,
-      {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-        cache: "no-store",
-      },
-    );
-
-  if (!response.ok) {
-    throw await parseApiError(
-      response,
-      "Unable to create messages from spreadsheet.",
-    );
-  }
-
-  let body: unknown = null;
-
-  try {
-    body = await response.json();
-  } catch {
-    throw new MessagesApiError(
-      "Invalid bulk message response.",
-      response.status,
-    );
-  }
-
-  if (
-    !isRecord(body) ||
-    !("data" in body)
-  ) {
-    throw new MessagesApiError(
-      "Invalid bulk message response: data is missing.",
-      response.status,
-    );
-  }
-
-  const data = body.data;
-
-  if (!Array.isArray(data)) {
-    throw new MessagesApiError(
-      "Invalid bulk message response.",
-      response.status,
-    );
-  }
-
-  return data as Message[];
-}
-
-// ============================================================================
-// Query string
+// Query String
 // ============================================================================
 
 function buildQueryString(
@@ -513,7 +638,8 @@ function buildQueryString(
     new URLSearchParams();
 
   if (
-    params.page !== undefined
+    params.page !==
+    undefined
   ) {
     searchParams.set(
       "page",
@@ -522,11 +648,19 @@ function buildQueryString(
   }
 
   if (
-    params.pageSize !== undefined
+    params.pageSize !==
+    undefined
   ) {
     searchParams.set(
       "pageSize",
       String(params.pageSize),
+    );
+  }
+
+  if (params.clientId) {
+    searchParams.set(
+      "clientId",
+      params.clientId,
     );
   }
 
@@ -565,14 +699,18 @@ function buildQueryString(
     );
   }
 
-  if (params.submittedFrom) {
+  if (
+    params.submittedFrom
+  ) {
     searchParams.set(
       "submittedFrom",
       params.submittedFrom,
     );
   }
 
-  if (params.submittedTo) {
+  if (
+    params.submittedTo
+  ) {
     searchParams.set(
       "submittedTo",
       params.submittedTo,
@@ -588,17 +726,19 @@ function buildQueryString(
 }
 
 // ============================================================================
-// Generic response parser
+// Generic Response Parser
 // ============================================================================
 
 async function parseResponse<T>(
   response: Response,
   fallback: string,
 ): Promise<T> {
-  let body: unknown = null;
+  let body: unknown =
+    null;
 
   try {
-    body = await response.json();
+    body =
+      await response.json();
   } catch {
     if (!response.ok) {
       throw new MessagesApiError(
@@ -630,7 +770,7 @@ async function parseResponse<T>(
 }
 
 // ============================================================================
-// Messages
+// Client-Scoped Messages
 // ============================================================================
 
 export async function findMessages(
@@ -641,16 +781,22 @@ export async function findMessages(
     await fetch(
       `/api/clients/${encodeURIComponent(
         clientId,
-      )}/messages${buildQueryString(params)}`,
+      )}/messages${buildQueryString(
+        params,
+      )}`,
       {
         method: "GET",
+
         credentials: "include",
+
         cache: "no-store",
       },
     );
 
   const body =
-    await parseResponse<PaginatedMessagesResponse>(
+    await parseResponse<
+      PaginatedMessagesResponse
+    >(
       response,
       "Unable to retrieve messages.",
     );
@@ -660,7 +806,8 @@ export async function findMessages(
     body.meta;
 
   return {
-    items: body.data,
+    items:
+      body.data,
 
     meta: pagination
       ? {
@@ -687,12 +834,87 @@ export async function findMessages(
           body.data.length,
 
         totalPages:
-          body.data.length > 0
+          body.data.length >
+            0
             ? 1
             : 0,
       },
   };
 }
+
+// ============================================================================
+// Platform Messages
+// ============================================================================
+
+export async function findPlatformMessages(
+  params: FindMessagesParams = {},
+): Promise<FindPlatformMessagesResult> {
+  const response =
+    await fetch(
+      `/api/messages${buildQueryString(
+        params,
+      )}`,
+      {
+        method: "GET",
+
+        credentials: "include",
+
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    await parseResponse<
+      PaginatedMessagesResponse<Message>
+    >(
+      response,
+      "Unable to retrieve platform messages.",
+    );
+
+  const pagination =
+    body.pagination ??
+    body.meta;
+
+  return {
+    items:
+      body.data,
+
+    meta: pagination
+      ? {
+        page:
+          pagination.page,
+
+        pageSize:
+          pagination.pageSize,
+
+        total:
+          pagination.totalItems,
+
+        totalPages:
+          pagination.totalPages,
+      }
+      : {
+        page:
+          params.page ?? 1,
+
+        pageSize:
+          params.pageSize ?? 20,
+
+        total:
+          body.data.length,
+
+        totalPages:
+          body.data.length >
+            0
+            ? 1
+            : 0,
+      },
+  };
+}
+
+// ============================================================================
+// Find Message by ID
+// ============================================================================
 
 export async function findMessageById(
   clientId: string,
@@ -707,7 +929,9 @@ export async function findMessageById(
       )}`,
       {
         method: "GET",
+
         credentials: "include",
+
         cache: "no-store",
       },
     );
@@ -715,6 +939,7 @@ export async function findMessageById(
   const body =
     await parseResponse<{
       success: boolean;
+
       data: Message;
     }>(
       response,
@@ -723,6 +948,10 @@ export async function findMessageById(
 
   return body.data;
 }
+
+// ============================================================================
+// Find Message by Public ID
+// ============================================================================
 
 export async function findMessageByPublicId(
   clientId: string,
@@ -737,7 +966,9 @@ export async function findMessageByPublicId(
       )}`,
       {
         method: "GET",
+
         credentials: "include",
+
         cache: "no-store",
       },
     );
@@ -745,6 +976,7 @@ export async function findMessageByPublicId(
   const body =
     await parseResponse<{
       success: boolean;
+
       data: Message;
     }>(
       response,
@@ -753,6 +985,10 @@ export async function findMessageByPublicId(
 
   return body.data;
 }
+
+// ============================================================================
+// Find Message Status Events
+// ============================================================================
 
 export async function findMessageStatusEvents(
   clientId: string,
@@ -767,7 +1003,9 @@ export async function findMessageStatusEvents(
       )}/status-events`,
       {
         method: "GET",
+
         credentials: "include",
+
         cache: "no-store",
       },
     );
@@ -775,6 +1013,7 @@ export async function findMessageStatusEvents(
   const body =
     await parseResponse<{
       success: boolean;
+
       data: MessageStatusEvent[];
     }>(
       response,
@@ -783,6 +1022,10 @@ export async function findMessageStatusEvents(
 
   return body.data;
 }
+
+// ============================================================================
+// Create Message
+// ============================================================================
 
 export async function createMessage(
   clientId: string,
@@ -795,11 +1038,14 @@ export async function createMessage(
       )}/messages`,
       {
         method: "POST",
+
         credentials: "include",
+
         headers: {
           "Content-Type":
             "application/json",
         },
+
         body: JSON.stringify(
           input,
         ),
@@ -809,6 +1055,7 @@ export async function createMessage(
   const body =
     await parseResponse<{
       success: boolean;
+
       data: Message;
     }>(
       response,
@@ -816,4 +1063,81 @@ export async function createMessage(
     );
 
   return body.data;
+}
+
+// ============================================================================
+// Bulk Message Upload
+// ============================================================================
+
+export async function createMessagesFromSpreadsheet(
+  clientId: string,
+  file: File,
+): Promise<Message[]> {
+  const formData =
+    new FormData();
+
+  formData.append(
+    "file",
+    file,
+  );
+
+  const response =
+    await fetch(
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/messages/bulk`,
+      {
+        method: "POST",
+
+        credentials: "include",
+
+        body: formData,
+
+        cache: "no-store",
+      },
+    );
+
+  if (!response.ok) {
+    throw await parseApiError(
+      response,
+      "Unable to create messages from spreadsheet.",
+    );
+  }
+
+  let body: unknown =
+    null;
+
+  try {
+    body =
+      await response.json();
+  } catch {
+    throw new MessagesApiError(
+      "Invalid bulk message response.",
+      response.status,
+    );
+  }
+
+  if (
+    !isRecord(body) ||
+    !("data" in body)
+  ) {
+    throw new MessagesApiError(
+      "Invalid bulk message response: data is missing.",
+      response.status,
+    );
+  }
+
+  const data =
+    body.data;
+
+  if (
+    !Array.isArray(data)
+  ) {
+    throw new MessagesApiError(
+      "Invalid bulk message response.",
+      response.status,
+    );
+  }
+
+  return data as Message[];
 }

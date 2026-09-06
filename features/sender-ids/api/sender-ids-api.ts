@@ -1,4 +1,3 @@
-
 export type SenderIdStatus =
   | "PENDING"
   | "APPROVED"
@@ -47,8 +46,12 @@ export interface FindSenderIdsResult {
 
 export interface CreateSenderIdInput {
   publicId: string;
-  clientId: string;
   sender: string;
+}
+
+export interface CreatePlatformSenderIdInput
+  extends CreateSenderIdInput {
+  clientId: string;
 }
 
 export interface UpdateSenderIdInput {
@@ -77,9 +80,15 @@ interface ApiErrorResponse {
   error?: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 interface PaginatedSenderIdsResponse {
   success: boolean;
   data: SenderId[];
+
   pagination?: {
     page: number;
     pageSize: number;
@@ -88,6 +97,7 @@ interface PaginatedSenderIdsResponse {
     hasNext?: boolean;
     hasPrevious?: boolean;
   };
+
   meta?: {
     page: number;
     pageSize: number;
@@ -151,6 +161,13 @@ function buildQueryString(
     );
   }
 
+  /*
+   * Client-scoped endpoints receive clientId
+   * through the URL path.
+   *
+   * Platform-scoped endpoints may provide
+   * clientId as a query filter.
+   */
   if (params.clientId) {
     searchParams.set(
       "clientId",
@@ -218,18 +235,65 @@ async function parseResponse<T>(
   return body as T;
 }
 
+function parsePagination(
+  body: PaginatedSenderIdsResponse,
+  params: FindSenderIdsParams,
+): PaginationMeta {
+  const pagination =
+    body.pagination ??
+    body.meta;
+
+  if (pagination) {
+    return {
+      page:
+        pagination.page,
+
+      pageSize:
+        pagination.pageSize,
+
+      total:
+        pagination.totalItems,
+
+      totalPages:
+        pagination.totalPages,
+    };
+  }
+
+  return {
+    page:
+      params.page ?? 1,
+
+    pageSize:
+      params.pageSize ?? 20,
+
+    total:
+      body.data.length,
+
+    totalPages:
+      body.data.length > 0
+        ? 1
+        : 0,
+  };
+}
+
+/* ============================================================
+ * Client-scoped Sender IDs
+ * ========================================================== */
+
 export async function findSenderIds(
+  clientId: string,
   params: FindSenderIdsParams = {},
 ): Promise<FindSenderIdsResult> {
-  const response =
-    await fetch(
-      `/api/sender-ids${buildQueryString(params)}`,
-      {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids${buildQueryString(params)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
 
   const body =
     await parseResponse<PaginatedSenderIdsResponse>(
@@ -237,57 +301,37 @@ export async function findSenderIds(
       "Unable to retrieve Sender IDs.",
     );
 
-  const pagination =
-    body.pagination ??
-    body.meta;
-
   return {
-    items: body.data,
+    items:
+      body.data,
 
-    meta: pagination
-      ? {
-        page:
-          pagination.page,
-        pageSize:
-          pagination.pageSize,
-        total:
-          pagination.totalItems,
-        totalPages:
-          pagination.totalPages,
-      }
-      : {
-        page:
-          params.page ?? 1,
-        pageSize:
-          params.pageSize ?? 20,
-        total:
-          body.data.length,
-        totalPages:
-          body.data.length > 0
-            ? 1
-            : 0,
-      },
+    meta:
+      parsePagination(
+        body,
+        params,
+      ),
   };
 }
 
 export async function findSenderIdById(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}`,
-      {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to retrieve Sender ID.",
     );
@@ -296,29 +340,29 @@ export async function findSenderIdById(
 }
 
 export async function createSenderId(
+  clientId: string,
   input: CreateSenderIdInput,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      "/api/sender-ids",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(
-          input,
-        ),
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type":
+          "application/json",
       },
-    );
+      body:
+        JSON.stringify(input),
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to create Sender ID.",
     );
@@ -327,30 +371,30 @@ export async function createSenderId(
 }
 
 export async function updateSenderId(
+  clientId: string,
   id: string,
   input: UpdateSenderIdInput,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}`,
-      {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(
-          input,
-        ),
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type":
+          "application/json",
       },
-    );
+      body:
+        JSON.stringify(input),
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to update Sender ID.",
     );
@@ -359,17 +403,19 @@ export async function updateSenderId(
 }
 
 export async function deleteSenderId(
+  clientId: string,
   id: string,
 ): Promise<void> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-        cache: "no-store",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
 
   if (!response.ok) {
     const body =
@@ -388,22 +434,23 @@ export async function deleteSenderId(
 }
 
 export async function approveSenderId(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}/approve`,
-      {
-        method: "POST",
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}/approve`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to approve Sender ID.",
     );
@@ -412,22 +459,23 @@ export async function approveSenderId(
 }
 
 export async function rejectSenderId(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}/reject`,
-      {
-        method: "POST",
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}/reject`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to reject Sender ID.",
     );
@@ -436,22 +484,23 @@ export async function rejectSenderId(
 }
 
 export async function disableSenderId(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}/disable`,
-      {
-        method: "POST",
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}/disable`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to disable Sender ID.",
     );
@@ -460,22 +509,23 @@ export async function disableSenderId(
 }
 
 export async function enableSenderId(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}/enable`,
-      {
-        method: "POST",
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}/enable`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to enable Sender ID.",
     );
@@ -483,24 +533,276 @@ export async function enableSenderId(
   return body.data;
 }
 
-
 export async function setDefaultSenderId(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const response =
-    await fetch(
-      `/api/sender-ids/${encodeURIComponent(id)}/default`,
-      {
-        method: "POST",
-        credentials: "include",
-      },
-    );
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(id)}/default`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
 
   const body =
-    await parseResponse<{
-      success: boolean;
-      data: SenderId;
-    }>(
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to set default Sender ID.",
+    );
+
+  return body.data;
+}
+
+/* ============================================================
+ * Platform-scoped Sender IDs
+ * ========================================================== */
+
+export async function findPlatformSenderIds(
+  params: FindSenderIdsParams = {},
+): Promise<FindSenderIdsResult> {
+  const response = await fetch(
+    `/api/sender-ids${buildQueryString(params)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseResponse<PaginatedSenderIdsResponse>(
+      response,
+      "Unable to retrieve Sender IDs.",
+    );
+
+  return {
+    items:
+      body.data,
+
+    meta:
+      parsePagination(
+        body,
+        params,
+      ),
+  };
+}
+
+export async function findPlatformSenderIdById(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to retrieve Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function createPlatformSenderId(
+  input: CreatePlatformSenderIdInput,
+): Promise<SenderId> {
+  const response = await fetch(
+    "/api/sender-ids",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body:
+        JSON.stringify(input),
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to create Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function updatePlatformSenderId(
+  id: string,
+  input: UpdateSenderIdInput,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+      body:
+        JSON.stringify(input),
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to update Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function deletePlatformSenderId(
+  id: string,
+): Promise<void> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    const body =
+      (await response
+        .json()
+        .catch(() => null)) as unknown;
+
+    throw new SenderIdsApiError(
+      getSenderIdErrorMessage(
+        body,
+        "Unable to delete Sender ID.",
+      ),
+      response.status,
+    );
+  }
+}
+
+export async function approvePlatformSenderId(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}/approve`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to approve Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function rejectPlatformSenderId(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}/reject`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to reject Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function disablePlatformSenderId(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}/disable`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to disable Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function enablePlatformSenderId(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}/enable`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
+      response,
+      "Unable to enable Sender ID.",
+    );
+
+  return body.data;
+}
+
+export async function setPlatformSenderIdDefault(
+  id: string,
+): Promise<SenderId> {
+  const response = await fetch(
+    `/api/sender-ids/${encodeURIComponent(id)}/default`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<SenderId>
+    >(
       response,
       "Unable to set default Sender ID.",
     );

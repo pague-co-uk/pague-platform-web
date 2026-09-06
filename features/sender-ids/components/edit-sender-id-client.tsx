@@ -82,6 +82,7 @@ export default function EditSenderIdClient({
 
     try {
       await updateSenderId(
+        senderId.clientId,
         senderId.id,
         {
           sender:
@@ -90,7 +91,7 @@ export default function EditSenderIdClient({
       );
 
       router.push(
-        `/sender-ids/${senderId.id}`,
+        `/clients/${senderId.clientId}/sender-ids/${senderId.id}`,
       );
 
       router.refresh();

@@ -1,6 +1,14 @@
 export interface Webhook {
   id: string;
   publicId: string;
+
+  client?: {
+    id: string;
+    publicId: string;
+    companyName: string;
+    displayName: string;
+  };
+
   name: string;
   url: string;
   enabled: boolean;
@@ -47,6 +55,14 @@ export interface FindWebhooksParams {
   enabled?: boolean;
 }
 
+export interface FindPlatformWebhooksParams {
+  page?: number;
+  pageSize?: number;
+  clientId?: string;
+  enabled?: boolean;
+  search?: string;
+}
+
 export interface FindWebhookDeliveriesParams {
   clientId: string;
   webhookId: string;
@@ -59,6 +75,11 @@ export interface FindWebhookDeliveriesParams {
 // ============================================================================
 
 export interface FindWebhooksResult {
+  data: Webhook[];
+  pagination: WebhookPagination;
+}
+
+export interface FindPlatformWebhooksResult {
   data: Webhook[];
   pagination: WebhookPagination;
 }
@@ -222,6 +243,69 @@ function buildQueryString(
     : "";
 }
 
+function buildPlatformQueryString(
+  params: Omit<
+    FindPlatformWebhooksParams,
+    never
+  >,
+): string {
+  const searchParams =
+    new URLSearchParams();
+
+  if (
+    params.page !== undefined
+  ) {
+    searchParams.set(
+      "page",
+      String(params.page),
+    );
+  }
+
+  if (
+    params.pageSize !== undefined
+  ) {
+    searchParams.set(
+      "pageSize",
+      String(params.pageSize),
+    );
+  }
+
+  if (
+    params.clientId !== undefined
+  ) {
+    searchParams.set(
+      "clientId",
+      params.clientId,
+    );
+  }
+
+  if (
+    params.enabled !== undefined
+  ) {
+    searchParams.set(
+      "enabled",
+      String(params.enabled),
+    );
+  }
+
+  if (
+    params.search !== undefined &&
+    params.search.trim() !== ""
+  ) {
+    searchParams.set(
+      "search",
+      params.search.trim(),
+    );
+  }
+
+  const query =
+    searchParams.toString();
+
+  return query
+    ? `?${query}`
+    : "";
+}
+
 function buildDeliveryQueryString(
   params: Omit<
     FindWebhookDeliveriesParams,
@@ -281,6 +365,44 @@ async function parseResponse<T>(
   }
 
   return body as T;
+}
+
+// ============================================================================
+// Find platform webhooks
+// ============================================================================
+
+export async function findPlatformWebhooks(
+  params: FindPlatformWebhooksParams = {},
+): Promise<FindPlatformWebhooksResult> {
+  const response =
+    await fetch(
+      `/api/webhooks${buildPlatformQueryString(
+        params,
+      )}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    await parseResponse<
+      PaginatedResponseEnvelope<Webhook>
+    >(
+      response,
+      "Failed to retrieve webhooks.",
+    );
+
+  return {
+    data:
+      Array.isArray(body.data)
+        ? body.data
+        : [],
+
+    pagination:
+      body.pagination,
+  };
 }
 
 // ============================================================================

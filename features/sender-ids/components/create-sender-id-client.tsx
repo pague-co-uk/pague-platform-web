@@ -167,17 +167,13 @@ export default function CreateSenderIdClient() {
     setSubmitting(true);
 
     try {
-      const created =
-        await createSenderId({
-          clientId,
-          publicId:
-            normalizedPublicId,
-          sender:
-            normalizedSender,
-        });
+      const created = await createSenderId(clientId, {
+        publicId: normalizedPublicId,
+        sender: normalizedSender,
+      });
 
       router.push(
-        `/sender-ids/${encodeURIComponent(created.id)}`,
+        `/clients/${encodeURIComponent(clientId)}/sender-ids/${encodeURIComponent(created.id)}`,
       );
 
       router.refresh();

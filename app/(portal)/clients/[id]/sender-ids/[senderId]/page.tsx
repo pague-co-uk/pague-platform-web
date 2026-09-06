@@ -9,6 +9,7 @@ import SenderIdDetailsClient from "@/features/sender-ids/components/sender-id-de
 interface SenderIdPageProps {
   params: Promise<{
     id: string;
+    senderId: string;
   }>;
 }
 
@@ -81,13 +82,19 @@ export default async function SenderIdPage({
       PERMISSIONS.SENDER_IDS_DEFAULT_UPDATE,
     );
 
-  const { id } = await params;
+  const {
+    id: clientId,
+    senderId: senderIdId,
+  } = await params;
 
   let senderId;
 
   try {
     senderId =
-      await findSenderIdById(id);
+      await findSenderIdById(
+        clientId,
+        senderIdId,
+      );
   } catch (error) {
     console.error(
       "[Sender ID] Unable to load Sender ID.",

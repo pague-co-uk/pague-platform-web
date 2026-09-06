@@ -9,30 +9,73 @@ import type {
 } from "./sender-ids-api";
 
 // ============================================================================
-// Find Sender IDs
+// Types
 // ============================================================================
 
-export async function findSenderIds(
-  params: FindSenderIdsParams = {},
-): Promise<FindSenderIdsResult> {
+interface ApiErrorBody {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
+
+interface PaginatedSenderIdsBody {
+  success?: boolean;
+  data?: SenderId[];
+
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasNext?: boolean;
+    hasPrevious?: boolean;
+  };
+
+  meta?: {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasNext?: boolean;
+    hasPrevious?: boolean;
+  };
+
+  message?: string;
+  error?: string;
+}
+
+interface SenderIdBody {
+  success?: boolean;
+  data?: SenderId;
+  message?: string;
+  error?: string;
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+async function getCookieHeader(): Promise<string> {
   const cookieStore =
     await cookies();
 
-  const cookieHeader =
-    cookieStore
-      .getAll()
-      .map(
-        ({ name, value }) =>
-          `${name}=${value}`,
-      )
-      .join("; ");
+  return cookieStore
+    .getAll()
+    .map(
+      ({ name, value }) =>
+        `${name}=${value}`,
+    )
+    .join("; ");
+}
 
+function buildQueryString(
+  params: FindSenderIdsParams = {},
+): string {
   const searchParams =
     new URLSearchParams();
 
   if (
-    params.page !==
-    undefined
+    params.page !== undefined
   ) {
     searchParams.set(
       "page",
@@ -41,8 +84,7 @@ export async function findSenderIds(
   }
 
   if (
-    params.pageSize !==
-    undefined
+    params.pageSize !== undefined
   ) {
     searchParams.set(
       "pageSize",
@@ -93,62 +135,92 @@ export async function findSenderIds(
   const query =
     searchParams.toString();
 
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/sender-ids${query
-        ? `?${query}`
-        : ""
-      }`,
-      {
-        method: "GET",
-        headers: {
-          Cookie:
-            cookieHeader,
-        },
-        cache: "no-store",
-      },
-    );
-  const body =
+  return query
+    ? `?${query}`
+    : "";
+}
+
+function getApiErrorMessage(
+  body: unknown,
+  fallback: string,
+): string {
+  if (
+    typeof body !== "object" ||
+    body === null
+  ) {
+    return fallback;
+  }
+
+  const error =
+    body as ApiErrorBody;
+
+  if (
+    typeof error.message ===
+    "string"
+  ) {
+    return error.message;
+  }
+
+  if (
+    typeof error.error ===
+    "string"
+  ) {
+    return error.error;
+  }
+
+  return fallback;
+}
+
+async function parseJson<T>(
+  response: Response,
+): Promise<T | null> {
+  return (
     (await response
       .json()
-      .catch(() => null)) as {
-        success?: boolean;
-        data?: FindSenderIdsResult["items"];
-        pagination?: {
-          page: number;
-          pageSize: number;
-          totalItems: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-        };
-        meta?: {
-          page: number;
-          pageSize: number;
-          totalItems: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-        };
-        message?: string;
-        error?: string;
-      } | null;
+      .catch(() => null)) as T | null
+  );
+}
 
-  // ==========================================================================
-  // Error
-  // ==========================================================================
+// ============================================================================
+// Find Sender IDs
+// ============================================================================
+
+export async function findSenderIds(
+  clientId: string,
+  params: FindSenderIdsParams = {},
+): Promise<FindSenderIdsResult> {
+  const cookieHeader =
+    await getCookieHeader();
+
+  const query =
+    buildQueryString(params);
+
+  const response = await fetch(
+    `${getControlPlaneUrl()}/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids${query}`,
+    {
+      method: "GET",
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseJson<PaginatedSenderIdsBody>(
+      response,
+    );
 
   if (!response.ok) {
     throw new Error(
-      body?.message ??
-      body?.error ??
-      "Unable to retrieve Sender IDs.",
+      getApiErrorMessage(
+        body,
+        `Unable to retrieve Sender IDs. (${response.status})`,
+      ),
     );
   }
-
-  // ==========================================================================
-  // Pagination
-  // ==========================================================================
 
   const pagination =
     body?.pagination ??
@@ -159,10 +231,6 @@ export async function findSenderIds(
       "Invalid Sender IDs response: pagination metadata is missing.",
     );
   }
-
-  // ==========================================================================
-  // Response
-  // ==========================================================================
 
   return {
     items:
@@ -184,23 +252,23 @@ export async function findSenderIds(
   };
 }
 
+// ============================================================================
+// Find Sender ID by ID
+// ============================================================================
+
 export async function findSenderIdById(
+  clientId: string,
   id: string,
 ): Promise<SenderId> {
-  const cookieStore =
-    await cookies();
-
   const cookieHeader =
-    cookieStore
-      .getAll()
-      .map(
-        ({ name, value }) =>
-          `${name}=${value}`,
-      )
-      .join("; ");
+    await getCookieHeader();
 
   const response = await fetch(
-    `${getControlPlaneUrl()}/api/sender-ids/${encodeURIComponent(id)}`,
+    `${getControlPlaneUrl()}/api/clients/${encodeURIComponent(
+      clientId,
+    )}/sender-ids/${encodeURIComponent(
+      id,
+    )}`,
     {
       method: "GET",
       headers: {
@@ -211,22 +279,134 @@ export async function findSenderIdById(
   );
 
   const body =
-    await response.json() as {
-      success?: boolean;
-      data?: SenderId;
-      message?: string;
-      error?: string;
-    };
+    await parseJson<SenderIdBody>(
+      response,
+    );
 
   if (!response.ok) {
     throw new Error(
-      body.message ??
-      body.error ??
-      `Unable to retrieve Sender ID (${response.status}).`,
+      getApiErrorMessage(
+        body,
+        `Unable to retrieve Sender ID (${response.status}).`,
+      ),
     );
   }
 
-  if (!body.data) {
+  if (!body?.data) {
+    throw new Error(
+      "Invalid Sender ID response: data is missing.",
+    );
+  }
+
+  return body.data;
+}
+
+// ============================================================================
+// Platform: Find Sender IDs
+// ============================================================================
+
+export async function findPlatformSenderIds(
+  params: FindSenderIdsParams = {},
+): Promise<FindSenderIdsResult> {
+  const cookieHeader =
+    await getCookieHeader();
+
+  const query =
+    buildQueryString(params);
+
+  const response = await fetch(
+    `${getControlPlaneUrl()}/api/sender-ids${query}`,
+    {
+      method: "GET",
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseJson<PaginatedSenderIdsBody>(
+      response,
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      getApiErrorMessage(
+        body,
+        `Unable to retrieve Sender IDs. (${response.status})`,
+      ),
+    );
+  }
+
+  const pagination =
+    body?.pagination ??
+    body?.meta;
+
+  if (!pagination) {
+    throw new Error(
+      "Invalid Sender IDs response: pagination metadata is missing.",
+    );
+  }
+
+  return {
+    items:
+      body?.data ?? [],
+
+    meta: {
+      page:
+        pagination.page,
+
+      pageSize:
+        pagination.pageSize,
+
+      total:
+        pagination.totalItems,
+
+      totalPages:
+        pagination.totalPages,
+    },
+  };
+}
+
+// ============================================================================
+// Platform: Find Sender ID by ID
+// ============================================================================
+
+export async function findPlatformSenderIdById(
+  id: string,
+): Promise<SenderId> {
+  const cookieHeader =
+    await getCookieHeader();
+
+  const response = await fetch(
+    `${getControlPlaneUrl()}/api/sender-ids/${encodeURIComponent(
+      id,
+    )}`,
+    {
+      method: "GET",
+      headers: {
+        Cookie: cookieHeader,
+      },
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseJson<SenderIdBody>(
+      response,
+    );
+
+  if (!response.ok) {
+    throw new Error(
+      getApiErrorMessage(
+        body,
+        `Unable to retrieve Sender ID (${response.status}).`,
+      ),
+    );
+  }
+
+  if (!body?.data) {
     throw new Error(
       "Invalid Sender ID response: data is missing.",
     );

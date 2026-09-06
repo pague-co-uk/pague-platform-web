@@ -8,27 +8,37 @@ import {
   findSenderIds,
 } from "@/features/sender-ids/api/server-sender-ids-api";
 
-
 import SenderIdsClient from "@/features/sender-ids/components/sender-ids-client";
-import { PERMISSIONS } from "@/lib/authorization/permissions";
+
+import {
+  PERMISSIONS,
+} from "@/lib/authorization/permissions";
 
 // ============================================================================
 // Sender IDs page
 // ============================================================================
 
 export default async function SenderIdsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ id: string }>;
   searchParams: Promise<{
     search?: string;
     status?: string;
     sender?: string;
-    clientId?: string;
     isDefault?: string;
     page?: string;
     pageSize?: string;
   }>;
 }) {
+  // ==========================================================================
+  // Route parameters
+  // ==========================================================================
+
+  const { id: clientId } =
+    await params;
+
   // ==========================================================================
   // Authentication
   // ==========================================================================
@@ -76,35 +86,36 @@ export default async function SenderIdsPage({
     permissionNames.has(
       PERMISSIONS.SENDER_IDS_CREATE,
     );
+
   // ==========================================================================
   // Query parameters
   // ==========================================================================
 
-  const params =
+  const query =
     await searchParams;
 
   const page =
     parsePositiveInteger(
-      params.page,
+      query.page,
       1,
     );
 
   const pageSize =
     parsePositiveInteger(
-      params.pageSize,
+      query.pageSize,
       20,
     );
 
   const status =
     isSenderIdStatus(
-      params.status,
+      query.status,
     )
-      ? params.status
+      ? query.status
       : undefined;
 
   const isDefault =
     parseBoolean(
-      params.isDefault,
+      query.isDefault,
     );
 
   // ==========================================================================
@@ -115,21 +126,21 @@ export default async function SenderIdsPage({
 
   try {
     senderIds =
-      await findSenderIds({
-        page,
-        pageSize,
-        search:
-          params.search?.trim() ||
-          undefined,
-        status,
-        sender:
-          params.sender?.trim() ||
-          undefined,
-        clientId:
-          params.clientId ||
-          undefined,
-        isDefault,
-      });
+      await findSenderIds(
+        clientId,
+        {
+          page,
+          pageSize,
+          search:
+            query.search?.trim() ||
+            undefined,
+          status,
+          sender:
+            query.sender?.trim() ||
+            undefined,
+          isDefault,
+        },
+      );
   } catch (error) {
     /*
      * Let the client component display the error state rather than making
@@ -149,6 +160,7 @@ export default async function SenderIdsPage({
 
   return (
     <SenderIdsClient
+      clientId={clientId}
       initialSenderIds={
         senderIds
       }

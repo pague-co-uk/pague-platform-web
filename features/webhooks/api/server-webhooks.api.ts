@@ -6,6 +6,8 @@ import {
 
 import type {
   CreateWebhookInput,
+  FindPlatformWebhooksParams,
+  FindPlatformWebhooksResult,
   FindWebhookDeliveriesParams,
   FindWebhookDeliveriesResult,
   FindWebhooksParams,
@@ -661,4 +663,98 @@ function getWebhookErrorMessage(
   }
 
   return fallback;
+}
+
+// ============================================================================
+// Find platform webhooks
+// ============================================================================
+
+export async function findPlatformWebhooks(
+  params: FindPlatformWebhooksParams = {},
+): Promise<FindPlatformWebhooksResult> {
+  const query =
+    new URLSearchParams();
+
+  if (
+    params.page !== undefined
+  ) {
+    query.set(
+      "page",
+      String(params.page),
+    );
+  }
+
+  if (
+    params.pageSize !== undefined
+  ) {
+    query.set(
+      "pageSize",
+      String(params.pageSize),
+    );
+  }
+
+  if (
+    params.clientId !== undefined
+  ) {
+    query.set(
+      "clientId",
+      params.clientId,
+    );
+  }
+
+  if (
+    params.enabled !== undefined
+  ) {
+    query.set(
+      "enabled",
+      String(params.enabled),
+    );
+  }
+
+  if (
+    params.search !== undefined &&
+    params.search.trim() !== ""
+  ) {
+    query.set(
+      "search",
+      params.search.trim(),
+    );
+  }
+
+  const queryString =
+    query.toString();
+
+  const path =
+    `/api/webhooks${queryString
+      ? `?${queryString}`
+      : ""
+    }`;
+
+  const response =
+    await controlPlaneFetch(
+      path,
+      {
+        method: "GET",
+      },
+    );
+
+  const body =
+    await parseResponse(
+      response,
+      "Unable to load webhooks.",
+    );
+
+  const result =
+    extractPaginatedData<Webhook>(
+      body,
+      "Invalid webhooks response.",
+    );
+
+  return {
+    data:
+      result.data,
+
+    pagination:
+      result.pagination,
+  };
 }

@@ -13,9 +13,6 @@ import {
   PageContainer,
 } from "@/components/layout/page-container";
 
-import {
-  PageHeader,
-} from "@/components/layout/page-header";
 
 import {
   StatusBadge,
@@ -35,6 +32,8 @@ import {
 } from "../api/sender-ids-api";
 
 import { formatDate } from "@/lib/date/format-date";
+
+import { PageHeader } from "@/components/layout/page-header";
 import type {
   SenderId,
   SenderIdStatus,
@@ -97,6 +96,16 @@ export default function SenderIdDetailsClient({
   const isBusy =
     action !== null;
 
+  const clientSenderIdsPath =
+    `/clients/${encodeURIComponent(
+      senderId.clientId,
+    )}/sender-ids`;
+
+  const senderIdPath =
+    `${clientSenderIdsPath}/${encodeURIComponent(
+      senderId.id,
+    )}`;
+
   const closeModal =
     useCallback(() => {
       if (confirming) {
@@ -118,36 +127,42 @@ export default function SenderIdDetailsClient({
       switch (action) {
         case "approve":
           await approveSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
 
         case "reject":
           await rejectSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
 
         case "disable":
           await disableSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
 
         case "enable":
           await enableSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
 
         case "default":
           await setDefaultSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
 
         case "delete":
           await deleteSenderId(
+            senderId.clientId,
             senderId.id,
           );
           break;
@@ -157,7 +172,7 @@ export default function SenderIdDetailsClient({
 
       if (action === "delete") {
         router.push(
-          "/sender-ids",
+          clientSenderIdsPath,
         );
       } else {
         router.refresh();
@@ -197,7 +212,7 @@ export default function SenderIdDetailsClient({
             type="button"
             onClick={() =>
               router.push(
-                "/sender-ids",
+                clientSenderIdsPath,
               )
             }
             disabled={isBusy}
@@ -259,7 +274,7 @@ export default function SenderIdDetailsClient({
                   type="button"
                   onClick={() =>
                     router.push(
-                      `/sender-ids/${encodeURIComponent(senderId.id)}/edit`,
+                      `${senderIdPath}/edit`,
                     )
                   }
                   disabled={isBusy}
@@ -306,7 +321,9 @@ export default function SenderIdDetailsClient({
             <dl className="mt-5 space-y-5">
               <DetailRow
                 label="Sender"
-                value={senderId.sender}
+                value={
+                  senderId.sender
+                }
               />
 
               <DetailRow

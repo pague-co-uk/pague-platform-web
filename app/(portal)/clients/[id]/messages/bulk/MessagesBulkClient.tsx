@@ -271,9 +271,7 @@ export default function MessagesBulkClient({
         description={`Upload an Excel spreadsheet to create multiple messages for ${clientName}.`}
       >
         <Link
-          href={`/clients/${encodeURIComponent(
-            client.id,
-          )}/messages`}
+          href={`/messages`}
           className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
         >
           ← Back to Messages

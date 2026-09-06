@@ -146,18 +146,11 @@ export default function NewMessageClient({
         );
 
         try {
-          const result =
-            await findSenderIds({
-              clientId:
-                client.id,
-
-              status:
-                "APPROVED",
-
-              page: 1,
-
-              pageSize: 100,
-            });
+          const result = await findSenderIds(client.id, {
+            status: "APPROVED",
+            page: 1,
+            pageSize: 100,
+          });
 
           if (cancelled) {
             return;

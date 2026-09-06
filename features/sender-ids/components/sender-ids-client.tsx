@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/status-badge";
 
 import { formatDate } from "@/lib/date/format-date";
+
 import type {
   FindSenderIdsResult,
   SenderId,
@@ -48,6 +49,8 @@ import type {
 // ============================================================================
 
 interface SenderIdsClientProps {
+  clientId: string;
+
   initialSenderIds:
   | FindSenderIdsResult
   | null;
@@ -83,6 +86,7 @@ const statusOptions = [
 // ============================================================================
 
 export default function SenderIdsClient({
+  clientId,
   initialSenderIds,
   canCreateSenderIds,
 }: SenderIdsClientProps) {
@@ -94,10 +98,14 @@ export default function SenderIdsClient({
   // ==========================================================================
 
   function openSenderId(
-    id: string,
+    senderIdId: string,
   ) {
     router.push(
-      `/sender-ids/${id}`,
+      `/clients/${encodeURIComponent(
+        clientId,
+      )}/sender-ids/${encodeURIComponent(
+        senderIdId,
+      )}`,
     );
   }
 
@@ -123,32 +131,17 @@ export default function SenderIdsClient({
     },
 
     {
-      key: "client",
-      header: "Client",
-      render: (senderId: SenderId) => (
-        <div>
-          <div className="font-medium text-slate-900">
-            {senderId.client.displayName}
-          </div>
-
-          {senderId.client.companyName !==
-            senderId.client.displayName && (
-              <div className="text-xs text-slate-500">
-                {senderId.client.companyName}
-              </div>
-            )}
-        </div>
-      ),
-    },
-
-    {
       key: "status",
       header: "Status",
       render: (senderId: SenderId) => (
         <StatusBadge
-          tone={getStatusTone(senderId.status)}
+          tone={getStatusTone(
+            senderId.status,
+          )}
         >
-          {formatStatus(senderId.status)}
+          {formatStatus(
+            senderId.status,
+          )}
         </StatusBadge>
       ),
     },
@@ -175,7 +168,9 @@ export default function SenderIdsClient({
       key: "createdAt",
       header: "Created",
       render: (senderId: SenderId) =>
-        formatDate(senderId.createdAt),
+        formatDate(
+          senderId.createdAt,
+        ),
     },
   ];
 
@@ -211,7 +206,9 @@ export default function SenderIdsClient({
       >
         {canCreateSenderIds && (
           <Link
-            href="/sender-ids/new"
+            href={`/clients/${encodeURIComponent(
+              clientId,
+            )}/sender-ids/new`}
             className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           >
             Create Sender ID

@@ -12,12 +12,12 @@ import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { FilterBar, FilterSearch } from "@/components/ui/filter-bar";
 import { Pagination } from "@/components/ui/pagination";
 import type {
+  Role,
   RoleMeta,
-  RoleSummary,
 } from "@/features/access-control/api/roles-api";
 
 interface RolesClientProps {
-  roles: readonly RoleSummary[];
+  roles: readonly Role[];
   meta: RoleMeta;
   canCreate: boolean;
 }
@@ -29,7 +29,7 @@ export default function RolesClient({
 }: RolesClientProps) {
   const router = useRouter();
 
-  const columns: DataTableColumn<RoleSummary>[] = [
+  const columns: DataTableColumn<Role>[] = [
     {
       key: "name",
       header: "Role",

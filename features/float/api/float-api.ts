@@ -34,6 +34,42 @@ export interface FloatLedgerEntry {
   createdAt: string;
 }
 
+export interface FloatLedgerClient {
+  readonly id: string;
+  readonly publicId: string;
+  readonly companyName: string;
+  readonly displayName: string;
+}
+
+export interface PlatformFloatLedgerEntry
+  extends Omit<
+    FloatLedgerEntry,
+    "clientId"
+  > {
+  readonly client: FloatLedgerClient;
+}
+
+export interface FindPlatformFloatLedgerInput {
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly clientId?: string;
+  readonly transactionType?: LedgerTransactionType;
+  readonly referenceType?: LedgerReferenceType;
+  readonly search?: string;
+}
+
+export interface PlatformFloatLedgerPagination {
+  readonly page: number;
+  readonly pageSize: number;
+  readonly totalItems: number;
+  readonly totalPages: number;
+}
+
+export interface PlatformFloatLedgerResponse {
+  readonly data: PlatformFloatLedgerEntry[];
+  readonly pagination: PlatformFloatLedgerPagination;
+}
+
 export interface FloatLedgerMeta {
   readonly page: number;
   readonly pageSize: number;
@@ -325,5 +361,84 @@ export async function adjustFloat(
         input,
       ),
     },
+  );
+}
+
+export async function findPlatformFloatLedger(
+  input: FindPlatformFloatLedgerInput = {},
+): Promise<PlatformFloatLedgerResponse> {
+  const params =
+    new URLSearchParams();
+
+  if (
+    input.page !==
+    undefined
+  ) {
+    params.set(
+      "page",
+      String(input.page),
+    );
+  }
+
+  if (
+    input.pageSize !==
+    undefined
+  ) {
+    params.set(
+      "pageSize",
+      String(input.pageSize),
+    );
+  }
+
+  if (
+    input.clientId !==
+    undefined
+  ) {
+    params.set(
+      "clientId",
+      input.clientId,
+    );
+  }
+
+  if (
+    input.transactionType !==
+    undefined
+  ) {
+    params.set(
+      "transactionType",
+      input.transactionType,
+    );
+  }
+
+  if (
+    input.referenceType !==
+    undefined
+  ) {
+    params.set(
+      "referenceType",
+      input.referenceType,
+    );
+  }
+
+  if (
+    input.search !==
+    undefined &&
+    input.search.trim() !==
+    ""
+  ) {
+    params.set(
+      "search",
+      input.search.trim(),
+    );
+  }
+
+  const query =
+    params.toString();
+
+  return request<PlatformFloatLedgerResponse>(
+    `/api/float${query
+      ? `?${query}`
+      : ""
+    }`,
   );
 }

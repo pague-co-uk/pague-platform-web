@@ -23,6 +23,7 @@ export default async function EditSenderIdPage({
 }: {
   params: Promise<{
     id: string;
+    senderId: string;
   }>;
 }) {
   // ==========================================================================
@@ -72,21 +73,19 @@ export default async function EditSenderIdPage({
   // Parameters
   // ==========================================================================
 
-  const {
-    id,
-  } = await params;
+  const { id: clientId, senderId } = await params;
 
   // ==========================================================================
   // Initial data
   // ==========================================================================
 
-  let senderId;
+  let senderIdData;
 
   try {
-    senderId =
-      await findSenderIdById(
-        id,
-      );
+    senderIdData = await findSenderIdById(
+      clientId,
+      senderId,
+    );
   } catch (error) {
     console.error(
       "[Sender IDs] Unable to load Sender ID for editing.",
@@ -96,7 +95,7 @@ export default async function EditSenderIdPage({
     notFound();
   }
 
-  if (!senderId) {
+  if (!senderIdData) {
     notFound();
   }
 
@@ -106,7 +105,7 @@ export default async function EditSenderIdPage({
 
   return (
     <EditSenderIdClient
-      senderId={senderId}
+      senderId={senderIdData}
     />
   );
 }

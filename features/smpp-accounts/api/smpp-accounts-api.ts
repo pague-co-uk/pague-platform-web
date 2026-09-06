@@ -15,6 +15,40 @@ export interface SmppAccount {
   updatedAt: string;
 }
 
+export interface SmppAccountClient {
+  id: string;
+  publicId: string;
+  companyName: string;
+  displayName: string;
+}
+
+export interface PlatformSmppAccount
+  extends Omit<SmppAccount, "clientId"> {
+  client: SmppAccountClient;
+}
+
+export interface FindPlatformSmppAccountsParams {
+  page?: number;
+  pageSize?: number;
+  clientId?: string;
+  status?: SmppAccountStatus;
+  search?: string;
+}
+
+export interface SmppAccountPagination {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface FindPlatformSmppAccountsResult {
+  data: PlatformSmppAccount[];
+  pagination: SmppAccountPagination;
+}
+
 export interface CreateSmppAccountInput {
   systemId: string;
   password: string;
@@ -276,4 +310,65 @@ export async function disableSmppAccount(
   }
 
   return body.data;
+}
+
+export async function findPlatformSmppAccounts(
+  params: FindPlatformSmppAccountsParams = {},
+): Promise<FindPlatformSmppAccountsResult> {
+  const query = new URLSearchParams();
+
+  if (params.page !== undefined) {
+    query.set("page", String(params.page));
+  }
+
+  if (params.pageSize !== undefined) {
+    query.set("pageSize", String(params.pageSize));
+  }
+
+  if (params.clientId !== undefined) {
+    query.set("clientId", params.clientId);
+  }
+
+  if (params.status !== undefined) {
+    query.set("status", params.status);
+  }
+
+  if (
+    params.search !== undefined &&
+    params.search.trim() !== ""
+  ) {
+    query.set("search", params.search.trim());
+  }
+
+  const queryString = query.toString();
+
+  const response = await fetch(
+    `${getBaseUrl()}/smpp-accounts${queryString ? `?${queryString}` : ""
+    }`,
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+
+  const body =
+    await parseResponse<
+      ApiResponse<
+        PlatformSmppAccount[]
+      > & {
+        pagination: SmppAccountPagination;
+      }
+    >(response);
+
+  if (!body?.success) {
+    throw new Error(
+      "Unable to retrieve SMPP accounts.",
+    );
+  }
+
+  return {
+    data: body.data,
+    pagination: body.pagination,
+  };
 }

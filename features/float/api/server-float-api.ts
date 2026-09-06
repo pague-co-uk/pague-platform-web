@@ -6,7 +6,10 @@ import type {
   AdjustFloatInput,
   DebitFloatInput,
   FindFloatLedgerInput,
+  FindPlatformFloatLedgerInput,
   FloatLedgerEntry,
+  PlatformFloatLedgerEntry,
+  PlatformFloatLedgerPagination,
   RefundFloatInput,
   TopUpFloatInput,
 } from "../api/float-api";
@@ -24,6 +27,12 @@ export interface FloatLedgerResult {
     readonly total: number;
     readonly totalPages: number;
   };
+}
+
+export interface PlatformFloatLedgerResult {
+  readonly items: readonly PlatformFloatLedgerEntry[];
+
+  readonly pagination: PlatformFloatLedgerPagination;
 }
 
 // ============================================================================
@@ -190,6 +199,209 @@ export async function getFloatBalance(
   }
 
   return body.data;
+}
+
+// ============================================================================
+// Find platform float ledger
+//
+// Server-side only.
+// ============================================================================
+
+export async function findPlatformFloatLedger(
+  options: FindPlatformFloatLedgerInput = {},
+): Promise<PlatformFloatLedgerResult> {
+  const session =
+    await getSessionCookie();
+
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "page",
+    String(
+      options.page ?? 1,
+    ),
+  );
+
+  params.set(
+    "pageSize",
+    String(
+      options.pageSize ?? 20,
+    ),
+  );
+
+  if (
+    options.clientId !==
+    undefined
+  ) {
+    params.set(
+      "clientId",
+      options.clientId,
+    );
+  }
+
+  if (
+    options.transactionType !==
+    undefined
+  ) {
+    params.set(
+      "transactionType",
+      options.transactionType,
+    );
+  }
+
+  if (
+    options.referenceType !==
+    undefined
+  ) {
+    params.set(
+      "referenceType",
+      options.referenceType,
+    );
+  }
+
+  if (
+    options.search !==
+    undefined &&
+    options.search.trim() !==
+    ""
+  ) {
+    params.set(
+      "search",
+      options.search.trim(),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Request
+  // --------------------------------------------------------------------------
+
+  let response: Response;
+
+  try {
+    response =
+      await fetch(
+        `${getControlPlaneUrl()}/api/float?${params.toString()}`,
+        {
+          method: "GET",
+
+          headers: {
+            Cookie:
+              `${session.name}=${session.value}`,
+          },
+
+          cache:
+            "no-store",
+        },
+      );
+  } catch (error) {
+    console.error(
+      "[Float] Failed to connect to Control Plane.",
+      error,
+    );
+
+    throw new FloatApiError(
+      "Unable to connect to the float service.",
+      502,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Response
+  // --------------------------------------------------------------------------
+
+  const text =
+    await response.text();
+
+  let body: unknown = null;
+
+  if (text) {
+    try {
+      body =
+        JSON.parse(text);
+    } catch {
+      body = text;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // API error
+  // --------------------------------------------------------------------------
+
+  if (!response.ok) {
+    throw new FloatApiError(
+      getFloatErrorMessage(
+        body,
+        "Unable to load float ledger.",
+      ),
+      response.status,
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // Validate response
+  // --------------------------------------------------------------------------
+
+  if (
+    typeof body !==
+    "object" ||
+    body === null ||
+    !("success" in body) ||
+    body.success !== true ||
+    !("data" in body) ||
+    !Array.isArray(body.data) ||
+    !("pagination" in body) ||
+    typeof body.pagination !==
+    "object" ||
+    body.pagination === null
+  ) {
+    throw new FloatApiError(
+      "Invalid platform float ledger response.",
+      response.status,
+    );
+  }
+
+  const pagination =
+    body.pagination;
+
+  if (
+    !("page" in pagination) ||
+    typeof pagination.page !==
+    "number" ||
+    !("pageSize" in pagination) ||
+    typeof pagination.pageSize !==
+    "number" ||
+    !("totalItems" in pagination) ||
+    typeof pagination.totalItems !==
+    "number" ||
+    !("totalPages" in pagination) ||
+    typeof pagination.totalPages !==
+    "number"
+  ) {
+    throw new FloatApiError(
+      "Invalid platform float ledger pagination response.",
+      response.status,
+    );
+  }
+
+  return {
+    items:
+      body.data as PlatformFloatLedgerEntry[],
+
+    pagination: {
+      page:
+        pagination.page,
+
+      pageSize:
+        pagination.pageSize,
+
+      totalItems:
+        pagination.totalItems,
+
+      totalPages:
+        pagination.totalPages,
+    },
+  };
 }
 
 // ============================================================================

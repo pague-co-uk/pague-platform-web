@@ -7,6 +7,14 @@ export interface ApiKey {
   id: string;
   publicId: string;
   clientId: string;
+
+  client?: {
+    id: string;
+    publicId: string;
+    companyName: string;
+    displayName: string;
+  };
+
   name: string;
   prefix: string;
   status: ApiKeyStatus;
@@ -69,7 +77,7 @@ const parseResponse = async <T>(
 };
 
 // ============================================================================
-// Find API keys
+// Find API keys — client scoped
 // ============================================================================
 
 export async function findApiKeys(
@@ -121,6 +129,108 @@ export async function findApiKeys(
       `/api/clients/${encodeURIComponent(
         clientId,
       )}/api-keys${query
+        ? `?${query}`
+        : ""
+      }`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    await parseResponse<ApiKeyPaginatedResponse>(
+      response,
+    );
+
+  if (!body.success) {
+    throw new Error(
+      "Unable to retrieve API keys.",
+    );
+  }
+
+  return {
+    data: Array.isArray(body.data)
+      ? body.data
+      : [],
+    pagination:
+      body.pagination,
+  };
+}
+
+// ============================================================================
+// Find API keys — platform scoped
+// ============================================================================
+
+export interface FindPlatformApiKeysOptions {
+  page?: number;
+  pageSize?: number;
+  clientId?: string;
+  status?: ApiKeyStatus;
+  search?: string;
+}
+
+export async function findPlatformApiKeys(
+  options?: FindPlatformApiKeysOptions,
+): Promise<{
+  data: ApiKey[];
+  pagination: ApiKeyPagination;
+}> {
+  const searchParams =
+    new URLSearchParams();
+
+  if (
+    options?.page !== undefined
+  ) {
+    searchParams.set(
+      "page",
+      String(options.page),
+    );
+  }
+
+  if (
+    options?.pageSize !== undefined
+  ) {
+    searchParams.set(
+      "pageSize",
+      String(options.pageSize),
+    );
+  }
+
+  if (
+    options?.clientId
+  ) {
+    searchParams.set(
+      "clientId",
+      options.clientId,
+    );
+  }
+
+  if (
+    options?.status !== undefined
+  ) {
+    searchParams.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (
+    options?.search
+  ) {
+    searchParams.set(
+      "search",
+      options.search,
+    );
+  }
+
+  const query =
+    searchParams.toString();
+
+  const response =
+    await fetch(
+      `/api/api-keys${query
         ? `?${query}`
         : ""
       }`,
@@ -234,7 +344,7 @@ export async function createApiKey(
 }
 
 // ============================================================================
-// Find API key
+// Find API key — client scoped
 // ============================================================================
 
 export async function findApiKey(

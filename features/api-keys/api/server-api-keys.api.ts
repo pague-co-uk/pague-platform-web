@@ -27,6 +27,14 @@ interface ApiResponse<T> {
   data: T;
 }
 
+export interface FindPlatformApiKeysOptions {
+  page?: number;
+  pageSize?: number;
+  clientId?: string;
+  status?: ApiKeyStatus;
+  search?: string;
+}
+
 // ============================================================================
 // Configuration
 // ============================================================================
@@ -78,14 +86,11 @@ const request = async <T>(
       `${getApiUrl()}${path}`,
       {
         ...init,
-
         headers: {
           ...(init?.headers ?? {}),
-
           cookie:
             await getCookieHeader(),
         },
-
         cache: "no-store",
       },
     );
@@ -96,7 +101,7 @@ const request = async <T>(
   if (!response.ok) {
     throw new Error(
       body ||
-      `Control Plane request failed with status ${response.status}.`,
+        `Control Plane request failed with status ${response.status}.`,
     );
   }
 
@@ -154,14 +159,13 @@ const extractPaginatedData = <T>(
     )
       ? response.data
       : [],
-
     pagination:
       response.pagination,
   };
 };
 
 // ============================================================================
-// Find API keys
+// Find API keys — client scoped
 // ============================================================================
 
 export async function findApiKeys(
@@ -216,16 +220,96 @@ export async function findApiKeys(
     }>(
       `/api/clients/${encodeURIComponent(
         clientId,
-      )}/api-keys${query
-        ? `?${query}`
-        : ""
+      )}/api-keys${
+        query
+          ? `?${query}`
+          : ""
       }`,
     );
 
   return extractPaginatedData(
     response,
   );
-}
+};
+
+// ============================================================================
+// Find API keys — platform scoped
+// ============================================================================
+
+export async function findPlatformApiKeys(
+  options?: FindPlatformApiKeysOptions,
+): Promise<PaginatedApiKeyResult> {
+  const params =
+    new URLSearchParams();
+
+  if (
+    options?.page !==
+    undefined
+  ) {
+    params.set(
+      "page",
+      String(options.page),
+    );
+  }
+
+  if (
+    options?.pageSize !==
+    undefined
+  ) {
+    params.set(
+      "pageSize",
+      String(options.pageSize),
+    );
+  }
+
+  if (
+    options?.clientId
+  ) {
+    params.set(
+      "clientId",
+      options.clientId,
+    );
+  }
+
+  if (
+    options?.status !==
+    undefined
+  ) {
+    params.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (
+    options?.search
+  ) {
+    params.set(
+      "search",
+      options.search,
+    );
+  }
+
+  const query =
+    params.toString();
+
+  const response =
+    await request<{
+      success: boolean;
+      data: ApiKey[];
+      pagination: ApiKeyPagination;
+    }>(
+      `/api/api-keys${
+        query
+          ? `?${query}`
+          : ""
+      }`,
+    );
+
+  return extractPaginatedData(
+    response,
+  );
+};
 
 // ============================================================================
 // Find API key
@@ -251,7 +335,7 @@ export async function findApiKey(
   return extractData(
     response,
   );
-}
+};
 
 // ============================================================================
 // Create API key
@@ -274,12 +358,10 @@ export async function createApiKey(
       )}/api-keys`,
       {
         method: "POST",
-
         headers: {
           "content-type":
             "application/json",
         },
-
         body:
           JSON.stringify(
             input,

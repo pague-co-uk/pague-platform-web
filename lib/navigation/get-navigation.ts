@@ -17,6 +17,13 @@ import {
 } from "@/lib/authorization/permissions";
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+const PLATFORM_SUPER_ADMIN =
+  "PLATFORM_SUPER_ADMIN";
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -42,11 +49,14 @@ interface NavigationDefinition
 }
 
 // ============================================================================
-// Navigation Definition
+// Client Navigation
 //
-// Global navigation is defined from the authenticated user's context.
+// Client users operate within their own client context.
 //
-// Client-scoped resources:
+// Client-owned resources are explicitly scoped using the authenticated user's
+// clientId.
+//
+// Client-scoped routes:
 //
 //   /clients/:clientId/messages
 //   /clients/:clientId/sender-ids
@@ -55,19 +65,176 @@ interface NavigationDefinition
 //   /clients/:clientId/smpp-accounts
 //   /clients/:clientId/float
 //
-// use the authenticated user's clientId.
-//
-// Permission checks happen exclusively on the server.
-//
-// The permission property is removed before navigation is returned to the
-// client.
+// Client users do not receive platform-wide Clients management navigation.
 // ============================================================================
 
-function getNavigationDefinition(
+function getClientNavigation(
   user: CurrentUser,
 ): readonly NavigationDefinition[] {
   return [
+    // ==========================================================================
+    // Overview
+    // ==========================================================================
 
+    {
+      key: "dashboard",
+
+      label: "Dashboard",
+
+      href: "/",
+
+      icon: "dashboard",
+    },
+
+    // ==========================================================================
+    // Messaging
+    // ==========================================================================
+
+    {
+      key: "messaging",
+
+      label: "Messaging",
+
+      icon: "messages",
+
+      children: [
+        {
+          key: "messages",
+
+          label: "Messages",
+
+          href:
+            `/clients/${user.clientId}/messages`,
+
+          icon: "messages",
+
+          permission:
+            PERMISSIONS.MESSAGES_READ,
+        },
+
+        {
+          key: "sender-ids",
+
+          label: "Sender IDs",
+
+          href:
+            `/clients/${user.clientId}/sender-ids`,
+
+          icon: "sender",
+
+          permission:
+            PERMISSIONS.SENDER_IDS_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
+    // Infrastructure
+    // ==========================================================================
+
+    {
+      key: "infrastructure",
+
+      label: "Infrastructure",
+
+      icon: "settings",
+
+      children: [
+        {
+          key: "api-keys",
+
+          label: "API Keys",
+
+          href:
+            `/clients/${user.clientId}/api-keys`,
+
+          icon: "key",
+
+          permission:
+            PERMISSIONS.API_KEYS_READ,
+        },
+
+        {
+          key: "webhooks",
+
+          label: "Webhooks",
+
+          href:
+            `/clients/${user.clientId}/webhooks`,
+
+          icon: "webhook",
+
+          permission:
+            PERMISSIONS.WEBHOOKS_READ,
+        },
+
+        {
+          key: "smpp-accounts",
+
+          label: "SMPP Accounts",
+
+          href:
+            `/clients/${user.clientId}/smpp-accounts`,
+
+          icon: "smpp",
+
+          permission:
+            PERMISSIONS.SMPP_ACCOUNTS_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
+    // Finance
+    // ==========================================================================
+
+    {
+      key: "finance",
+
+      label: "Finance",
+
+      icon: "wallet",
+
+      children: [
+        {
+          key: "float",
+
+          label: "Float",
+
+          href:
+            `/clients/${user.clientId}/float`,
+
+          icon: "wallet",
+
+          permission:
+            PERMISSIONS.FLOAT_READ,
+        },
+      ],
+    },
+  ];
+}
+
+// ============================================================================
+// Platform Navigation
+//
+// Platform users operate across all clients.
+//
+// Platform resources deliberately use global routes:
+//
+//   /clients
+//   /messages
+//   /sender-ids
+//   /api-keys
+//   /webhooks
+//   /smpp-accounts
+//   /float
+//
+// Platform resource pages are responsible for client selection/filtering where
+// the underlying resource belongs to a client.
+// ============================================================================
+
+function getPlatformNavigation(): readonly NavigationDefinition[] {
+  return [
     // ==========================================================================
     // Overview
     // ==========================================================================
@@ -137,8 +304,6 @@ function getNavigationDefinition(
 
     // ==========================================================================
     // Clients
-    //
-    // The authenticated user's clientId is used for client-scoped resources.
     // ==========================================================================
 
     {
@@ -161,14 +326,27 @@ function getNavigationDefinition(
           permission:
             PERMISSIONS.CLIENTS_READ,
         },
+      ],
+    },
 
+    // ==========================================================================
+    // Messaging
+    // ==========================================================================
+
+    {
+      key: "messaging",
+
+      label: "Messaging",
+
+      icon: "messages",
+
+      children: [
         {
           key: "messages",
 
           label: "Messages",
 
-          href:
-            `/clients/${user.clientId}/messages`,
+          href: "/messages",
 
           icon: "messages",
 
@@ -181,22 +359,34 @@ function getNavigationDefinition(
 
           label: "Sender IDs",
 
-          href:
-            `/clients/${user.clientId}/sender-ids`,
+          href: "/sender-ids",
 
           icon: "sender",
 
           permission:
             PERMISSIONS.SENDER_IDS_READ,
         },
+      ],
+    },
 
+    // ==========================================================================
+    // Infrastructure
+    // ==========================================================================
+
+    {
+      key: "infrastructure",
+
+      label: "Infrastructure",
+
+      icon: "settings",
+
+      children: [
         {
           key: "api-keys",
 
           label: "API Keys",
 
-          href:
-            `/clients/${user.clientId}/api-keys`,
+          href: "/api-keys",
 
           icon: "key",
 
@@ -209,8 +399,7 @@ function getNavigationDefinition(
 
           label: "Webhooks",
 
-          href:
-            `/clients/${user.clientId}/webhooks`,
+          href: "/webhooks",
 
           icon: "webhook",
 
@@ -223,22 +412,34 @@ function getNavigationDefinition(
 
           label: "SMPP Accounts",
 
-          href:
-            `/clients/${user.clientId}/smpp-accounts`,
+          href: "/smpp-accounts",
 
           icon: "smpp",
 
           permission:
             PERMISSIONS.SMPP_ACCOUNTS_READ,
         },
+      ],
+    },
 
+    // ==========================================================================
+    // Finance
+    // ==========================================================================
+
+    {
+      key: "finance",
+
+      label: "Finance",
+
+      icon: "wallet",
+
+      children: [
         {
           key: "float",
 
           label: "Float",
 
-          href:
-            `/clients/${user.clientId}/float`,
+          href: "/float",
 
           icon: "wallet",
 
@@ -304,14 +505,38 @@ function getNavigationDefinition(
 }
 
 // ============================================================================
+// Platform Context
+//
+// PLATFORM_SUPER_ADMIN is the role that determines whether the user operates
+// in platform context.
+//
+// Individual resource visibility is still controlled by permissions.
+// ============================================================================
+
+function isPlatformUser(
+  user: CurrentUser,
+): boolean {
+  return user.roles.some(
+    (role) =>
+      role.name ===
+      PLATFORM_SUPER_ADMIN,
+  );
+}
+
+// ============================================================================
 // Get Navigation
 // ============================================================================
 
 export function getNavigation(
   user: CurrentUser,
 ): readonly NavigationSection[] {
+  const definition =
+    isPlatformUser(user)
+      ? getPlatformNavigation()
+      : getClientNavigation(user);
+
   const items =
-    getNavigationDefinition(user)
+    definition
       .map((item) =>
         filterNavigationItem(
           user,
@@ -392,7 +617,7 @@ function filterNavigationItem(
   // Client-Safe Navigation Item
   //
   // Deliberately omit `permission`.
-  // Authorization rules remain server-side.
+  // Authorization remains server-side.
   // ==========================================================================
 
   return {

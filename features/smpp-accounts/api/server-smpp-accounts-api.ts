@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 
 import type {
   CreateSmppAccountInput,
+  FindPlatformSmppAccountsParams,
+  FindPlatformSmppAccountsResult,
+  PlatformSmppAccount,
   SmppAccount,
   UpdateSmppAccountInput,
 } from "../api/smpp-accounts-api";
@@ -333,4 +336,71 @@ export async function disableSmppAccount(
   }
 
   return extractData(response);
+}
+
+export async function findPlatformSmppAccounts(
+  params: FindPlatformSmppAccountsParams = {},
+): Promise<FindPlatformSmppAccountsResult> {
+  const query = new URLSearchParams();
+
+  if (params.page !== undefined) {
+    query.set("page", String(params.page));
+  }
+
+  if (params.pageSize !== undefined) {
+    query.set("pageSize", String(params.pageSize));
+  }
+
+  if (params.clientId !== undefined) {
+    query.set("clientId", params.clientId);
+  }
+
+  if (params.status !== undefined) {
+    query.set("status", params.status);
+  }
+
+  if (
+    params.search !== undefined &&
+    params.search.trim() !== ""
+  ) {
+    query.set("search", params.search.trim());
+  }
+
+  const queryString = query.toString();
+
+  const response =
+    await request<
+      ApiResponse<
+        PlatformSmppAccount[]
+      > & {
+        pagination: {
+          page: number;
+          pageSize: number;
+          totalItems: number;
+          totalPages: number;
+          hasNext: boolean;
+          hasPrevious: boolean;
+        };
+      }
+    >(
+      `/api/smpp-accounts${queryString ? `?${queryString}` : ""
+      }`,
+    );
+
+  if (!response) {
+    throw new Error(
+      "SMPP accounts response was empty.",
+    );
+  }
+
+  if (!response.success) {
+    throw new Error(
+      "The Control Plane API returned an unsuccessful response.",
+    );
+  }
+
+  return {
+    data: response.data,
+    pagination: response.pagination,
+  };
 }
