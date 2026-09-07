@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { findClientById } from "@/features/clients/api/server-clients-api";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import SmppAccountCreateClient from "./smpp-account-create-client";
 
@@ -48,6 +49,7 @@ export default async function SmppAccountCreatePage({
   return (
     <SmppAccountCreateClient
       client={client}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

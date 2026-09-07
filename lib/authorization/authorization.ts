@@ -4,6 +4,16 @@ import type {
   CurrentUser,
 } from "@/lib/auth/get-current-user";
 
+export const PLATFORM_SUPER_ADMIN = "PLATFORM_SUPER_ADMIN";
+
+export function isPlatformUser(
+  user: CurrentUser,
+): boolean {
+  return user.roles.some(
+    (role) => role.name === PLATFORM_SUPER_ADMIN,
+  );
+}
+
 // ============================================================================
 // Permission
 // ============================================================================

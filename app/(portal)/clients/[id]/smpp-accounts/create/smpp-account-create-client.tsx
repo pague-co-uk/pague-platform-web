@@ -22,6 +22,7 @@ import {
 import {
   useToast,
 } from "@/components/ui/toast";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   createSmppAccount,
@@ -37,6 +38,7 @@ import type {
 
 interface SmppAccountCreateClientProps {
   readonly client: Client;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -45,6 +47,7 @@ interface SmppAccountCreateClientProps {
 
 export default function SmppAccountCreateClient({
   client,
+  showPlatformBackLink,
 }: SmppAccountCreateClientProps) {
   const router = useRouter();
 
@@ -284,12 +287,7 @@ export default function SmppAccountCreateClient({
       ======================================================================= */}
 
       <div className="mb-5">
-        <Link
-          href={smppAccountsUrl}
-          className="text-sm font-medium text-slate-700 transition hover:text-slate-950"
-        >
-          ← Back to SMPP Accounts
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/smpp-accounts" platformLabel="Back to SMPP Accounts" clientHref={smppAccountsUrl} clientLabel="Back to Client SMPP Accounts" />
       </div>
 
       {/* ======================================================================
@@ -525,7 +523,7 @@ export default function SmppAccountCreateClient({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Creating…"

@@ -17,6 +17,7 @@ import {
 import {
   PageHeader,
 } from "@/components/layout/page-header";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import type {
   Client,
@@ -41,6 +42,7 @@ import {
 
 interface NewMessageClientProps {
   readonly client: Client;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -72,6 +74,7 @@ const GSM7_EXTENDED_CHARACTERS =
 
 export default function NewMessageClient({
   client,
+  showPlatformBackLink,
 }: NewMessageClientProps) {
   const [
     senderIds,
@@ -466,14 +469,13 @@ export default function NewMessageClient({
         title="New message"
         description={`Send a message from ${clientName(client)}.`}
       >
-        <Link
-          href={`/clients/${encodeURIComponent(
-            client.id,
-          )}/messages`}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        >
-          ← Back to Messages
-        </Link>
+        <ContextAwareBackLinks
+          showPlatformLink={showPlatformBackLink}
+          platformHref="/messages"
+          platformLabel="Back to Messages"
+          clientHref={`/clients/${encodeURIComponent(client.id)}/messages`}
+          clientLabel="Back to Client Messages"
+        />
       </PageHeader>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -618,7 +620,7 @@ export default function NewMessageClient({
 
               {!fieldErrors.destination && (
                 <p className="mt-1.5 text-xs text-slate-400">
-                  Enter the recipient's phone number in international format.
+                  Enter the recipient&apos;s phone number in international format.
                 </p>
               )}
             </div>
@@ -865,7 +867,7 @@ export default function NewMessageClient({
                   senderIds.length ===
                   0
                 }
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSending ? (
                   <>

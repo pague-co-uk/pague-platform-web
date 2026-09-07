@@ -188,7 +188,7 @@ export default function ClientsClient({
               onClick={() =>
                 router.refresh()
               }
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Try again
             </button>
@@ -211,7 +211,7 @@ export default function ClientsClient({
         {canCreateClients && (
           <Link
             href="/clients/new"
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Create client
           </Link>
@@ -264,7 +264,7 @@ export default function ClientsClient({
             {canCreateClients && (
               <Link
                 href="/clients/new"
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Create client
               </Link>

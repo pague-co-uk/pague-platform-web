@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import { findClientById } from "@/features/clients/api/server-clients-api";
 import { CreateWebhookClient } from "@/features/webhooks/components/create-webhook-client";
@@ -48,6 +49,7 @@ export default async function CreateWebhookPage({
       clientId={client.id}
       clientName={client.displayName || client.companyName}
       clientPublicId={client.publicId}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

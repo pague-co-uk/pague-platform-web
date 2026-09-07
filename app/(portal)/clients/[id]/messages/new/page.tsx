@@ -5,6 +5,8 @@ import {
 import {
   findClientById,
 } from "@/features/clients/api/server-clients-api";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import NewMessageClient from "./NewMessageClient";
 
@@ -22,6 +24,7 @@ export default async function NewMessagePage({
 
   const client =
     await findClientById(id);
+  const user = await getCurrentUser();
 
   if (!client) {
     notFound();
@@ -30,6 +33,7 @@ export default async function NewMessagePage({
   return (
     <NewMessageClient
       client={client}
+      showPlatformBackLink={user ? isPlatformUser(user) : false}
     />
   );
 }

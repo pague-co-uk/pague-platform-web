@@ -9,6 +9,7 @@ import {
 import {
   PageHeader,
 } from "@/components/layout/page-header";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   StatusBadge,
@@ -34,6 +35,7 @@ interface FloatLedgerEntryClientProps {
   readonly client: Client;
 
   readonly entry: FloatLedgerEntry;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -43,6 +45,7 @@ interface FloatLedgerEntryClientProps {
 export default function FloatLedgerEntryClient({
   client,
   entry,
+  showPlatformBackLink,
 }: FloatLedgerEntryClientProps) {
   const clientName =
     client.displayName ||
@@ -85,14 +88,7 @@ export default function FloatLedgerEntryClient({
           </div>
         </div>
 
-        <Link
-          href={`/clients/${encodeURIComponent(
-            client.id,
-          )}/float`}
-          className="shrink-0 text-sm font-medium text-slate-600 transition hover:text-slate-900"
-        >
-          Back to float
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/float" platformLabel="Back to Float" clientHref={`/clients/${encodeURIComponent(client.id)}/float`} clientLabel="Back to Client Float" />
       </div>
 
       {/* ======================================================================

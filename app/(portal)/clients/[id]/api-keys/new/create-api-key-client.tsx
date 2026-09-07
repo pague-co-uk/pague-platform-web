@@ -22,6 +22,7 @@ import {
 import {
   useToast,
 } from "@/components/ui/toast";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   createApiKey,
@@ -38,6 +39,7 @@ import type {
 
 interface CreateApiKeyClientProps {
   readonly client: Client;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -62,6 +64,7 @@ const API_KEY_CAPABILITIES = [
 
 export default function CreateApiKeyClient({
   client,
+  showPlatformBackLink,
 }: CreateApiKeyClientProps) {
   const router = useRouter();
 
@@ -224,6 +227,7 @@ export default function CreateApiKeyClient({
           router.push(apiKeysUrl);
           router.refresh();
         }}
+        showPlatformBackLink={showPlatformBackLink}
       />
     );
   }
@@ -239,12 +243,7 @@ export default function CreateApiKeyClient({
       ======================================================================= */}
 
       <div className="mb-5">
-        <Link
-          href={apiKeysUrl}
-          className="text-sm font-medium text-slate-700 transition hover:text-slate-950"
-        >
-          ← Back to API Keys
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/api-keys" platformLabel="Back to API Keys" clientHref={apiKeysUrl} clientLabel="Back to Client API Keys" />
       </div>
 
       {/* ======================================================================
@@ -468,7 +467,7 @@ export default function CreateApiKeyClient({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? "Creating…"
@@ -490,6 +489,7 @@ interface CreatedApiKeyProps {
   readonly keyName: string;
   readonly result: ApiKeyCreatedResponse;
   readonly onDone: () => void;
+  readonly showPlatformBackLink: boolean;
 }
 
 function CreatedApiKey({
@@ -497,6 +497,7 @@ function CreatedApiKey({
   keyName,
   result,
   onDone,
+  showPlatformBackLink,
 }: CreatedApiKeyProps) {
   const [
     copied,
@@ -538,12 +539,7 @@ function CreatedApiKey({
       ======================================================================= */}
 
       <div className="mb-5">
-        <Link
-          href={apiKeysUrl}
-          className="text-sm font-medium text-slate-700 transition hover:text-slate-950"
-        >
-          ← Back to API Keys
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/api-keys" platformLabel="Back to API Keys" clientHref={apiKeysUrl} clientLabel="Back to Client API Keys" />
       </div>
 
       {/* ======================================================================

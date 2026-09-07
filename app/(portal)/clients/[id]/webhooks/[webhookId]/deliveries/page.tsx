@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import { findWebhookById } from "@/features/webhooks/api/server-webhooks.api";
 import { WebhookDeliveriesClient } from "@/features/webhooks/components/webhook-deliveries-client";
@@ -44,5 +45,5 @@ export default async function ClientWebhookDeliveriesPage({
     notFound();
   }
 
-  return <WebhookDeliveriesClient clientId={clientId} webhook={webhook} />;
+  return <WebhookDeliveriesClient clientId={clientId} webhook={webhook} showPlatformBackLink={isPlatformUser(authenticatedUser)} />;
 }

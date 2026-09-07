@@ -29,8 +29,17 @@ import {
 import type {
   ClientSummary,
 } from "@/features/clients/api/clients-api";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
-export default function CreateSenderIdClient() {
+interface CreateSenderIdClientProps {
+  readonly clientId: string;
+  readonly showPlatformBackLink: boolean;
+}
+
+export default function CreateSenderIdClient({
+  clientId: initialClientId,
+  showPlatformBackLink,
+}: CreateSenderIdClientProps) {
   const router = useRouter();
 
   const [
@@ -45,8 +54,7 @@ export default function CreateSenderIdClient() {
 
   const [
     clientId,
-    setClientId,
-  ] = useState("");
+  ] = useState(initialClientId);
 
   const [
     publicId,
@@ -195,18 +203,13 @@ export default function CreateSenderIdClient() {
         title="Create Sender ID"
         description="Register a new Sender ID for a client."
       >
-        <button
-          type="button"
-          onClick={() =>
-            router.push(
-              "/sender-ids",
-            )
-          }
-          disabled={submitting}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Back to Sender IDs
-        </button>
+        <ContextAwareBackLinks
+          showPlatformLink={showPlatformBackLink}
+          platformHref="/sender-ids"
+          platformLabel="Back to Sender IDs"
+          clientHref={`/clients/${encodeURIComponent(initialClientId)}/sender-ids`}
+          clientLabel="Back to Client Sender IDs"
+        />
       </PageHeader>
 
       <div className="mx-auto w-full max-w-3xl">
@@ -252,14 +255,10 @@ export default function CreateSenderIdClient() {
                 id="clientId"
                 name="clientId"
                 value={clientId}
-                onChange={(event) =>
-                  setClientId(
-                    event.target.value,
-                  )
-                }
                 disabled={
                   clientsLoading ||
-                  submitting
+                  submitting ||
+                  Boolean(initialClientId)
                 }
                 className="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-slate-50"
               >
@@ -386,7 +385,7 @@ export default function CreateSenderIdClient() {
                 clientsLoading ||
                 clients.length === 0
               }
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting && (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

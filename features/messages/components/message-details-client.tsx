@@ -3,16 +3,16 @@
 import Link from "next/link";
 
 import {
-  useRouter,
-} from "next/navigation";
-
-import {
   PageContainer,
 } from "@/components/layout/page-container";
 
 import {
   PageHeader,
 } from "@/components/layout/page-header";
+
+import {
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
 
 import {
   StatusBadge,
@@ -42,6 +42,8 @@ interface MessageDetailsClientProps {
   readonly message: Message;
 
   readonly statusEvents: MessageStatusEvent[];
+
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -52,10 +54,8 @@ export default function MessageDetailsClient({
   client,
   message,
   statusEvents,
+  showPlatformBackLink,
 }: MessageDetailsClientProps) {
-  const router =
-    useRouter();
-
   const clientName =
     client.displayName ||
     client.companyName;
@@ -74,12 +74,13 @@ export default function MessageDetailsClient({
         title="Message details"
         description={`View message ${message.publicId}.`}
       >
-        <Link
-          href={`/messages`}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        >
-          Back to messages
-        </Link>
+        <ContextAwareBackLinks
+          showPlatformLink={showPlatformBackLink}
+          platformHref="/messages"
+          platformLabel="Back to Messages"
+          clientHref={`/clients/${encodeURIComponent(client.id)}/messages`}
+          clientLabel="Back to Client Messages"
+        />
       </PageHeader>
 
       {/* ====================================================================
@@ -108,14 +109,6 @@ export default function MessageDetailsClient({
           </div>
         </div>
 
-        <Link
-          href={`/clients/${encodeURIComponent(
-            client.id,
-          )}/messages`}
-          className="shrink-0 text-sm font-medium text-slate-600 transition hover:text-slate-900"
-        >
-          Back to client messages
-        </Link>
       </div>
 
       {/* ====================================================================

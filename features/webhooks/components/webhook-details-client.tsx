@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
   useRouter,
 } from "next/navigation";
@@ -36,6 +37,7 @@ interface WebhookDetailsClientProps {
   canDelete: boolean;
   canRotateSecret: boolean;
   canReadDeliveries: boolean;
+  showPlatformBackLink: boolean;
 }
 
 function formatDate(
@@ -63,6 +65,7 @@ export function WebhookDetailsClient({
   canDelete,
   canRotateSecret,
   canReadDeliveries,
+  showPlatformBackLink,
 }: WebhookDetailsClientProps) {
   const router = useRouter();
 
@@ -323,13 +326,8 @@ export function WebhookDetailsClient({
         {/* ================================================================== */}
 
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-6 pt-6">
-          <div className="absolute -left-80 top-6">
-            <Link
-              href={`/clients/${encodeURIComponent(clientId)}/webhooks`}
-              className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ← Back to Webhooks
-            </Link>
+          <div className="mb-5">
+            <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/webhooks" platformLabel="Back to Webhooks" clientHref={`/clients/${encodeURIComponent(clientId)}/webhooks`} clientLabel="Back to Client Webhooks" />
           </div>
 
           <div className="mb-6">

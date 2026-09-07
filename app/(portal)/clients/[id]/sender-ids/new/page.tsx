@@ -2,10 +2,15 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import CreateSenderIdClient from "@/features/sender-ids/components/create-sender-id-client";
 
-export default async function NewSenderIdPage() {
+export default async function NewSenderIdPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const authenticatedUser =
     await getCurrentUser();
 
@@ -37,7 +42,12 @@ export default async function NewSenderIdPage() {
     notFound();
   }
 
+  const { id: clientId } = await params;
+
   return (
-    <CreateSenderIdClient />
+    <CreateSenderIdClient
+      clientId={clientId}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
+    />
   );
 }

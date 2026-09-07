@@ -7,6 +7,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import {
   findClientById,
@@ -83,6 +84,7 @@ export default async function FloatLedgerEntryPage({
     <FloatLedgerEntryClient
       client={client}
       entry={entry}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

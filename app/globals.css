@@ -28,3 +28,33 @@ body {
 button {
   cursor: pointer;
 }
+
+/* Keep legacy primary actions visually aligned while individual screens are
+ * gradually moved to the shared primary-button class list. Restricting this
+ * to interactive elements deliberately leaves blue status badges and other
+ * non-action UI untouched. */
+button[class*="bg-blue-"],
+a[class*=" h-"][class*="bg-blue-"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  border-radius: 0.375rem;
+  background-color: rgb(15 23 42) !important;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+button[class*="bg-blue-"]:hover:not(:disabled),
+a[class*=" h-"][class*="bg-blue-"]:hover {
+  background-color: rgb(30 41 59) !important;
+}
+
+button[class*="bg-blue-"]:focus-visible,
+a[class*=" h-"][class*="bg-blue-"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(59 130 246), 0 0 0 4px white;
+}

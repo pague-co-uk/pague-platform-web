@@ -22,6 +22,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 // ============================================================================
 // Types
@@ -121,6 +122,7 @@ export default async function MessageDetailsPage({
       client={client}
       message={message}
       statusEvents={statusEvents}
+      showPlatformBackLink={user ? isPlatformUser(user) : false}
     />
   );
 }

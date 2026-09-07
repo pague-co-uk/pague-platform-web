@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import {
   findClientById,
@@ -67,6 +68,7 @@ export default async function CreateApiKeyPage({
   return (
     <CreateApiKeyClient
       client={client}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

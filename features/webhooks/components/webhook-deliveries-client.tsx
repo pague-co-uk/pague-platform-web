@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import { useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -23,6 +23,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 interface WebhookDeliveriesClientProps {
   clientId: string;
   webhook: Webhook;
+  showPlatformBackLink: boolean;
 }
 
 function formatDate(
@@ -92,6 +93,7 @@ function getResponseLabel(
 export function WebhookDeliveriesClient({
   clientId,
   webhook,
+  showPlatformBackLink,
 }: WebhookDeliveriesClientProps) {
   const searchParams =
     useSearchParams();
@@ -360,16 +362,7 @@ export function WebhookDeliveriesClient({
       {/* ================================================================== */}
 
       <div className="mb-6">
-        <Link
-          href={`/clients/${encodeURIComponent(
-            clientId,
-          )}/webhooks/${encodeURIComponent(
-            webhook.id,
-          )}`}
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          ← Back to Webhook
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/webhooks" platformLabel="Back to Webhooks" clientHref={`/clients/${encodeURIComponent(clientId)}/webhooks`} clientLabel="Back to Client Webhooks" />
       </div>
 
       {/* ================================================================== */}

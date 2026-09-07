@@ -25,6 +25,7 @@ import {
 import {
   useToast,
 } from "@/components/ui/toast";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   activateSmppAccount,
@@ -49,6 +50,7 @@ interface SmppAccountDetailsClientProps {
   readonly canChangeSmppPasswords: boolean;
   readonly canActivateSmppAccounts: boolean;
   readonly canDisableSmppAccounts: boolean;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -62,6 +64,7 @@ export default function SmppAccountDetailsClient({
   canChangeSmppPasswords,
   canActivateSmppAccounts,
   canDisableSmppAccounts,
+  showPlatformBackLink,
 }: SmppAccountDetailsClientProps) {
   const router = useRouter();
 
@@ -429,12 +432,7 @@ export default function SmppAccountDetailsClient({
       ======================================================================= */}
 
       <div className="mb-5">
-        <Link
-          href={smppAccountsUrl}
-          className="text-sm font-medium text-slate-700 transition hover:text-slate-950"
-        >
-          ← Back to SMPP Accounts
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/smpp-accounts" platformLabel="Back to SMPP Accounts" clientHref={smppAccountsUrl} clientLabel="Back to Client SMPP Accounts" />
       </div>
 
       {/* ======================================================================

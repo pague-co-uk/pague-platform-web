@@ -6,6 +6,7 @@ import { findClientById } from "@/features/clients/api/server-clients-api";
 import { findSmppAccount } from "@/features/smpp-accounts/api/server-smpp-accounts-api";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import SmppAccountDetailsClient from "./smpp-account-details-client";
 
@@ -113,6 +114,7 @@ export default async function SmppAccountDetailsPage({
       canDisableSmppAccounts={
         canDisableSmppAccounts
       }
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

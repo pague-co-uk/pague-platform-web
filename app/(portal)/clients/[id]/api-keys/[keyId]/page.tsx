@@ -9,6 +9,7 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import {
   findApiKey,
@@ -84,6 +85,7 @@ export default async function ApiKeyDetailsPage({
       canRevoke={permissions.has(
         PERMISSIONS.API_KEYS_REVOKE,
       )}
+      showPlatformBackLink={isPlatformUser(user)}
     />
   );
 }

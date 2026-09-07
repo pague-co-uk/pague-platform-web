@@ -34,6 +34,7 @@ import {
 import { formatDate } from "@/lib/date/format-date";
 
 import { PageHeader } from "@/components/layout/page-header";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import type {
   SenderId,
   SenderIdStatus,
@@ -55,6 +56,8 @@ interface SenderIdDetailsClientProps {
   canEnableSenderIds: boolean;
 
   canDefaultUpdateSenderIds: boolean;
+
+  showPlatformBackLink: boolean;
 }
 
 type SenderIdAction =
@@ -75,6 +78,7 @@ export default function SenderIdDetailsClient({
   canDisableSenderIds,
   canEnableSenderIds,
   canDefaultUpdateSenderIds,
+  showPlatformBackLink,
 }: SenderIdDetailsClientProps) {
   const router = useRouter();
 
@@ -208,18 +212,13 @@ export default function SenderIdDetailsClient({
           title={senderId.sender}
           description="View Sender ID details and configuration."
         >
-          <button
-            type="button"
-            onClick={() =>
-              router.push(
-                clientSenderIdsPath,
-              )
-            }
-            disabled={isBusy}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Back to Sender IDs
-          </button>
+          <ContextAwareBackLinks
+            showPlatformLink={showPlatformBackLink}
+            platformHref="/sender-ids"
+            platformLabel="Back to Sender IDs"
+            clientHref={clientSenderIdsPath}
+            clientLabel="Back to Client Sender IDs"
+          />
         </PageHeader>
 
         {error && (

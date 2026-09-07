@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 import { findSenderIdById } from "@/features/sender-ids/api/server-sender-ids-api";
 import SenderIdDetailsClient from "@/features/sender-ids/components/sender-id-details-client";
@@ -128,6 +129,7 @@ export default async function SenderIdPage({
       canDefaultUpdateSenderIds={
         canDefaultUpdateSenderIds
       }
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

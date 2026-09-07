@@ -13,6 +13,7 @@ import EditSenderIdClient from "@/features/sender-ids/components/edit-sender-id-
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
+import { isPlatformUser } from "@/lib/authorization/authorization";
 
 // ============================================================================
 // Edit Sender ID page
@@ -106,6 +107,7 @@ export default async function EditSenderIdPage({
   return (
     <EditSenderIdClient
       senderId={senderIdData}
+      showPlatformBackLink={isPlatformUser(authenticatedUser)}
     />
   );
 }

@@ -10,6 +10,7 @@ import {
 } from "next/navigation";
 
 import Link from "next/link";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   updateSenderId,
@@ -25,6 +26,7 @@ import type {
 
 interface EditSenderIdClientProps {
   senderId: SenderId;
+  showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -33,6 +35,7 @@ interface EditSenderIdClientProps {
 
 export default function EditSenderIdClient({
   senderId,
+  showPlatformBackLink,
 }: EditSenderIdClientProps) {
   const router =
     useRouter();
@@ -118,12 +121,13 @@ export default function EditSenderIdClient({
   return (
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-8">
-        <Link
-          href={`/sender-ids/${senderId.id}`}
-          className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
-        >
-          ← Back to Sender ID
-        </Link>
+        <ContextAwareBackLinks
+          showPlatformLink={showPlatformBackLink}
+          platformHref="/sender-ids"
+          platformLabel="Back to Sender IDs"
+          clientHref={`/clients/${encodeURIComponent(senderId.clientId)}/sender-ids`}
+          clientLabel="Back to Client Sender IDs"
+        />
       </div>
 
       <div className="mb-8">

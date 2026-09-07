@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import { useRouter } from "next/navigation";
 import {
   FormEvent,
@@ -19,12 +20,14 @@ interface EditWebhookClientProps {
   clientId: string;
   clientName: string;
   webhook: Webhook;
+  showPlatformBackLink: boolean;
 }
 
 export function EditWebhookClient({
   clientId,
   clientName,
   webhook,
+  showPlatformBackLink,
 }: EditWebhookClientProps) {
   const router = useRouter();
   const toast = useToast();
@@ -145,16 +148,7 @@ export function EditWebhookClient({
       {/* ==================================================================== */}
 
       <div className="mb-6">
-        <Link
-          href={`/clients/${encodeURIComponent(
-            clientId,
-          )}/webhooks/${encodeURIComponent(
-            webhook.id,
-          )}`}
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          ← Back to Webhook
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/webhooks" platformLabel="Back to Webhooks" clientHref={`/clients/${encodeURIComponent(clientId)}/webhooks`} clientLabel="Back to Client Webhooks" />
       </div>
 
       {/* ==================================================================== */}

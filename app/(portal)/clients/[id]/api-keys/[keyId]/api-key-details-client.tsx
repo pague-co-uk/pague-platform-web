@@ -21,6 +21,7 @@ import {
 import {
   useToast,
 } from "@/components/ui/toast";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import type {
   Client,
@@ -36,6 +37,7 @@ interface ApiKeyDetailsClientProps {
   readonly apiKey: ApiKey;
 
   readonly canRevoke: boolean;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -72,6 +74,7 @@ export default function ApiKeyDetailsClient({
   client,
   apiKey: initialApiKey,
   canRevoke,
+  showPlatformBackLink,
 }: ApiKeyDetailsClientProps) {
   const {
     success,
@@ -155,15 +158,14 @@ export default function ApiKeyDetailsClient({
         {/* ================================================================== */}
 
         <div className="relative mx-auto w-full max-w-5xl px-6 pb-6 pt-6">
-          <div className="absolute -left-80 top-6">
-            <Link
-              href={`/clients/${encodeURIComponent(
-                client.id,
-              )}/api-keys`}
-              className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              ← Back to API Keys
-            </Link>
+          <div className="mb-5">
+            <ContextAwareBackLinks
+              showPlatformLink={showPlatformBackLink}
+              platformHref="/api-keys"
+              platformLabel="Back to API Keys"
+              clientHref={`/clients/${encodeURIComponent(client.id)}/api-keys`}
+              clientLabel="Back to Client API Keys"
+            />
           </div>
 
           <div className="mb-6">

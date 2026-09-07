@@ -16,6 +16,7 @@ import {
 import {
   PageHeader,
 } from "@/components/layout/page-header";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import type {
   Client,
@@ -35,6 +36,7 @@ import {
 interface MessagesBulkClientProps {
   readonly client: Client;
   readonly canCreateMessages: boolean;
+  readonly showPlatformBackLink: boolean;
 }
 
 // ============================================================================
@@ -44,6 +46,7 @@ interface MessagesBulkClientProps {
 export default function MessagesBulkClient({
   client,
   canCreateMessages,
+  showPlatformBackLink,
 }: MessagesBulkClientProps) {
   const inputRef =
     useRef<HTMLInputElement>(null);
@@ -270,12 +273,13 @@ export default function MessagesBulkClient({
         title="Bulk upload messages"
         description={`Upload an Excel spreadsheet to create multiple messages for ${clientName}.`}
       >
-        <Link
-          href={`/messages`}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        >
-          ← Back to Messages
-        </Link>
+        <ContextAwareBackLinks
+          showPlatformLink={showPlatformBackLink}
+          platformHref="/messages"
+          platformLabel="Back to Messages"
+          clientHref={`/clients/${encodeURIComponent(client.id)}/messages`}
+          clientLabel="Back to Client Messages"
+        />
       </PageHeader>
 
       {/* ======================================================================
@@ -725,7 +729,7 @@ export default function MessagesBulkClient({
                   isUploading ||
                   !canCreateMessages
                 }
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isUploading ? (
                   <>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
   FormEvent,
   useState,
@@ -15,12 +16,14 @@ interface CreateWebhookClientProps {
   clientId: string;
   clientName: string;
   clientPublicId: string;
+  showPlatformBackLink: boolean;
 }
 
 export function CreateWebhookClient({
   clientId,
   clientName,
   clientPublicId,
+  showPlatformBackLink,
 }: CreateWebhookClientProps) {
   const [name, setName] =
     useState("");
@@ -164,14 +167,7 @@ export function CreateWebhookClient({
     return (
       <div className="mx-auto w-full max-w-2xl px-6 pb-6 pt-6">
         <div className="mb-6">
-          <Link
-            href={`/clients/${encodeURIComponent(
-              clientId,
-            )}/webhooks`}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
-          >
-            ← Back to Webhooks
-          </Link>
+          <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/webhooks" platformLabel="Back to Webhooks" clientHref={`/clients/${encodeURIComponent(clientId)}/webhooks`} clientLabel="Back to Client Webhooks" />
 
           <h1 className="mt-4 text-2xl font-semibold text-slate-900">
             Webhook created
@@ -232,14 +228,7 @@ export function CreateWebhookClient({
   return (
     <div className="mx-auto w-full max-w-2xl px-6 pb-6 pt-6">
       <div className="mb-6">
-        <Link
-          href={`/clients/${encodeURIComponent(
-            clientId,
-          )}/webhooks`}
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
-          ← Back to Webhooks
-        </Link>
+        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/webhooks" platformLabel="Back to Webhooks" clientHref={`/clients/${encodeURIComponent(clientId)}/webhooks`} clientLabel="Back to Client Webhooks" />
 
         <h1 className="mt-4 text-2xl font-semibold text-slate-900">
           Create Webhook
