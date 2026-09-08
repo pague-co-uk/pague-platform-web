@@ -14,6 +14,14 @@ import {
 
 import PlatformSmppAccountsClient from "@/features/smpp-accounts/components/platform-smpp-accounts-client";
 
+import {
+  findClients,
+} from "@/features/clients/api/server-clients-api";
+
+// ============================================================================
+// Props
+// ============================================================================
+
 interface PlatformSmppAccountsPageProps {
   readonly searchParams: Promise<{
     page?: string;
@@ -23,6 +31,10 @@ interface PlatformSmppAccountsPageProps {
     search?: string;
   }>;
 }
+
+// ============================================================================
+// Page
+// ============================================================================
 
 export default async function PlatformSmppAccountsPage({
   searchParams,
@@ -45,16 +57,30 @@ export default async function PlatformSmppAccountsPage({
       ),
     );
 
+  // ========================================================================
+  // Permissions
+  // ========================================================================
+
   const canReadSmppAccounts =
     permissions.has(
       PERMISSIONS.SMPP_ACCOUNTS_READ,
+    );
+
+  const canCreateSmppAccounts =
+    permissions.has(
+      PERMISSIONS.SMPP_ACCOUNTS_CREATE,
     );
 
   if (!canReadSmppAccounts) {
     notFound();
   }
 
-  const params = await searchParams;
+  // ========================================================================
+  // Query parameters
+  // ========================================================================
+
+  const params =
+    await searchParams;
 
   const page =
     Number(params.page) > 0
@@ -65,6 +91,10 @@ export default async function PlatformSmppAccountsPage({
     Number(params.pageSize) > 0
       ? Number(params.pageSize)
       : 20;
+
+  // ========================================================================
+  // SMPP accounts
+  // ========================================================================
 
   const result =
     await findPlatformSmppAccounts({
@@ -84,10 +114,32 @@ export default async function PlatformSmppAccountsPage({
         undefined,
     });
 
+  // ========================================================================
+  // Clients
+  // ========================================================================
+
+  const clients =
+    canCreateSmppAccounts
+      ? await findClients({
+        page: 1,
+        pageSize: 100,
+      })
+      : null;
+
+  // ========================================================================
+  // Render
+  // ========================================================================
+
   return (
     <PlatformSmppAccountsClient
       smppAccounts={result.data}
       pagination={result.pagination}
+      canCreateSmppAccounts={
+        canCreateSmppAccounts
+      }
+      clients={
+        clients?.items ?? []
+      }
     />
   );
 }

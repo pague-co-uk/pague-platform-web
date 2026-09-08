@@ -411,7 +411,7 @@ export function AppHeader({
                 =========================================================== */}
 
                 <Link
-                  href="/settings"
+                  href="/system-health"
                   role="menuitem"
                   onClick={() =>
                     setAccountMenuOpen(
@@ -438,7 +438,7 @@ export function AppHeader({
                   </svg>
 
                   <span>
-                    Settings
+                    System Health
                   </span>
                 </Link>
 

@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 
-import type {
-  PlatformSmppAccount,
-  SmppAccountPagination,
-} from "@/features/smpp-accounts/api/smpp-accounts-api";
+import {
+  useRouter,
+} from "next/navigation";
+
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
 
 import {
   DataTable,
-} from "@/components/ui/data-table";
-
-import type {
-  DataTableColumn,
+  type DataTableColumn,
 } from "@/components/ui/data-table";
 
 import {
@@ -35,6 +35,15 @@ import {
   StatusBadge,
 } from "@/components/ui/status-badge";
 
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
+
+import type {
+  PlatformSmppAccount,
+  SmppAccountPagination,
+} from "@/features/smpp-accounts/api/smpp-accounts-api";
+
 // ============================================================================
 // Props
 // ============================================================================
@@ -43,6 +52,10 @@ interface PlatformSmppAccountsClientProps {
   readonly smppAccounts: readonly PlatformSmppAccount[];
 
   readonly pagination: SmppAccountPagination;
+
+  readonly canCreateSmppAccounts: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
@@ -52,7 +65,11 @@ interface PlatformSmppAccountsClientProps {
 export default function PlatformSmppAccountsClient({
   smppAccounts,
   pagination,
+  canCreateSmppAccounts,
+  clients,
 }: PlatformSmppAccountsClientProps) {
+  const router = useRouter();
+
   const columns: DataTableColumn<PlatformSmppAccount>[] =
     [
       {
@@ -62,8 +79,11 @@ export default function PlatformSmppAccountsClient({
 
         render: (account) => (
           <Link
-            href={`/clients/${account.client.id}/smpp-accounts/${account.id}`}
-            className="font-medium text-slate-900 hover:text-slate-600"
+            href={`/clients/${encodeURIComponent(account.client.id)}/smpp-accounts/${encodeURIComponent(account.id)}`}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            className="font-medium text-slate-900 transition hover:text-blue-600"
           >
             {account.systemId}
           </Link>
@@ -82,9 +102,15 @@ export default function PlatformSmppAccountsClient({
 
           return (
             <div className="min-w-0">
-              <div className="truncate font-medium text-slate-900">
+              <Link
+                href={`/clients/${encodeURIComponent(account.client.id)}`}
+                onClick={(event) =>
+                  event.stopPropagation()
+                }
+                className="truncate font-medium text-slate-900 transition hover:text-blue-600"
+              >
                 {clientName}
-              </div>
+              </Link>
 
               <div className="font-mono text-xs text-slate-500">
                 {account.client.publicId}
@@ -160,8 +186,11 @@ export default function PlatformSmppAccountsClient({
 
         render: (account) => (
           <Link
-            href={`/clients/${account.client.id}/smpp-accounts/${account.id}`}
-            className="text-sm font-medium text-slate-700 hover:text-slate-950"
+            href={`/clients/${encodeURIComponent(account.client.id)}/smpp-accounts/${encodeURIComponent(account.id)}`}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            className="text-sm font-medium text-slate-700 transition hover:text-slate-950"
           >
             View
           </Link>
@@ -174,7 +203,21 @@ export default function PlatformSmppAccountsClient({
       <PageHeader
         title="SMPP Accounts"
         description="SMPP accounts across all clients."
-      />
+      >
+        {canCreateSmppAccounts && (
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label: "Create SMPP account",
+                href: (clientId) =>
+                  `/clients/${encodeURIComponent(clientId)}/smpp-accounts/new`,
+                variant: "primary",
+              },
+            ]}
+          />
+        )}
+      </PageHeader>
 
       {smppAccounts.length === 0 ? (
         <EmptyState
@@ -183,26 +226,36 @@ export default function PlatformSmppAccountsClient({
         />
       ) : (
         <>
-          <DataTable
-            columns={columns}
-            rows={smppAccounts}
-            getRowKey={(account) =>
-              account.id
-            }
-            onRowClick={(account) => {
-              window.location.href =
-                `/clients/${account.client.id}/smpp-accounts/${account.id}`;
-            }}
-          />
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <DataTable
+              columns={columns}
+              rows={smppAccounts}
+              getRowKey={(account) =>
+                account.id
+              }
+              onRowClick={(account) => {
+                router.push(
+                  `/clients/${encodeURIComponent(account.client.id)}/smpp-accounts/${encodeURIComponent(account.id)}`,
+                );
+              }}
+            />
+          </div>
 
-          <Pagination
-            meta={{
-              page: pagination.page,
-              pageSize: pagination.pageSize,
-              total: pagination.totalItems,
-              totalPages: pagination.totalPages,
-            }}
-          />
+          {pagination.totalItems > 0 && (
+            <div className="mt-4">
+              <Pagination
+                meta={{
+                  page: pagination.page,
+                  pageSize:
+                    pagination.pageSize,
+                  total:
+                    pagination.totalItems,
+                  totalPages:
+                    pagination.totalPages,
+                }}
+              />
+            </div>
+          )}
         </>
       )}
     </PageContainer>

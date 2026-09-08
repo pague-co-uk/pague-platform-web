@@ -1,9 +1,29 @@
-import { PageContainer } from "@/components/layout/page-container";
-import { findPlatformApiKeys } from "@/features/api-keys/api/server-api-keys.api";
+
+import {
+  findPlatformApiKeys,
+} from "@/features/api-keys/api/server-api-keys.api";
+
+import {
+  findClients,
+} from "@/features/clients/api/server-clients-api";
 
 import PlatformApiKeysClient from "@/features/api-keys/components/platform-api-keys-client";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { PERMISSIONS } from "@/lib/authorization/permissions";
+
+import {
+  getCurrentUser,
+} from "@/lib/auth/get-current-user";
+
+import {
+  PERMISSIONS,
+} from "@/lib/authorization/permissions";
+
+import {
+  notFound,
+} from "next/navigation";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface ApiKeysPageProps {
   searchParams: Promise<{
@@ -15,6 +35,10 @@ interface ApiKeysPageProps {
   }>;
 }
 
+// ============================================================================
+// Page
+// ============================================================================
+
 export default async function ApiKeysPage({
   searchParams,
 }: ApiKeysPageProps) {
@@ -24,23 +48,38 @@ export default async function ApiKeysPage({
   const user =
     await getCurrentUser();
 
+  const permissions =
+    new Set(
+      user!.roles.flatMap(
+        (role) =>
+          role.permissions.map(
+            (permission) =>
+              permission.name,
+          ),
+      ),
+    );
+
+  // ==========================================================================
+  // Authorization
+  // ==========================================================================
+
   const canReadApiKeys =
-    user?.roles?.some(
-      (role) =>
-        role.permissions?.some(
-          (permission) =>
-            permission.name ===
-            PERMISSIONS.API_KEYS_READ,
-        ),
-    ) ?? false;
+    permissions.has(
+      PERMISSIONS.API_KEYS_READ,
+    );
+
+  const canCreateApiKeys =
+    permissions.has(
+      PERMISSIONS.API_KEYS_CREATE,
+    );
 
   if (!canReadApiKeys) {
-    return (
-      <PageContainer>
-        Access denied.
-      </PageContainer>
-    );
+    notFound();
   }
+
+  // ==========================================================================
+  // Pagination
+  // ==========================================================================
 
   const page =
     Number(query.page) > 0
@@ -51,6 +90,10 @@ export default async function ApiKeysPage({
     Number(query.pageSize) > 0
       ? Number(query.pageSize)
       : 20;
+
+  // ==========================================================================
+  // API Keys
+  // ==========================================================================
 
   const apiKeys =
     await findPlatformApiKeys({
@@ -68,11 +111,35 @@ export default async function ApiKeysPage({
         | undefined,
     });
 
+  // ==========================================================================
+  // Clients
+  // ==========================================================================
+
+  const clients =
+    canCreateApiKeys
+      ? await findClients({
+        page: 1,
+        pageSize: 100,
+      })
+      : null;
+
+  // ==========================================================================
+  // Render
+  // ==========================================================================
+
   return (
     <PlatformApiKeysClient
-      apiKeys={apiKeys.data}
+      apiKeys={
+        apiKeys.data
+      }
       pagination={
         apiKeys.pagination
+      }
+      canCreateApiKeys={
+        canCreateApiKeys
+      }
+      clients={
+        clients?.items ?? []
       }
     />
   );

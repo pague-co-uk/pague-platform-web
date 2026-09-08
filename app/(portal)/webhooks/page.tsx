@@ -6,6 +6,12 @@ import { PERMISSIONS } from "@/lib/authorization/permissions";
 import { findPlatformWebhooks } from "@/features/webhooks/api/server-webhooks.api";
 import { PlatformWebhooksClient } from "@/features/webhooks/components/platform-webhooks-client";
 
+import { findClients } from "@/features/clients/api/server-clients-api";
+
+// ============================================================================
+// Types
+// ============================================================================
+
 interface PlatformWebhooksPageProps {
   readonly searchParams: Promise<{
     page?: string;
@@ -15,6 +21,10 @@ interface PlatformWebhooksPageProps {
     search?: string;
   }>;
 }
+
+// ============================================================================
+// Page
+// ============================================================================
 
 export default async function PlatformWebhooksPage({
   searchParams,
@@ -26,26 +36,45 @@ export default async function PlatformWebhooksPage({
     notFound();
   }
 
-  const permissions = new Set(
-    authenticatedUser.roles.flatMap(
-      (role) =>
-        role.permissions.map(
-          (permission) =>
-            permission.name,
-        ),
-    ),
-  );
+  const permissions =
+    new Set(
+      authenticatedUser.roles.flatMap(
+        (role) =>
+          role.permissions.map(
+            (permission) =>
+              permission.name,
+          ),
+      ),
+    );
 
-  if (
-    !permissions.has(
+  // ==========================================================================
+  // Authorization
+  // ==========================================================================
+
+  const canReadWebhooks =
+    permissions.has(
       PERMISSIONS.WEBHOOKS_READ,
-    )
-  ) {
+    );
+
+  const canCreateWebhooks =
+    permissions.has(
+      PERMISSIONS.WEBHOOKS_CREATE,
+    );
+
+  if (!canReadWebhooks) {
     notFound();
   }
 
+  // ==========================================================================
+  // Query
+  // ==========================================================================
+
   const query =
     await searchParams;
+
+  // ==========================================================================
+  // Webhooks
+  // ==========================================================================
 
   const result =
     await findPlatformWebhooks({
@@ -73,13 +102,46 @@ export default async function PlatformWebhooksPage({
         undefined,
     });
 
+  // ==========================================================================
+  // Clients
+  // ==========================================================================
+
+  const clients =
+    canCreateWebhooks
+      ? await findClients({
+        page: 1,
+        pageSize: 100,
+      })
+      : null;
+
+  // ==========================================================================
+  // Render
+  // ==========================================================================
+
   return (
     <PlatformWebhooksClient
-      webhooks={result.data}
-      pagination={result.pagination}
+      webhooks={
+        result.data
+      }
+
+      pagination={
+        result.pagination
+      }
+
+      canCreateWebhooks={
+        canCreateWebhooks
+      }
+
+      clients={
+        clients?.items ?? []
+      }
     />
   );
 }
+
+// ============================================================================
+// Helpers
+// ============================================================================
 
 function parsePositiveInteger(
   value: string | undefined,

@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   useRouter,
-  useSearchParams,
 } from "next/navigation";
 
 import {
   DataTable,
   type DataTableColumn,
 } from "@/components/ui/data-table";
+
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
 
 import {
   FilterBar,
@@ -29,10 +33,27 @@ import type {
   WebhookPagination,
 } from "../api/webhooks-api";
 
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
+
+// ============================================================================
+// Types
+// ============================================================================
+
 interface PlatformWebhooksClientProps {
   readonly webhooks: Webhook[];
+
   readonly pagination: WebhookPagination | null;
+
+  readonly canCreateWebhooks: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
+
+// ============================================================================
+// Helpers
+// ============================================================================
 
 function formatDate(
   value: string,
@@ -48,17 +69,25 @@ function formatDate(
   ).format(new Date(value));
 }
 
+// ============================================================================
+// Component
+// ============================================================================
+
 export function PlatformWebhooksClient({
   webhooks,
   pagination,
+  canCreateWebhooks,
+  clients,
 }: PlatformWebhooksClientProps) {
   const router =
     useRouter();
 
-  const searchParams =
-    useSearchParams();
+  // ==========================================================================
+  // Columns
+  // ==========================================================================
 
-  const columns: DataTableColumn<Webhook>[] =
+  const columns:
+    DataTableColumn<Webhook>[] =
     [
       {
         key: "name",
@@ -177,6 +206,10 @@ export function PlatformWebhooksClient({
       },
     ];
 
+  // ==========================================================================
+  // Row click
+  // ==========================================================================
+
   function handleRowClick(
     webhook: Webhook,
   ) {
@@ -192,6 +225,10 @@ export function PlatformWebhooksClient({
       )}`,
     );
   }
+
+  // ==========================================================================
+  // Pagination
+  // ==========================================================================
 
   const paginationMeta =
     pagination
@@ -212,25 +249,50 @@ export function PlatformWebhooksClient({
         totalPages: 0,
       };
 
+  // ==========================================================================
+  // Render
+  // ==========================================================================
+
   return (
-    <div className="space-y-6 px-6 pt-6 pb-6">
-      {/* ======================================================================
+    <div className="space-y-6 px-6 pb-6 pt-6">
+      {/* ====================================================================
           Header
-      ======================================================================= */}
+      ===================================================================== */}
 
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">
-          Webhooks
-        </h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900">
+            Webhooks
+          </h1>
 
-        <p className="mt-1 text-sm text-slate-500">
-          View webhook endpoints configured across all clients.
-        </p>
+          <p className="mt-1 text-sm text-slate-500">
+            View webhook endpoints configured across all clients.
+          </p>
+        </div>
+
+        {canCreateWebhooks && (
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label: "Create Webhook",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/webhooks/create`,
+                variant:
+                  "primary",
+              },
+            ]}
+          />
+        )}
       </div>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Filters
-      ======================================================================= */}
+      ===================================================================== */}
 
       <FilterBar
         resetParams={[
@@ -253,9 +315,9 @@ export function PlatformWebhooksClient({
         />
       </FilterBar>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Table
-      ======================================================================= */}
+      ===================================================================== */}
 
       <DataTable
         columns={columns}
@@ -268,14 +330,16 @@ export function PlatformWebhooksClient({
         }
       />
 
-      {/* ======================================================================
+      {/* ====================================================================
           Pagination
-      ======================================================================= */}
+      ===================================================================== */}
 
       {pagination &&
         pagination.totalPages > 1 && (
           <Pagination
-            meta={paginationMeta}
+            meta={
+              paginationMeta
+            }
           />
         )}
     </div>

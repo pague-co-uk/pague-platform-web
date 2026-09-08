@@ -147,7 +147,7 @@ export async function findRoles(
 
   if (
     typeof body !==
-      "object" ||
+    "object" ||
     body === null ||
     !("success" in body) ||
     body.success !== true ||
@@ -155,7 +155,7 @@ export async function findRoles(
     !Array.isArray(body.data) ||
     !("pagination" in body) ||
     typeof body.pagination !==
-      "object" ||
+    "object" ||
     body.pagination === null
   ) {
     throw new RolesApiError(
@@ -217,7 +217,7 @@ function getRoleErrorMessage(
 ): string {
   if (
     typeof data !==
-      "object" ||
+    "object" ||
     data === null
   ) {
     return fallback;
@@ -226,11 +226,11 @@ function getRoleErrorMessage(
   if (
     "error" in data &&
     typeof data.error ===
-      "object" &&
+    "object" &&
     data.error !== null &&
     "message" in data.error &&
     typeof data.error.message ===
-      "string" &&
+    "string" &&
     data.error.message.trim()
   ) {
     return data.error.message;
@@ -239,7 +239,7 @@ function getRoleErrorMessage(
   if (
     "message" in data &&
     typeof data.message ===
-      "string" &&
+    "string" &&
     data.message.trim()
   ) {
     return data.message;

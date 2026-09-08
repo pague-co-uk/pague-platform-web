@@ -6,6 +6,10 @@ import {
   findPlatformMessages,
 } from "@/features/messages/api/server-messages-api";
 
+import {
+  findClients,
+} from "@/features/clients/api/server-clients-api";
+
 import PlatformMessagesClient from "@/features/messages/components/platform-messages-client";
 
 import {
@@ -121,6 +125,34 @@ export default async function MessagesPage({
     });
 
   // ==========================================================================
+  // Create authorization
+  // ==========================================================================
+
+  const canCreateMessages =
+    user!.roles?.some(
+      (role) =>
+        role.permissions?.some(
+          (permission) =>
+            permission.name ===
+            PERMISSIONS.MESSAGES_CREATE,
+        ),
+    ) ?? false;
+
+  // ==========================================================================
+  // Clients
+  // ==========================================================================
+
+  const clients =
+    canCreateMessages
+      ? await findClients({
+        page: 1,
+        pageSize: 100,
+      })
+      : {
+        items: [],
+      };
+
+  // ==========================================================================
   // Render
   // ==========================================================================
 
@@ -131,6 +163,12 @@ export default async function MessagesPage({
       }
       pagination={
         messages.meta
+      }
+      canCreateMessages={
+        canCreateMessages
+      }
+      clients={
+        clients.items
       }
     />
   );

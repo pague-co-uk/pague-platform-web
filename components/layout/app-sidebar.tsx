@@ -204,7 +204,7 @@ export function AppSidebar({
         <div className="shrink-0 border-t border-slate-200/80 p-3">
 
           <Link
-            href="/settings"
+            href="/system-health"
             onClick={
               onClose
             }
@@ -216,7 +216,7 @@ export function AppSidebar({
             />
 
             <span className="truncate">
-              Settings
+              System Health
             </span>
           </Link>
 

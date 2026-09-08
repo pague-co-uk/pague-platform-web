@@ -1,6 +1,5 @@
 "use client";
 
-
 import Link from "next/link";
 
 import {
@@ -11,6 +10,10 @@ import {
   DataTable,
   type DataTableColumn,
 } from "@/components/ui/data-table";
+
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
 
 import {
   EmptyState,
@@ -37,10 +40,14 @@ import {
   PageHeader,
 } from "@/components/layout/page-header";
 
-import {
-  type ApiKey,
-  type ApiKeyPagination
+import type {
+  ApiKey,
+  ApiKeyPagination,
 } from "@/features/api-keys/api/api-keys-api";
+
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
 
 import {
   formatDate,
@@ -54,6 +61,10 @@ interface PlatformApiKeysClientProps {
   readonly apiKeys: ApiKey[];
 
   readonly pagination: ApiKeyPagination;
+
+  readonly canCreateApiKeys: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
@@ -63,6 +74,8 @@ interface PlatformApiKeysClientProps {
 export default function PlatformApiKeysClient({
   apiKeys,
   pagination,
+  canCreateApiKeys,
+  clients,
 }: PlatformApiKeysClientProps) {
   const router =
     useRouter();
@@ -199,8 +212,7 @@ export default function PlatformApiKeysClient({
       {
         key: "actions",
         header: "",
-        className:
-          "text-right",
+        className: "text-right",
         render: (apiKey) => (
           <div className="flex items-center justify-end">
             <Link
@@ -227,18 +239,37 @@ export default function PlatformApiKeysClient({
 
   return (
     <PageContainer>
-      {/* ======================================================================
+      {/* ====================================================================
           Header
-      ======================================================================= */}
+      ===================================================================== */}
 
       <PageHeader
         title="API Keys"
         description="Manage API credentials across all clients."
-      />
+      >
+        {canCreateApiKeys && (
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label: "Create API key",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/api-keys/new`,
+                variant:
+                  "primary",
+              },
+            ]}
+          />
+        )}
+      </PageHeader>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Filters
-      ======================================================================= */}
+      ===================================================================== */}
 
       <FilterBar
         resetParams={[
@@ -289,13 +320,12 @@ export default function PlatformApiKeysClient({
         />
       </FilterBar>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Table
-      ======================================================================= */}
+      ===================================================================== */}
 
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        {apiKeys.length ===
-          0 ? (
+        {apiKeys.length === 0 ? (
           <EmptyState
             title="No API keys found"
             description="There are no API keys matching the current filters."
@@ -326,27 +356,26 @@ export default function PlatformApiKeysClient({
         )}
       </div>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Pagination
-      ======================================================================= */}
+      ===================================================================== */}
 
-      {pagination.totalItems >
-        0 && (
-          <div className="mt-4">
-            <Pagination
-              meta={{
-                page:
-                  pagination.page,
-                pageSize:
-                  pagination.pageSize,
-                total:
-                  pagination.totalItems,
-                totalPages:
-                  pagination.totalPages,
-              }}
-            />
-          </div>
-        )}
+      {pagination.totalItems > 0 && (
+        <div className="mt-4">
+          <Pagination
+            meta={{
+              page:
+                pagination.page,
+              pageSize:
+                pagination.pageSize,
+              total:
+                pagination.totalItems,
+              totalPages:
+                pagination.totalPages,
+            }}
+          />
+        </div>
+      )}
     </PageContainer>
   );
 }

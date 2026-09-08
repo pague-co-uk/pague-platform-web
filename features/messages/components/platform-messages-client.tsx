@@ -43,6 +43,14 @@ import type {
   PaginationMeta,
 } from "@/features/messages/api/messages-api";
 
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
+
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
+
 import {
   formatDate,
 } from "@/lib/date/format-date";
@@ -55,6 +63,10 @@ interface PlatformMessagesClientProps {
   readonly messages: Message[];
 
   readonly pagination: PaginationMeta;
+
+  readonly canCreateMessages: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
@@ -64,6 +76,8 @@ interface PlatformMessagesClientProps {
 export default function PlatformMessagesClient({
   messages,
   pagination,
+  canCreateMessages,
+  clients,
 }: PlatformMessagesClientProps) {
   const router =
     useRouter();
@@ -146,8 +160,7 @@ export default function PlatformMessagesClient({
       {
         key: "segments",
         header: "Segments",
-        className:
-          "text-right",
+        className: "text-right",
         render: (message) => (
           <span className="text-sm text-slate-700">
             {message.segmentCount}
@@ -186,39 +199,55 @@ export default function PlatformMessagesClient({
 
   return (
     <PageContainer>
-      {/* ====================================================================
-          Header
-      ===================================================================== */}
-
       <PageHeader
         title="Messages"
         description="View and monitor messages across the platform."
-      />
-
-      {/* ====================================================================
-          Platform context
-      ===================================================================== */}
+      >
+        {canCreateMessages && (
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label: "Bulk upload",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/messages/bulk`,
+                variant:
+                  "secondary",
+              },
+              {
+                label: "Send message",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/messages/new`,
+                variant:
+                  "primary",
+              },
+            ]}
+          />
+        )}
+      </PageHeader>
 
       <div className="mb-5 rounded-xl border border-slate-200 bg-white px-5 py-4">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-            Platform
-          </p>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Platform
+        </p>
 
-          <p className="mt-1 text-sm font-semibold text-slate-900">
-            All clients
-          </p>
+        <p className="mt-1 text-sm font-semibold text-slate-900">
+          All clients
+        </p>
 
-          <p className="mt-1 text-xs text-slate-500">
-            Showing messages across the platform. Use the filters below to
-            narrow the results.
-          </p>
-        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Showing messages across the platform. Use the filters below to
+          narrow the results.
+        </p>
       </div>
-
-      {/* ====================================================================
-          Filters
-      ===================================================================== */}
 
       <FilterBar
         resetParams={[
@@ -305,10 +334,6 @@ export default function PlatformMessagesClient({
         />
       </FilterBar>
 
-      {/* ====================================================================
-          Table
-      ===================================================================== */}
-
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
         {messages.length === 0 ? (
           <EmptyState
@@ -317,12 +342,8 @@ export default function PlatformMessagesClient({
           />
         ) : (
           <DataTable
-            columns={
-              columns
-            }
-            rows={
-              messages
-            }
+            columns={columns}
+            rows={messages}
             getRowKey={(message) =>
               message.id
             }
@@ -338,10 +359,6 @@ export default function PlatformMessagesClient({
           />
         )}
       </div>
-
-      {/* ====================================================================
-          Pagination
-      ===================================================================== */}
 
       {pagination.total > 0 && (
         <div className="mt-4">
@@ -380,27 +397,22 @@ function MessageStatusBadge({
       label: "Queued",
       tone: "info",
     },
-
     ROUTED: {
       label: "Routed",
       tone: "info",
     },
-
     SUBMITTED: {
       label: "Submitted",
       tone: "warning",
     },
-
     DELIVERED: {
       label: "Delivered",
       tone: "success",
     },
-
     FAILED: {
       label: "Failed",
       tone: "danger",
     },
-
     EXPIRED: {
       label: "Expired",
       tone: "danger",
