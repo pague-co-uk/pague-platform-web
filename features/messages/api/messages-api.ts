@@ -133,7 +133,7 @@ export interface FindPlatformMessagesResult {
 // ============================================================================
 
 export interface CreateMessageInput {
-  senderIdId?: string;
+  sender?: string;
 
   destination: string;
 

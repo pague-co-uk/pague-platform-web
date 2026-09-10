@@ -774,7 +774,7 @@ export default function MessagesBulkClient({
               {[
                 "destination",
                 "message",
-                "senderId",
+                "sender",
                 "encoding",
               ].map(
                 (column) => (

@@ -387,12 +387,32 @@ export default function NewMessageClient({
     setIsSending(true);
 
     try {
+      const selectedSender = senderIds.find(
+        (senderId) =>
+          senderId.id === selectedSenderId,
+      );
+
+      if (!selectedSender) {
+        setFieldErrors({
+          senderIdId:
+            "Please select a valid Sender ID.",
+        });
+
+        setErrorMessage(
+          "Please select a valid Sender ID.",
+        );
+
+        setIsSending(false);
+
+        return;
+      }
+
       const message =
         await createMessage(
           client.id,
           {
-            senderIdId:
-              selectedSenderId,
+            sender:
+              selectedSender.sender,
 
             destination:
               destination.trim(),
