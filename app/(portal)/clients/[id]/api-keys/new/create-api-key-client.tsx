@@ -19,10 +19,10 @@ import {
   PageHeader,
 } from "@/components/layout/page-header";
 
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
   useToast,
 } from "@/components/ui/toast";
-import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   createApiKey,
@@ -51,7 +51,7 @@ interface CreateApiKeyClientProps {
 
 const API_KEY_CAPABILITIES = [
   {
-    value: "messages.send",
+    value: "messages.create",
     label: "Send messages",
     description:
       "Allow the API key to submit outbound messages.",

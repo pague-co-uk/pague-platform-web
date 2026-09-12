@@ -20,9 +20,12 @@ import {
 } from "@/components/layout/page-header";
 
 import {
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
+
+import {
   useToast,
 } from "@/components/ui/toast";
-import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 import {
   createSmppAccount,
@@ -77,6 +80,16 @@ export default function SmppAccountCreateClient({
   ] = useState("");
 
   const [
+    ipAllowlist,
+    setIpAllowlist,
+  ] = useState<string[]>([]);
+
+  const [
+    ipAddressInput,
+    setIpAddressInput,
+  ] = useState("");
+
+  const [
     submitting,
     setSubmitting,
   ] = useState(false);
@@ -98,6 +111,58 @@ export default function SmppAccountCreateClient({
     `/clients/${encodeURIComponent(
       client.id,
     )}/smpp-accounts`;
+
+  // ==========================================================================
+  // IP Allowlist
+  // ==========================================================================
+
+  function handleAddIpAddress() {
+    const ipAddress =
+      ipAddressInput.trim();
+
+    if (!ipAddress) {
+      showError(
+        "IP address required",
+        "Enter an IP address to add to the allowlist.",
+      );
+
+      return;
+    }
+
+    if (
+      ipAllowlist.includes(
+        ipAddress,
+      )
+    ) {
+      showError(
+        "Duplicate IP address",
+        "This IP address is already in the allowlist.",
+      );
+
+      return;
+    }
+
+    setIpAllowlist(
+      (current) => [
+        ...current,
+        ipAddress,
+      ],
+    );
+
+    setIpAddressInput("");
+  }
+
+  function handleRemoveIpAddress(
+    ipAddress: string,
+  ) {
+    setIpAllowlist(
+      (current) =>
+        current.filter(
+          (address) =>
+            address !== ipAddress,
+        ),
+    );
+  }
 
   // ==========================================================================
   // Submit
@@ -229,6 +294,8 @@ export default function SmppAccountCreateClient({
 
             password,
 
+            ipAllowlist,
+
             ...(maxConcurrentBindsValue !==
               undefined
               ? {
@@ -282,23 +349,21 @@ export default function SmppAccountCreateClient({
 
   return (
     <PageContainer>
-      {/* ======================================================================
-          Back link
-      ======================================================================= */}
-
       <div className="mb-5">
-        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/smpp-accounts" platformLabel="Back to SMPP Accounts" clientHref={smppAccountsUrl} clientLabel="Back to Client SMPP Accounts" />
+        <ContextAwareBackLinks
+          showPlatformLink={
+            showPlatformBackLink
+          }
+          platformHref="/smpp-accounts"
+          platformLabel="Back to SMPP Accounts"
+          clientHref={
+            smppAccountsUrl
+          }
+          clientLabel="Back to Client SMPP Accounts"
+        />
       </div>
 
-      {/* ======================================================================
-          Centered content
-      ======================================================================= */}
-
       <div className="mx-auto w-full max-w-2xl">
-
-        {/* ====================================================================
-            Header
-        ===================================================================== */}
 
         <div className="mb-5">
           <PageHeader
@@ -340,10 +405,6 @@ export default function SmppAccountCreateClient({
           onSubmit={handleSubmit}
           className="overflow-hidden rounded-xl border border-slate-200 bg-white"
         >
-          {/* ==================================================================
-              Account details
-          =================================================================== */}
-
           <section>
             <div className="border-b border-slate-200 px-4 py-3 sm:px-5">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -493,7 +554,7 @@ export default function SmppAccountCreateClient({
                     }
                     placeholder="Default"
                     disabled={submitting}
-                    className="block h-9 min-w-0 flex-1 rounded-l-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="block h-9 min-w-0 flex-1 rounded-l-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
                   />
 
                   <span className="inline-flex h-9 items-center rounded-r-lg border border-l-0 border-slate-300 bg-slate-50 px-3 text-xs text-slate-500">
@@ -504,6 +565,99 @@ export default function SmppAccountCreateClient({
                 <p className="mt-1 text-[11px] text-slate-400">
                   Optional. Must be between 5 and 3600 seconds.
                 </p>
+              </div>
+
+              {/* ==============================================================
+                  IP allowlist
+              =============================================================== */}
+
+              <div>
+                <label
+                  htmlFor="ipAddress"
+                  className="block text-xs font-medium text-slate-700"
+                >
+                  Allowed IP addresses
+                </label>
+
+                <p className="mt-1 text-[11px] leading-5 text-slate-400">
+                  Only these IP addresses will be permitted to establish SMPP
+                  binds. Leave the list empty to create the account without
+                  allowing any SMPP connections.
+                </p>
+
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="ipAddress"
+                    type="text"
+                    value={ipAddressInput}
+                    onChange={(event) =>
+                      setIpAddressInput(
+                        event.target.value,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (
+                        event.key ===
+                        "Enter"
+                      ) {
+                        event.preventDefault();
+                        handleAddIpAddress();
+                      }
+                    }}
+                    placeholder="e.g. 192.168.1.100"
+                    disabled={submitting}
+                    className="block h-9 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 font-mono text-sm text-slate-900 outline-none transition placeholder:font-sans placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={
+                      handleAddIpAddress
+                    }
+                    disabled={submitting}
+                    className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Add IP
+                  </button>
+                </div>
+
+                {ipAllowlist.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    {ipAllowlist.map(
+                      (ipAddress) => (
+                        <div
+                          key={ipAddress}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                        >
+                          <span className="font-mono text-xs text-slate-700">
+                            {ipAddress}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleRemoveIpAddress(
+                                ipAddress,
+                              )
+                            }
+                            disabled={
+                              submitting
+                            }
+                            className="text-xs font-medium text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-700">
+                    No IP addresses configured. The account will be created
+                    but will not be able to establish an SMPP bind until an IP
+                    address is added.
+                  </p>
+                )}
               </div>
             </div>
           </section>

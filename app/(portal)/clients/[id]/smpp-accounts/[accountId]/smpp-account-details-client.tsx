@@ -25,7 +25,10 @@ import {
 import {
   useToast,
 } from "@/components/ui/toast";
-import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
+
+import {
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
 
 import {
   activateSmppAccount,
@@ -40,7 +43,7 @@ import type {
 } from "@/features/clients/api/clients-api";
 
 // ============================================================================
-// Types
+// Props
 // ============================================================================
 
 interface SmppAccountDetailsClientProps {
@@ -122,6 +125,18 @@ export default function SmppAccountDetailsClient({
   );
 
   const [
+    ipAllowlist,
+    setIpAllowlist,
+  ] = useState<string[]>(
+    account.ipAllowlist ?? [],
+  );
+
+  const [
+    ipAddressInput,
+    setIpAddressInput,
+  ] = useState("");
+
+  const [
     savingSettings,
     setSavingSettings,
   ] = useState(false);
@@ -150,9 +165,6 @@ export default function SmppAccountDetailsClient({
 
   const isActive =
     account.status === "ACTIVE";
-
-  const isDisabled =
-    account.status === "DISABLED";
 
   const isSuspended =
     account.status === "SUSPENDED";
@@ -331,6 +343,58 @@ export default function SmppAccountDetailsClient({
   }
 
   // ==========================================================================
+  // IP Allowlist
+  // ==========================================================================
+
+  function handleAddIpAddress() {
+    const ipAddress =
+      ipAddressInput.trim();
+
+    if (!ipAddress) {
+      showError(
+        "IP address required",
+        "Enter an IP address to add to the allowlist.",
+      );
+
+      return;
+    }
+
+    if (
+      ipAllowlist.includes(
+        ipAddress,
+      )
+    ) {
+      showError(
+        "Duplicate IP address",
+        "This IP address is already in the allowlist.",
+      );
+
+      return;
+    }
+
+    setIpAllowlist(
+      (current) => [
+        ...current,
+        ipAddress,
+      ],
+    );
+
+    setIpAddressInput("");
+  }
+
+  function handleRemoveIpAddress(
+    ipAddress: string,
+  ) {
+    setIpAllowlist(
+      (current) =>
+        current.filter(
+          (address) =>
+            address !== ipAddress,
+        ),
+    );
+  }
+
+  // ==========================================================================
   // Settings
   // ==========================================================================
 
@@ -393,6 +457,8 @@ export default function SmppAccountDetailsClient({
 
           enquireLinkInterval:
             interval,
+
+          ipAllowlist,
         },
       );
 
@@ -427,23 +493,21 @@ export default function SmppAccountDetailsClient({
 
   return (
     <PageContainer>
-      {/* ======================================================================
-          Back link
-      ======================================================================= */}
-
       <div className="mb-5">
-        <ContextAwareBackLinks showPlatformLink={showPlatformBackLink} platformHref="/smpp-accounts" platformLabel="Back to SMPP Accounts" clientHref={smppAccountsUrl} clientLabel="Back to Client SMPP Accounts" />
+        <ContextAwareBackLinks
+          showPlatformLink={
+            showPlatformBackLink
+          }
+          platformHref="/smpp-accounts"
+          platformLabel="Back to SMPP Accounts"
+          clientHref={
+            smppAccountsUrl
+          }
+          clientLabel="Back to Client SMPP Accounts"
+        />
       </div>
 
-      {/* ======================================================================
-          Centered content
-      ======================================================================= */}
-
       <div className="mx-auto w-full max-w-5xl">
-
-        {/* ====================================================================
-            Header
-        ===================================================================== */}
 
         <div className="mb-5">
           <PageHeader
@@ -507,30 +571,17 @@ export default function SmppAccountDetailsClient({
           </div>
 
           <div className="grid gap-x-8 gap-y-5 px-4 py-4 sm:grid-cols-2 sm:px-5">
-
-            {/* ================================================================
-                System ID
-            ================================================================= */}
-
             <DetailItem
               label="System ID"
               value={account.systemId}
               mono
             />
 
-            {/* ================================================================
-                Public ID
-            ================================================================= */}
-
             <DetailItem
               label="Public ID"
               value={account.publicId}
               mono
             />
-
-            {/* ================================================================
-                Status
-            ================================================================= */}
 
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
@@ -553,19 +604,11 @@ export default function SmppAccountDetailsClient({
               </div>
             </div>
 
-            {/* ================================================================
-                Client ID
-            ================================================================= */}
-
             <DetailItem
               label="Client ID"
               value={account.clientId}
               mono
             />
-
-            {/* ================================================================
-                Created
-            ================================================================= */}
 
             <DetailItem
               label="Created"
@@ -574,17 +617,12 @@ export default function SmppAccountDetailsClient({
               )}
             />
 
-            {/* ================================================================
-                Updated
-            ================================================================= */}
-
             <DetailItem
               label="Last updated"
               value={formatDate(
                 account.updatedAt,
               )}
             />
-
           </div>
         </section>
 
@@ -599,29 +637,60 @@ export default function SmppAccountDetailsClient({
             </h2>
 
             <p className="mt-0.5 text-xs leading-5 text-slate-500">
-              Control the number of simultaneous binds and SMPP keepalive
-              interval.
+              Control simultaneous binds, SMPP keepalive behaviour, and the
+              network addresses permitted to establish SMPP sessions.
             </p>
           </div>
 
           {!editingSettings ? (
-            <div className="grid gap-x-8 gap-y-5 px-4 py-4 sm:grid-cols-2 sm:px-5">
+            <div className="space-y-5 px-4 py-4 sm:px-5">
 
-              <DetailItem
-                label="Maximum concurrent binds"
-                value={String(
-                  account.maxConcurrentBinds,
+              <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                <DetailItem
+                  label="Maximum concurrent binds"
+                  value={String(
+                    account.maxConcurrentBinds,
+                  )}
+                />
+
+                <DetailItem
+                  label="Enquire-link interval"
+                  value={`${account.enquireLinkInterval} seconds`}
+                />
+              </div>
+
+              {/* ==============================================================
+                  IP allowlist
+              =============================================================== */}
+
+              <div className="border-t border-slate-200 pt-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+                  Allowed IP addresses
+                </p>
+
+                {account.ipAllowlist?.length ? (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {account.ipAllowlist.map(
+                      (ipAddress) => (
+                        <span
+                          key={ipAddress}
+                          className="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-xs text-slate-700"
+                        >
+                          {ipAddress}
+                        </span>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-1 text-sm text-amber-700">
+                    No IP addresses are allowlisted. SMPP binding is currently
+                    blocked by the fail-closed policy.
+                  </p>
                 )}
-              />
-
-              <DetailItem
-                label="Enquire-link interval"
-                value={`${account.enquireLinkInterval} seconds`}
-              />
-
+              </div>
             </div>
           ) : (
-            <div className="space-y-4 px-4 py-4 sm:px-5">
+            <div className="space-y-5 px-4 py-4 sm:px-5">
 
               {/* ==============================================================
                   Concurrent binds
@@ -687,6 +756,103 @@ export default function SmppAccountDetailsClient({
               </div>
 
               {/* ==============================================================
+                  IP allowlist
+              =============================================================== */}
+
+              <div>
+                <div>
+                  <label
+                    htmlFor="ipAddress"
+                    className="block text-xs font-medium text-slate-700"
+                  >
+                    Allowed IP addresses
+                  </label>
+
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Only these IP addresses may establish SMPP binds. Leave the
+                    list empty to block all SMPP binds.
+                  </p>
+                </div>
+
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="ipAddress"
+                    type="text"
+                    value={ipAddressInput}
+                    onChange={(event) =>
+                      setIpAddressInput(
+                        event.target.value,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (
+                        event.key ===
+                        "Enter"
+                      ) {
+                        event.preventDefault();
+                        handleAddIpAddress();
+                      }
+                    }}
+                    placeholder="e.g. 192.168.1.100"
+                    disabled={savingSettings}
+                    className="block h-9 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 font-mono text-sm text-slate-900 outline-none transition placeholder:font-sans placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={
+                      handleAddIpAddress
+                    }
+                    disabled={
+                      savingSettings
+                    }
+                    className="inline-flex h-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Add IP
+                  </button>
+                </div>
+
+                {ipAllowlist.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {ipAllowlist.map(
+                      (ipAddress) => (
+                        <div
+                          key={ipAddress}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                        >
+                          <span className="font-mono text-xs text-slate-700">
+                            {ipAddress}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleRemoveIpAddress(
+                                ipAddress,
+                              )
+                            }
+                            disabled={
+                              savingSettings
+                            }
+                            className="text-xs font-medium text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                )}
+
+                {ipAllowlist.length === 0 && (
+                  <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-700">
+                    No IP addresses configured. This account will not be able
+                    to establish an SMPP bind.
+                  </p>
+                )}
+              </div>
+
+              {/* ==============================================================
                   Edit actions
               =============================================================== */}
 
@@ -705,6 +871,13 @@ export default function SmppAccountDetailsClient({
                         account.enquireLinkInterval,
                       ),
                     );
+
+                    setIpAllowlist(
+                      account.ipAllowlist ??
+                      [],
+                    );
+
+                    setIpAddressInput("");
 
                     setEditingSettings(
                       false,
@@ -792,11 +965,6 @@ export default function SmppAccountDetailsClient({
               </div>
             ) : (
               <div className="space-y-4 px-4 py-4 sm:px-5">
-
-                {/* ============================================================
-                    New password
-                ============================================================= */}
-
                 <div>
                   <label
                     htmlFor="newPassword"
@@ -824,10 +992,6 @@ export default function SmppAccountDetailsClient({
                   />
                 </div>
 
-                {/* ============================================================
-                    Confirm password
-                ============================================================= */}
-
                 <div>
                   <label
                     htmlFor="confirmPassword"
@@ -854,10 +1018,6 @@ export default function SmppAccountDetailsClient({
                     className="mt-1.5 block h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-
-                {/* ============================================================
-                    Actions
-                ============================================================= */}
 
                 <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                   <button

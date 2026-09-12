@@ -4,15 +4,27 @@ export type SmppAccountStatus =
   | "SUSPENDED";
 
 export interface SmppAccount {
+
   id: string;
+
   publicId: string;
+
   clientId: string;
+
   systemId: string;
+
   status: SmppAccountStatus;
+
   maxConcurrentBinds: number;
+
   enquireLinkInterval: number;
+
+  ipAllowlist: string[];
+
   createdAt: string;
+
   updatedAt: string;
+
 }
 
 export interface SmppAccountClient {
@@ -50,15 +62,27 @@ export interface FindPlatformSmppAccountsResult {
 }
 
 export interface CreateSmppAccountInput {
+
   systemId: string;
+
   password: string;
+
   maxConcurrentBinds?: number;
+
   enquireLinkInterval?: number;
+
+  ipAllowlist: string[];
+
 }
 
 export interface UpdateSmppAccountInput {
+
   maxConcurrentBinds?: number;
+
   enquireLinkInterval?: number;
+
+  ipAllowlist?: string[];
+
 }
 
 interface ApiResponse<T> {

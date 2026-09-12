@@ -620,7 +620,7 @@ export default function ClientDetailsClient({
                   <Link
                     href={`/clients/${encodeURIComponent(
                       client.id,
-                    )}/api-keys/create`}
+                    )}/api-keys/new`}
                     className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
                   >
                     Create API key
