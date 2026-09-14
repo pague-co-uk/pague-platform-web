@@ -89,6 +89,13 @@ const APPLICATIONS = [
     description:
       "Client-facing SMPP server",
   },
+
+  {
+    key: "webhook-consumer",
+    name: "Webhook Consumer",
+    description:
+      "Delivers client delivery receipts to webhook endpoints",
+  },
 ] as const;
 
 // ============================================================================
@@ -567,8 +574,8 @@ function HealthStatusIcon({
     <span
       aria-hidden="true"
       className={`flex shrink-0 items-center justify-center rounded-full ${small
-          ? "h-8 w-8"
-          : "h-11 w-11"
+        ? "h-8 w-8"
+        : "h-11 w-11"
         } ${status === "up"
           ? "bg-emerald-50"
           : "bg-red-50"
@@ -576,8 +583,8 @@ function HealthStatusIcon({
     >
       <span
         className={`rounded-full ${small
-            ? "h-2.5 w-2.5"
-            : "h-3 w-3"
+          ? "h-2.5 w-2.5"
+          : "h-3 w-3"
           } ${status === "up"
             ? "bg-emerald-500"
             : "bg-red-500"

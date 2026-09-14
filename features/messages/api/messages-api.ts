@@ -11,6 +11,89 @@ export type MessageEncoding =
   | "UCS2"
   | "BINARY";
 
+export type MessageRouteAttemptStatus =
+  | "PENDING"
+  | "DISPATCHED"
+  | "SUBMITTING"
+  | "SUBMITTED"
+  | "FAILED"
+  | "UNKNOWN";
+
+// ============================================================================
+// Message Status Event
+// ============================================================================
+
+export interface MessageStatusEvent {
+  id: string;
+
+  messageId: string;
+
+  attemptId: string | null;
+
+  status: MessageStatus;
+
+  source: string;
+
+  description: string | null;
+
+  rawData: unknown;
+
+  createdAt: string;
+}
+
+// ============================================================================
+// Message Route Attempt
+// ============================================================================
+
+export interface MessageRouteAttempt {
+  id: string;
+
+  attemptNumber: number;
+
+  priority: number;
+
+  status: MessageRouteAttemptStatus;
+
+  route: {
+    id: string;
+    publicId: string;
+    mobileNetwork: {
+      id: string;
+      name: string;
+    };
+    connectorId: string;
+    status: string;
+  };
+
+  connector: {
+    id: string;
+
+    publicId: string;
+  };
+
+  providerMessageId: string | null;
+
+  errorCode: string | null;
+
+  errorMessage: string | null;
+
+  dispatchedAt: string | null;
+
+  startedAt: string | null;
+
+  submittedAt: string | null;
+
+  failedAt: string | null;
+
+  completedAt: string | null;
+
+  createdAt: string;
+
+  updatedAt: string;
+
+  statusEvents: MessageStatusEvent[];
+}
+
 // ============================================================================
 // Message
 // ============================================================================
@@ -52,28 +135,16 @@ export interface Message {
   createdAt: string;
 
   updatedAt: string;
-}
 
-// ============================================================================
-// Message Status Event
-// ============================================================================
+  /**
+   * Overall message lifecycle events.
+   */
+  statusEvents: MessageStatusEvent[];
 
-export interface MessageStatusEvent {
-  id: string;
-
-  messageId: string;
-
-  attemptId: string | null;
-
-  status: MessageStatus;
-
-  source: string;
-
-  description: string | null;
-
-  rawData: unknown;
-
-  createdAt: string;
+  /**
+   * Individual route execution attempts.
+   */
+  routeAttempts: MessageRouteAttempt[];
 }
 
 // ============================================================================

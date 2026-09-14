@@ -6,7 +6,6 @@ import {
 
 import {
   findMessageById,
-  findMessageStatusEvents,
 } from "@/features/messages/api/server-messages-api";
 
 import MessageDetailsClient from "@/features/messages/components/message-details-client";
@@ -22,7 +21,10 @@ import {
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
-import { isPlatformUser } from "@/lib/authorization/authorization";
+
+import {
+  isPlatformUser,
+} from "@/lib/authorization/authorization";
 
 // ============================================================================
 // Types
@@ -78,7 +80,7 @@ export default async function MessageDetailsPage({
 
           <div className="mt-5">
             <Link
-              href={`/messages`}
+              href="/messages"
               className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
             >
               Back to messages
@@ -96,18 +98,12 @@ export default async function MessageDetailsPage({
   const [
     client,
     message,
-    statusEvents,
   ] = await Promise.all([
     findClientById(
       clientId,
     ),
 
     findMessageById(
-      clientId,
-      messageId,
-    ),
-
-    findMessageStatusEvents(
       clientId,
       messageId,
     ),
@@ -121,8 +117,11 @@ export default async function MessageDetailsPage({
     <MessageDetailsClient
       client={client}
       message={message}
-      statusEvents={statusEvents}
-      showPlatformBackLink={user ? isPlatformUser(user) : false}
+      showPlatformBackLink={
+        user
+          ? isPlatformUser(user)
+          : false
+      }
     />
   );
 }

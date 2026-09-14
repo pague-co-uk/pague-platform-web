@@ -40,13 +40,85 @@ type ConnectorAction =
   | "delete"
   | null;
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(value));
+const SENSITIVE_CONFIG_KEYS =
+  new Set([
+    "password",
+    "passwd",
+    "pass",
+    "secret",
+    "token",
+    "apikey",
+    "api_key",
+    "accesskey",
+    "access_key",
+    "secretkey",
+    "secret_key",
+    "clientsecret",
+    "client_secret",
+    "credential",
+    "credentials",
+    "authorization",
+    "username",
+    "user",
+  ]);
+
+function isSensitiveConfigKey(
+  key: string,
+): boolean {
+  const normalizedKey =
+    key
+      .replace(/[-_\s]/g, "")
+      .toLowerCase();
+
+  return SENSITIVE_CONFIG_KEYS.has(
+    normalizedKey,
+  );
+}
+
+function maskConfiguration(
+  value: unknown,
+): unknown {
+  if (Array.isArray(value)) {
+    return value.map(
+      maskConfiguration,
+    );
+  }
+
+  if (
+    value !== null &&
+    typeof value === "object"
+  ) {
+    return Object.fromEntries(
+      Object.entries(value).map(
+        ([key, childValue]) => [
+          key,
+          isSensitiveConfigKey(key)
+            ? "****"
+            : maskConfiguration(
+              childValue,
+            ),
+        ],
+      ),
+    );
+  }
+
+  return value;
+}
+
+function formatDate(
+  value: string,
+): string {
+  return new Intl.DateTimeFormat(
+    "en-GB",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      timeZone: "UTC",
+    },
+  ).format(
+    new Date(value),
+  );
 }
 
 function getStatusLabel(
@@ -111,7 +183,10 @@ export default function ConnectorDetailsClient({
 
   const [pendingAction, setPendingAction] =
     useState<
-      Exclude<ConnectorAction, null> | null
+      Exclude<
+        ConnectorAction,
+        null
+      > | null
     >(null);
 
   function requestAction(
@@ -120,8 +195,13 @@ export default function ConnectorDetailsClient({
       null
     >,
   ) {
-    setPendingAction(nextAction);
-    setConfirmationOpen(true);
+    setPendingAction(
+      nextAction,
+    );
+
+    setConfirmationOpen(
+      true,
+    );
   }
 
   function handleCancel() {
@@ -138,7 +218,9 @@ export default function ConnectorDetailsClient({
       return;
     }
 
-    setAction(pendingAction);
+    setAction(
+      pendingAction,
+    );
 
     try {
       let updatedConnector: Connector;
@@ -175,8 +257,13 @@ export default function ConnectorDetailsClient({
             `${connector.name} was deleted successfully.`,
           );
 
-          setConfirmationOpen(false);
-          setPendingAction(null);
+          setConfirmationOpen(
+            false,
+          );
+
+          setPendingAction(
+            null,
+          );
 
           router.push(
             "/connectors",
@@ -187,10 +274,15 @@ export default function ConnectorDetailsClient({
           return;
       }
 
-      setConnector(updatedConnector);
+      setConnector(
+        updatedConnector,
+      );
 
       const actionLabels: Record<
-        Exclude<ConnectorAction, null>,
+        Exclude<
+          ConnectorAction,
+          null
+        >,
         string
       > = {
         enable: "enabled",
@@ -204,13 +296,19 @@ export default function ConnectorDetailsClient({
         `${connector.name} was ${actionLabels[pendingAction]} successfully.`,
       );
 
-      setConfirmationOpen(false);
-      setPendingAction(null);
+      setConfirmationOpen(
+        false,
+      );
+
+      setPendingAction(
+        null,
+      );
 
       router.refresh();
     } catch (err) {
       const message =
-        err instanceof ConnectorsApiError
+        err instanceof
+          ConnectorsApiError
           ? err.message
           : `Unable to ${pendingAction} connector.`;
 
@@ -228,6 +326,11 @@ export default function ConnectorDetailsClient({
 
   const configuration =
     connector.configuration;
+
+  const displayConfiguration =
+    maskConfiguration(
+      configuration,
+    );
 
   return (
     <main className="mx-auto w-full max-w-4xl">
@@ -357,10 +460,12 @@ export default function ConnectorDetailsClient({
 
           <div className="p-6">
             {configuration &&
-              Object.keys(configuration).length > 0 ? (
+              Object.keys(
+                configuration,
+              ).length > 0 ? (
               <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 font-mono text-sm leading-6 text-slate-100">
                 {JSON.stringify(
-                  configuration,
+                  displayConfiguration,
                   null,
                   2,
                 )}

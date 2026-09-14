@@ -24,8 +24,9 @@ import type {
 
 import type {
   Message,
+  MessageRouteAttempt,
+  MessageRouteAttemptStatus,
   MessageStatus,
-  MessageStatusEvent,
 } from "@/features/messages/api/messages-api";
 
 import {
@@ -41,8 +42,6 @@ interface MessageDetailsClientProps {
 
   readonly message: Message;
 
-  readonly statusEvents: MessageStatusEvent[];
-
   readonly showPlatformBackLink: boolean;
 }
 
@@ -53,16 +52,11 @@ interface MessageDetailsClientProps {
 export default function MessageDetailsClient({
   client,
   message,
-  statusEvents,
   showPlatformBackLink,
 }: MessageDetailsClientProps) {
   const clientName =
     client.displayName ||
     client.companyName;
-
-  // ==========================================================================
-  // Render
-  // ==========================================================================
 
   return (
     <PageContainer>
@@ -75,10 +69,14 @@ export default function MessageDetailsClient({
         description={`View message ${message.publicId}.`}
       >
         <ContextAwareBackLinks
-          showPlatformLink={showPlatformBackLink}
+          showPlatformLink={
+            showPlatformBackLink
+          }
           platformHref="/messages"
           platformLabel="Back to Messages"
-          clientHref={`/clients/${encodeURIComponent(client.id)}/messages`}
+          clientHref={`/clients/${encodeURIComponent(
+            client.id,
+          )}/messages`}
           clientLabel="Back to Client Messages"
         />
       </PageHeader>
@@ -108,7 +106,6 @@ export default function MessageDetailsClient({
             </span>
           </div>
         </div>
-
       </div>
 
       {/* ====================================================================
@@ -235,7 +232,59 @@ export default function MessageDetailsClient({
       </div>
 
       {/* ====================================================================
-          Status timeline
+          Routing Attempts
+      ===================================================================== */}
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-5 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900">
+                Routing attempts
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-500">
+                Routes and connectors used while processing this message.
+              </p>
+            </div>
+
+            <span className="text-xs text-slate-400">
+              {message.routeAttempts.length}{" "}
+              {message.routeAttempts.length ===
+                1
+                ? "attempt"
+                : "attempts"}
+            </span>
+          </div>
+        </div>
+
+        {message.routeAttempts.length ===
+          0 ? (
+          <div className="px-5 py-8 text-center">
+            <p className="text-sm text-slate-500">
+              No routing attempts have been recorded yet.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {message.routeAttempts.map(
+              (attempt) => (
+                <MessageRouteAttemptCard
+                  key={
+                    attempt.id
+                  }
+                  attempt={
+                    attempt
+                  }
+                />
+              ),
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ====================================================================
+          Message timeline
       ===================================================================== */}
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-white">
@@ -252,8 +301,8 @@ export default function MessageDetailsClient({
             </div>
 
             <span className="text-xs text-slate-400">
-              {statusEvents.length}{" "}
-              {statusEvents.length ===
+              {message.statusEvents.length}{" "}
+              {message.statusEvents.length ===
                 1
                 ? "event"
                 : "events"}
@@ -261,7 +310,7 @@ export default function MessageDetailsClient({
           </div>
         </div>
 
-        {statusEvents.length ===
+        {message.statusEvents.length ===
           0 ? (
           <div className="px-5 py-8 text-center">
             <p className="text-sm text-slate-500">
@@ -271,14 +320,14 @@ export default function MessageDetailsClient({
         ) : (
           <div className="px-5 py-5">
             <div className="relative">
-              {statusEvents.map(
+              {message.statusEvents.map(
                 (
                   event,
                   index,
                 ) => {
                   const isLast =
                     index ===
-                    statusEvents.length -
+                    message.statusEvents.length -
                     1;
 
                   return (
@@ -309,7 +358,9 @@ export default function MessageDetailsClient({
                             />
 
                             <span className="text-xs font-medium text-slate-500">
-                              {event.source}
+                              {
+                                event.source
+                              }
                             </span>
                           </div>
 
@@ -371,13 +422,340 @@ export default function MessageDetailsClient({
             label="Client ID"
             value={
               <span className="break-all font-mono text-xs">
-                {message.client.displayName}
+                {message.client.id}
               </span>
             }
           />
         </div>
       </div>
     </PageContainer>
+  );
+}
+
+// ============================================================================
+// Message Route Attempt Card
+// ============================================================================
+
+function MessageRouteAttemptCard({
+  attempt,
+}: {
+  readonly attempt: MessageRouteAttempt;
+}) {
+  return (
+    <div className="px-5 py-5">
+      {/* --------------------------------------------------------------------
+          Attempt header
+      --------------------------------------------------------------------- */}
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900">
+              Attempt{" "}
+              {attempt.attemptNumber}
+            </h3>
+
+            <MessageRouteAttemptStatusBadge
+              status={
+                attempt.status
+              }
+            />
+          </div>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Route priority{" "}
+            {attempt.priority}
+          </p>
+        </div>
+
+        <span className="font-mono text-[11px] text-slate-400">
+          {attempt.id}
+        </span>
+      </div>
+
+      {/* --------------------------------------------------------------------
+          Route / connector
+      --------------------------------------------------------------------- */}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <AttemptDetail
+          label="Route"
+          value={
+            attempt.route.publicId
+          }
+        />
+
+        <AttemptDetail
+          label="Connector"
+          value={
+            attempt.connector.publicId
+          }
+        />
+
+        <AttemptDetail
+          label="Mobile network"
+          value={
+            attempt.route
+              .mobileNetwork.name
+          }
+        />
+
+        <AttemptDetail
+          label="Route status"
+          value={
+            attempt.route.status
+          }
+        />
+      </div>
+
+      {/* --------------------------------------------------------------------
+          Provider information
+      --------------------------------------------------------------------- */}
+
+      {attempt.providerMessageId && (
+        <div className="mt-3">
+          <AttemptDetail
+            label="Provider message ID"
+            value={
+              attempt.providerMessageId
+            }
+          />
+        </div>
+      )}
+
+      {/* --------------------------------------------------------------------
+          Timing
+      --------------------------------------------------------------------- */}
+
+      <div className="mt-4">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Attempt timing
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <AttemptDate
+            label="Dispatched"
+            value={
+              attempt.dispatchedAt
+            }
+          />
+
+          <AttemptDate
+            label="Started"
+            value={
+              attempt.startedAt
+            }
+          />
+
+          <AttemptDate
+            label="Submitted"
+            value={
+              attempt.submittedAt
+            }
+          />
+
+          <AttemptDate
+            label="Failed"
+            value={
+              attempt.failedAt
+            }
+          />
+
+          <AttemptDate
+            label="Completed"
+            value={
+              attempt.completedAt
+            }
+          />
+        </div>
+      </div>
+
+      {/* --------------------------------------------------------------------
+          Error
+      --------------------------------------------------------------------- */}
+
+      {(attempt.errorCode ||
+        attempt.errorMessage) && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-red-500">
+              Routing failure
+            </p>
+
+            {attempt.errorCode && (
+              <p className="mt-1 font-mono text-xs font-semibold text-red-700">
+                Error code:{" "}
+                {
+                  attempt.errorCode
+                }
+              </p>
+            )}
+
+            {attempt.errorMessage && (
+              <p className="mt-1 text-sm leading-5 text-red-700">
+                {
+                  attempt.errorMessage
+                }
+              </p>
+            )}
+          </div>
+        )}
+
+      {/* --------------------------------------------------------------------
+          Attempt status events
+      --------------------------------------------------------------------- */}
+
+      <div className="mt-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Attempt status events
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Status events associated with this routing attempt.
+            </p>
+          </div>
+
+          <span className="text-xs text-slate-400">
+            {
+              attempt.statusEvents
+                .length
+            }{" "}
+            {attempt.statusEvents
+              .length === 1
+              ? "event"
+              : "events"}
+          </span>
+        </div>
+
+        {attempt.statusEvents
+          .length === 0 ? (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+            <p className="text-xs text-slate-500">
+              No status events have been recorded for this attempt.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+            <div className="relative">
+              {attempt.statusEvents.map(
+                (
+                  event,
+                  index,
+                ) => {
+                  const isLast =
+                    index ===
+                    attempt.statusEvents.length -
+                    1;
+
+                  return (
+                    <div
+                      key={
+                        event.id
+                      }
+                      className="relative flex gap-3"
+                    >
+                      {!isLast && (
+                        <div className="absolute left-[6px] top-4 h-full w-px bg-slate-200" />
+                      )}
+
+                      <div className="relative z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 border-slate-50 bg-slate-300 ring-1 ring-slate-200" />
+
+                      <div
+                        className={`min-w-0 flex-1 ${isLast
+                          ? "pb-0"
+                          : "pb-5"
+                          }`}
+                      >
+                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <MessageStatusBadge
+                              status={
+                                event.status
+                              }
+                            />
+
+                            <span className="text-xs text-slate-500">
+                              {
+                                event.source
+                              }
+                            </span>
+                          </div>
+
+                          <span className="whitespace-nowrap text-[11px] text-slate-400">
+                            {formatDate(
+                              event.createdAt,
+                            )}
+                          </span>
+                        </div>
+
+                        {event.description && (
+                          <p className="mt-1 text-xs leading-5 text-slate-600">
+                            {
+                              event.description
+                            }
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Attempt detail
+// ============================================================================
+
+function AttemptDetail({
+  label,
+  value,
+}: {
+  readonly label: string;
+  readonly value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 break-all font-mono text-xs font-medium text-slate-700">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// ============================================================================
+// Attempt date
+// ============================================================================
+
+function AttemptDate({
+  label,
+  value,
+}: {
+  readonly label: string;
+  readonly value: string | null;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 text-xs text-slate-600">
+        {value
+          ? formatDate(value)
+          : "—"}
+      </p>
+    </div>
   );
 }
 
@@ -406,7 +784,7 @@ function DetailRow({
 }
 
 // ============================================================================
-// Status badge
+// Message status badge
 // ============================================================================
 
 function MessageStatusBadge({
@@ -414,19 +792,18 @@ function MessageStatusBadge({
 }: {
   readonly status: MessageStatus;
 }) {
-  const configuration:
-    Record<
-      MessageStatus,
-      {
-        label: string;
-        tone:
-        | "success"
-        | "warning"
-        | "danger"
-        | "info"
-        | "neutral";
-      }
-    > = {
+  const configuration: Record<
+    MessageStatus,
+    {
+      label: string;
+      tone:
+      | "success"
+      | "warning"
+      | "danger"
+      | "info"
+      | "neutral";
+    }
+  > = {
     QUEUED: {
       label: "Queued",
       tone: "info",
@@ -455,6 +832,71 @@ function MessageStatusBadge({
     EXPIRED: {
       label: "Expired",
       tone: "danger",
+    },
+  };
+
+  const item =
+    configuration[status];
+
+  return (
+    <StatusBadge
+      tone={item.tone}
+      dot
+    >
+      {item.label}
+    </StatusBadge>
+  );
+}
+
+// ============================================================================
+// Message route attempt status badge
+// ============================================================================
+
+function MessageRouteAttemptStatusBadge({
+  status,
+}: {
+  readonly status: MessageRouteAttemptStatus;
+}) {
+  const configuration: Record<
+    MessageRouteAttemptStatus,
+    {
+      label: string;
+      tone:
+      | "success"
+      | "warning"
+      | "danger"
+      | "info"
+      | "neutral";
+    }
+  > = {
+    PENDING: {
+      label: "Pending",
+      tone: "neutral",
+    },
+
+    DISPATCHED: {
+      label: "Dispatched",
+      tone: "info",
+    },
+
+    SUBMITTING: {
+      label: "Submitting",
+      tone: "warning",
+    },
+
+    SUBMITTED: {
+      label: "Submitted",
+      tone: "success",
+    },
+
+    FAILED: {
+      label: "Failed",
+      tone: "danger",
+    },
+
+    UNKNOWN: {
+      label: "Unknown",
+      tone: "neutral",
     },
   };
 
