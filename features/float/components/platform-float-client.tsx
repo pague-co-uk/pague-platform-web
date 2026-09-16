@@ -19,10 +19,6 @@ import {
 } from "@/components/ui/pagination";
 
 import {
-  StatusBadge,
-} from "@/components/ui/status-badge";
-
-import {
   PageContainer,
 } from "@/components/layout/page-container";
 
@@ -31,22 +27,22 @@ import {
 } from "@/components/layout/page-header";
 
 import type {
-  PlatformFloatLedgerEntry,
-  PlatformFloatLedgerPagination,
-} from "@/features/float/api/float-api";
-
-import {
-  formatDate,
-} from "@/lib/date/format-date";
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
 
 // ============================================================================
 // Props
 // ============================================================================
 
 interface PlatformFloatClientProps {
-  readonly ledger: readonly PlatformFloatLedgerEntry[];
+  readonly clients: readonly ClientSummary[];
 
-  readonly pagination: PlatformFloatLedgerPagination;
+  readonly pagination: {
+    readonly page: number;
+    readonly pageSize: number;
+    readonly total: number;
+    readonly totalPages: number;
+  };
 }
 
 // ============================================================================
@@ -54,35 +50,21 @@ interface PlatformFloatClientProps {
 // ============================================================================
 
 export default function PlatformFloatClient({
-  ledger,
+  clients,
   pagination,
 }: PlatformFloatClientProps) {
   const columns:
-    DataTableColumn<PlatformFloatLedgerEntry>[] =
+    DataTableColumn<ClientSummary>[] =
     [
       {
-        key: "createdAt",
-
-        header: "Date",
-
-        render: (entry) => (
-          <span className="text-sm text-slate-500">
-            {formatDate(
-              entry.createdAt,
-            )}
-          </span>
-        ),
-      },
-
-      {
-        key: "client",
+        key: "publicId",
 
         header: "Client",
 
-        render: (entry) => {
+        render: (client) => {
           const clientName =
-            entry.client.displayName ||
-            entry.client.companyName;
+            client.displayName ||
+            client.companyName;
 
           return (
             <div className="min-w-0">
@@ -91,7 +73,7 @@ export default function PlatformFloatClient({
               </div>
 
               <div className="font-mono text-xs text-slate-500">
-                {entry.client.publicId}
+                {client.publicId}
               </div>
             </div>
           );
@@ -99,86 +81,26 @@ export default function PlatformFloatClient({
       },
 
       {
-        key: "transactionType",
+        key: "companyName",
 
-        header: "Type",
+        header: "Company",
 
-        render: (entry) => (
-          <FloatTransactionBadge
-            type={
-              entry.transactionType
-            }
-          />
-        ),
-      },
-
-      {
-        key: "publicId",
-
-        header: "Public ID",
-
-        render: (entry) => (
-          <span className="font-mono text-xs text-slate-600">
-            {entry.publicId}
-          </span>
-        ),
-      },
-
-      {
-        key: "credits",
-
-        header: "Credits",
-
-        className:
-          "text-right",
-
-        render: (entry) => (
-          <span
-            className={
-              entry.credits >= 0
-                ? "font-medium text-slate-900"
-                : "font-medium text-red-600"
-            }
-          >
-            {formatSignedCredits(
-              entry.credits,
-            )}
-          </span>
-        ),
-      },
-
-      {
-        key: "reference",
-
-        header: "Reference",
-
-        render: (entry) => (
-          <div className="min-w-0">
-            <p className="truncate font-mono text-xs text-slate-600">
-              {entry.referenceId ??
-                "—"}
-            </p>
-
-            {entry.referenceType && (
-              <p className="mt-0.5 text-[11px] text-slate-400">
-                {formatReferenceType(
-                  entry.referenceType,
-                )}
-              </p>
-            )}
-          </div>
-        ),
-      },
-
-      {
-        key: "description",
-
-        header: "Description",
-
-        render: (entry) => (
-          <span className="text-sm text-slate-500">
-            {entry.description ??
+        render: (client) => (
+          <span className="text-sm text-slate-600">
+            {client.companyName ||
               "—"}
+          </span>
+        ),
+      },
+
+      {
+        key: "status",
+
+        header: "Status",
+
+        render: (client) => (
+          <span className="text-sm text-slate-600">
+            {client.status}
           </span>
         ),
       },
@@ -191,12 +113,14 @@ export default function PlatformFloatClient({
         className:
           "w-[1%] whitespace-nowrap text-right",
 
-        render: (entry) => (
+        render: (client) => (
           <Link
-            href={`/clients/${entry.client.id}/float`}
-            className="text-sm font-medium text-slate-700 hover:text-slate-950"
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/float`}
+            className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
           >
-            View
+            Manage Float
           </Link>
         ),
       },
@@ -205,26 +129,28 @@ export default function PlatformFloatClient({
   return (
     <PageContainer>
       <PageHeader
-        title="Float"
-        description="Float ledger transactions across all clients."
+        title="Float Accounts"
+        description="Manage SMS credit balances and transactions for individual clients."
       />
 
-      {ledger.length === 0 ? (
+      {clients.length === 0 ? (
         <EmptyState
-          title="No float transactions"
-          description="No float ledger transactions match the current filters."
+          title="No float accounts"
+          description="There are no clients available to manage float."
         />
       ) : (
         <>
           <DataTable
             columns={columns}
-            rows={ledger}
-            getRowKey={(entry) =>
-              entry.id
+            rows={clients}
+            getRowKey={(client) =>
+              client.id
             }
-            onRowClick={(entry) => {
+            onRowClick={(client) => {
               window.location.href =
-                `/clients/${entry.client.id}/float`;
+                `/clients/${encodeURIComponent(
+                  client.id,
+                )}/float`;
             }}
           />
 
@@ -238,7 +164,7 @@ export default function PlatformFloatClient({
                   pagination.pageSize,
 
                 total:
-                  pagination.totalItems,
+                  pagination.total,
 
                 totalPages:
                   pagination.totalPages,
@@ -249,110 +175,4 @@ export default function PlatformFloatClient({
       )}
     </PageContainer>
   );
-}
-
-// ============================================================================
-// Transaction badge
-// ============================================================================
-
-function FloatTransactionBadge({
-  type,
-}: {
-  readonly type:
-  PlatformFloatLedgerEntry["transactionType"];
-}) {
-  switch (type) {
-    case "TOPUP":
-      return (
-        <StatusBadge
-          tone="success"
-          dot
-        >
-          Top Up
-        </StatusBadge>
-      );
-
-    case "DEBIT":
-      return (
-        <StatusBadge
-          tone="warning"
-          dot
-        >
-          Debit
-        </StatusBadge>
-      );
-
-    case "REFUND":
-      return (
-        <StatusBadge
-          tone="info"
-          dot
-        >
-          Refund
-        </StatusBadge>
-      );
-
-    case "ADJUSTMENT":
-      return (
-        <StatusBadge
-          tone="neutral"
-          dot
-        >
-          Adjustment
-        </StatusBadge>
-      );
-  }
-}
-
-// ============================================================================
-// Formatting
-// ============================================================================
-
-function formatCredits(
-  credits: number,
-): string {
-  return new Intl.NumberFormat(
-    "en-US",
-  ).format(credits);
-}
-
-function formatSignedCredits(
-  credits: number,
-): string {
-  if (credits > 0) {
-    return `+${formatCredits(
-      credits,
-    )}`;
-  }
-
-  if (credits < 0) {
-    return `-${formatCredits(
-      Math.abs(credits),
-    )}`;
-  }
-
-  return "0";
-}
-
-function formatReferenceType(
-  type: NonNullable<
-    PlatformFloatLedgerEntry["referenceType"]
-  >,
-): string {
-  switch (type) {
-    case "MESSAGE":
-      return "Message";
-
-    case "ADMIN":
-      return "Admin";
-
-    case "SYSTEM":
-      return "System";
-
-    case "IMPORT":
-      return "Import";
-
-    default:
-      return type;
-  }
 }

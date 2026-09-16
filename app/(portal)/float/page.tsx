@@ -9,8 +9,8 @@ import {
 } from "@/lib/authorization/permissions";
 
 import {
-  findPlatformFloatLedger,
-} from "@/features/float/api/server-float-api";
+  findClients,
+} from "@/features/clients/api/server-clients-api";
 
 import PlatformFloatClient from "@/features/float/components/platform-float-client";
 
@@ -18,9 +18,6 @@ interface PlatformFloatPageProps {
   readonly searchParams: Promise<{
     page?: string;
     pageSize?: string;
-    clientId?: string;
-    transactionType?: string;
-    referenceType?: string;
     search?: string;
   }>;
 }
@@ -68,33 +65,10 @@ export default async function PlatformFloatPage({
       query.pageSize,
     ) ?? 20;
 
-  const transactionType =
-    isLedgerTransactionType(
-      query.transactionType,
-    )
-      ? query.transactionType
-      : undefined;
-
-  const referenceType =
-    isLedgerReferenceType(
-      query.referenceType,
-    )
-      ? query.referenceType
-      : undefined;
-
-  const result =
-    await findPlatformFloatLedger({
+  const clients =
+    await findClients({
       page,
       pageSize,
-
-      clientId:
-        query.clientId ||
-        undefined,
-
-      transactionType,
-
-      referenceType,
-
       search:
         query.search?.trim() ||
         undefined,
@@ -102,9 +76,11 @@ export default async function PlatformFloatPage({
 
   return (
     <PlatformFloatClient
-      ledger={result.items}
+      clients={
+        clients.items
+      }
       pagination={
-        result.pagination
+        clients.meta
       }
     />
   );
@@ -152,34 +128,4 @@ function parsePageSize(
   }
 
   return parsed;
-}
-
-function isLedgerTransactionType(
-  value: string | undefined,
-): value is
-  | "TOPUP"
-  | "DEBIT"
-  | "REFUND"
-  | "ADJUSTMENT" {
-  return (
-    value === "TOPUP" ||
-    value === "DEBIT" ||
-    value === "REFUND" ||
-    value === "ADJUSTMENT"
-  );
-}
-
-function isLedgerReferenceType(
-  value: string | undefined,
-): value is
-  | "MESSAGE"
-  | "ADMIN"
-  | "SYSTEM"
-  | "IMPORT" {
-  return (
-    value === "MESSAGE" ||
-    value === "ADMIN" ||
-    value === "SYSTEM" ||
-    value === "IMPORT"
-  );
 }
