@@ -6,7 +6,11 @@ import {
   findPlatformSenderIds,
 } from "@/features/sender-ids/api/server-sender-ids-api";
 
-import PlatformSenderIdsClient from "@/features/sender-ids/components/platform-sender-ids-client";
+import {
+  findClients,
+} from "@/features/clients/api/server-clients-api";
+
+import SenderIdsClient from "@/features/sender-ids/components/sender-ids-client";
 
 import {
   getCurrentUser,
@@ -24,11 +28,9 @@ interface SenderIdsPageProps {
   searchParams: Promise<{
     page?: string;
     pageSize?: string;
-    clientId?: string;
     search?: string;
-    sender?: string;
     status?: string;
-    isDefault?: string;
+    clientId?: string;
   }>;
 }
 
@@ -75,6 +77,16 @@ export default async function SenderIdsPage({
     );
   }
 
+  const canCreateSenderIds =
+    user?.roles?.some(
+      (role) =>
+        role.permissions?.some(
+          (permission) =>
+            permission.name ===
+            PERMISSIONS.SENDER_IDS_CREATE,
+        ),
+    ) ?? false;
+
   // ==========================================================================
   // Pagination
   // ==========================================================================
@@ -97,34 +109,46 @@ export default async function SenderIdsPage({
     await findPlatformSenderIds({
       page,
       pageSize,
-      clientId:
-        query.clientId,
       search:
         query.search,
-      sender:
-        query.sender,
       status:
         query.status as
         | undefined,
-      isDefault:
-        query.isDefault !==
-          undefined
-          ? query.isDefault ===
-          "true"
-          : undefined,
+      clientId:
+        query.clientId,
     });
+
+  // ==========================================================================
+  // Clients
+  // ==========================================================================
+
+  const clients =
+    canCreateSenderIds
+      ? await findClients({
+        page: 1,
+        pageSize: 100,
+      })
+      : {
+        items: [],
+      };
 
   // ==========================================================================
   // Render
   // ==========================================================================
 
   return (
-    <PlatformSenderIdsClient
+    <SenderIdsClient
       senderIds={
         senderIds.items
       }
       pagination={
         senderIds.meta
+      }
+      canCreateSenderIds={
+        canCreateSenderIds
+      }
+      clients={
+        clients.items
       }
     />
   );

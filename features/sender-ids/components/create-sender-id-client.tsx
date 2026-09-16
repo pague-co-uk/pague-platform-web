@@ -29,6 +29,7 @@ import {
 import type {
   ClientSummary,
 } from "@/features/clients/api/clients-api";
+
 import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 
 interface CreateSenderIdClientProps {
@@ -128,6 +129,13 @@ export default function CreateSenderIdClient({
     const normalizedPublicId =
       publicId.trim();
 
+    /*
+     * Preserve the Sender ID's original casing.
+     *
+     * We only remove leading/trailing whitespace.
+     * We deliberately do NOT call toUpperCase() or
+     * toLowerCase() because Sender IDs are case-sensitive.
+     */
     const normalizedSender =
       sender.trim();
 
@@ -175,10 +183,16 @@ export default function CreateSenderIdClient({
     setSubmitting(true);
 
     try {
-      const created = await createSenderId(clientId, {
-        publicId: normalizedPublicId,
-        sender: normalizedSender,
-      });
+      const created =
+        await createSenderId(
+          clientId,
+          {
+            publicId:
+              normalizedPublicId,
+            sender:
+              normalizedSender,
+          },
+        );
 
       router.push(
         `/clients/${encodeURIComponent(clientId)}/sender-ids/${encodeURIComponent(created.id)}`,
@@ -204,7 +218,9 @@ export default function CreateSenderIdClient({
         description="Register a new Sender ID for a client."
       >
         <ContextAwareBackLinks
-          showPlatformLink={showPlatformBackLink}
+          showPlatformLink={
+            showPlatformBackLink
+          }
           platformHref="/sender-ids"
           platformLabel="Back to Sender IDs"
           clientHref={`/clients/${encodeURIComponent(initialClientId)}/sender-ids`}
@@ -351,11 +367,11 @@ export default function CreateSenderIdClient({
                 maxLength={20}
                 disabled={submitting}
                 placeholder="e.g. VIBRANT"
-                className="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm uppercase text-slate-900 outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-slate-50"
+                className="block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
 
               <p className="mt-2 text-xs text-slate-400">
-                Maximum 20 characters.
+                Maximum 20 characters. Sender IDs are case-sensitive.
               </p>
             </div>
           </div>

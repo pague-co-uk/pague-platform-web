@@ -1,26 +1,19 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   useRouter,
 } from "next/navigation";
 
 import {
-  PageContainer,
-} from "@/components/layout/page-container";
-
-import {
-  PageHeader,
-} from "@/components/layout/page-header";
-
-import {
   DataTable,
-  type DataTableColumn,
+  DataTableColumn,
 } from "@/components/ui/data-table";
 
 import {
-  ErrorState,
-} from "@/components/ui/error-state";
+  EmptyState,
+} from "@/components/ui/empty-state";
 
 import {
   FilterBar,
@@ -36,163 +29,152 @@ import {
   StatusBadge,
 } from "@/components/ui/status-badge";
 
-import { formatDate } from "@/lib/date/format-date";
+import {
+  PageContainer,
+} from "@/components/layout/page-container";
+
+import {
+  PageHeader,
+} from "@/components/layout/page-header";
+
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
+
+import {
+  formatDate,
+} from "@/lib/date/format-date";
 
 import type {
-  FindSenderIdsResult,
+  PaginationMeta,
   SenderId,
   SenderIdStatus,
-} from "../api/sender-ids-api";
+} from "@/features/sender-ids/api/sender-ids-api";
+
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface SenderIdsClientProps {
-  clientId: string;
+  readonly senderIds: SenderId[];
 
-  initialSenderIds:
-  | FindSenderIdsResult
-  | null;
+  readonly pagination: PaginationMeta;
 
-  canCreateSenderIds: boolean;
+  readonly canCreateSenderIds: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
-// Constants
-// ============================================================================
-
-const statusOptions = [
-  {
-    value: "PENDING",
-    label: "Pending",
-  },
-  {
-    value: "APPROVED",
-    label: "Approved",
-  },
-  {
-    value: "REJECTED",
-    label: "Rejected",
-  },
-  {
-    value: "DISABLED",
-    label: "Disabled",
-  },
-] as const;
-
-// ============================================================================
-// Sender IDs client
+// Component
 // ============================================================================
 
 export default function SenderIdsClient({
-  clientId,
-  initialSenderIds,
+  senderIds,
+  pagination,
   canCreateSenderIds,
+  clients,
 }: SenderIdsClientProps) {
   const router =
     useRouter();
 
   // ==========================================================================
-  // Navigation
-  // ==========================================================================
-
-  function openSenderId(
-    senderIdId: string,
-  ) {
-    router.push(
-      `/clients/${encodeURIComponent(
-        clientId,
-      )}/sender-ids/${encodeURIComponent(
-        senderIdId,
-      )}`,
-    );
-  }
-
-  // ==========================================================================
   // Columns
   // ==========================================================================
 
-  const columns: DataTableColumn<SenderId>[] = [
-    {
-      key: "sender",
-      header: "Sender ID",
-      render: (senderId: SenderId) => (
-        <div>
-          <div className="font-medium">
-            {senderId.sender}
+  const columns:
+    DataTableColumn<SenderId>[] =
+    [
+      {
+        key: "sender",
+        header: "Sender ID",
+        render: (senderId) => (
+          <div className="min-w-0">
+            <Link
+              href={`/clients/${encodeURIComponent(
+                senderId.clientId,
+              )}/sender-ids/${encodeURIComponent(
+                senderId.id,
+              )}`}
+              onClick={(event) =>
+                event.stopPropagation()
+              }
+              className="text-sm font-medium text-slate-900 transition hover:text-blue-600"
+            >
+              {senderId.sender}
+            </Link>
+
+            <p className="mt-0.5 font-mono text-xs text-slate-400">
+              {senderId.publicId}
+            </p>
           </div>
+        ),
+      },
 
-          <div className="text-xs text-slate-500">
-            {senderId.publicId}
-          </div>
-        </div>
-      ),
-    },
-
-    {
-      key: "status",
-      header: "Status",
-      render: (senderId: SenderId) => (
-        <StatusBadge
-          tone={getStatusTone(
-            senderId.status,
-          )}
-        >
-          {formatStatus(
-            senderId.status,
-          )}
-        </StatusBadge>
-      ),
-    },
-
-    {
-      key: "isDefault",
-      header: "Default",
-      render: (senderId: SenderId) =>
-        senderId.isDefault ? (
-          <StatusBadge
-            tone="info"
-            dot={false}
+      {
+        key: "clientId",
+        header: "Client",
+        render: (senderId) => (
+          <Link
+            href={`/clients/${encodeURIComponent(
+              senderId.clientId,
+            )}/sender-ids`}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            className="text-sm font-medium text-slate-700 transition hover:text-blue-600"
           >
-            Default
-          </StatusBadge>
-        ) : (
-          <span className="text-sm text-slate-400">
-            —
+            {senderId.client.displayName}
+          </Link>
+        ),
+      },
+
+      {
+        key: "status",
+        header: "Status",
+        render: (senderId) => (
+          <SenderIdStatusBadge
+            status={
+              senderId.status
+            }
+          />
+        ),
+      },
+
+      {
+        key: "isDefault",
+        header: "Default",
+        render: (senderId) =>
+          senderId.isDefault ? (
+            <StatusBadge
+              tone="info"
+              dot={false}
+            >
+              Default
+            </StatusBadge>
+          ) : (
+            <span className="text-sm text-slate-400">
+              No
+            </span>
+          ),
+      },
+
+      {
+        key: "createdAt",
+        header: "Created",
+        render: (senderId) => (
+          <span className="whitespace-nowrap text-sm text-slate-600">
+            {formatDate(
+              senderId.createdAt,
+            )}
           </span>
         ),
-    },
-
-    {
-      key: "createdAt",
-      header: "Created",
-      render: (senderId: SenderId) =>
-        formatDate(
-          senderId.createdAt,
-        ),
-    },
-  ];
-
-  // ==========================================================================
-  // Error state
-  // ==========================================================================
-
-  if (!initialSenderIds) {
-    return (
-      <PageContainer>
-        <PageHeader
-          title="Sender IDs"
-          description="Manage SMS Sender IDs and their approval status."
-        />
-
-        <ErrorState
-          title="Unable to load Sender IDs"
-          description="Something went wrong while loading Sender IDs. Please try again."
-        />
-      </PageContainer>
-    );
-  }
+      },
+    ];
 
   // ==========================================================================
   // Render
@@ -202,108 +184,179 @@ export default function SenderIdsClient({
     <PageContainer>
       <PageHeader
         title="Sender IDs"
-        description="Manage SMS Sender IDs and their approval status."
+        description="View and manage Sender IDs across the platform."
       >
         {canCreateSenderIds && (
-          <Link
-            href={`/clients/${encodeURIComponent(
-              clientId,
-            )}/sender-ids/new`}
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700/90 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-          >
-            Create Sender ID
-          </Link>
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label:
+                  "Create Sender ID",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/sender-ids/new`,
+                variant:
+                  "primary",
+              },
+            ]}
+          />
         )}
       </PageHeader>
 
-      <div className="space-y-6">
-        <FilterBar>
-          <FilterSearch
-            name="search"
-            placeholder="Search Sender IDs..."
-          />
+      <div className="mb-5 rounded-xl border border-slate-200 bg-white px-5 py-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Platform
+        </p>
 
-          <FilterSearch
-            name="sender"
-            placeholder="Filter by sender..."
-          />
+        <p className="mt-1 text-sm font-semibold text-slate-900">
+          All clients
+        </p>
 
-          <FilterSelect
-            name="status"
-            options={
-              statusOptions
-            }
-            placeholder="All statuses"
-          />
-        </FilterBar>
-
-        <DataTable
-          columns={
-            columns
-          }
-          rows={
-            initialSenderIds.items
-          }
-          getRowKey={(
-            senderId: SenderId,
-          ) =>
-            senderId.id
-          }
-          onRowClick={(
-            senderId: SenderId,
-          ) =>
-            openSenderId(
-              senderId.id,
-            )
-          }
-        />
-
-        <Pagination
-          meta={
-            initialSenderIds.meta
-          }
-        />
+        <p className="mt-1 text-xs text-slate-500">
+          Showing Sender IDs across the platform. Use the filters below to
+          narrow the results.
+        </p>
       </div>
+
+      <FilterBar
+        resetParams={[
+          "clientId",
+          "status",
+          "search",
+          "page",
+        ]}
+      >
+        <FilterSearch
+          name="search"
+          placeholder="Search Sender IDs..."
+        />
+
+        <FilterSearch
+          name="clientId"
+          placeholder="Client ID..."
+        />
+
+        <FilterSelect
+          name="status"
+          options={[
+            {
+              value: "",
+              label: "All statuses",
+            },
+            {
+              value: "PENDING",
+              label: "Pending",
+            },
+            {
+              value: "APPROVED",
+              label: "Approved",
+            },
+            {
+              value: "REJECTED",
+              label: "Rejected",
+            },
+            {
+              value: "DISABLED",
+              label: "Disabled",
+            },
+          ]}
+        />
+      </FilterBar>
+
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+        {senderIds.length === 0 ? (
+          <EmptyState
+            title="No Sender IDs found"
+            description="There are no Sender IDs matching the current filters."
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            rows={senderIds}
+            getRowKey={(senderId) =>
+              senderId.id
+            }
+            onRowClick={(
+              senderId,
+            ) =>
+              router.push(
+                `/clients/${encodeURIComponent(
+                  senderId.clientId,
+                )}/sender-ids/${encodeURIComponent(
+                  senderId.id,
+                )}`,
+              )
+            }
+          />
+        )}
+      </div>
+
+      {pagination.total > 0 && (
+        <div className="mt-4">
+          <Pagination
+            meta={pagination}
+          />
+        </div>
+      )}
     </PageContainer>
   );
 }
 
 // ============================================================================
-// Status helpers
+// Status badge
 // ============================================================================
 
-function getStatusTone(
-  status: SenderIdStatus,
-) {
-  switch (status) {
-    case "APPROVED":
-      return "success" as const;
+function SenderIdStatusBadge({
+  status,
+}: {
+  readonly status: SenderIdStatus;
+}) {
+  const configuration:
+    Record<
+      SenderIdStatus,
+      {
+        label: string;
+        tone:
+        | "success"
+        | "warning"
+        | "danger"
+        | "neutral";
+      }
+    > = {
+    PENDING: {
+      label: "Pending",
+      tone: "warning",
+    },
 
-    case "PENDING":
-      return "warning" as const;
+    APPROVED: {
+      label: "Approved",
+      tone: "success",
+    },
 
-    case "REJECTED":
-      return "danger" as const;
+    REJECTED: {
+      label: "Rejected",
+      tone: "danger",
+    },
 
-    case "DISABLED":
-      return "neutral" as const;
-  }
-}
+    DISABLED: {
+      label: "Disabled",
+      tone: "neutral",
+    },
+  };
 
-function formatStatus(
-  status: SenderIdStatus,
-): string {
-  switch (status) {
-    case "APPROVED":
-      return "Approved";
+  const item =
+    configuration[status];
 
-    case "PENDING":
-      return "Pending";
-
-    case "REJECTED":
-      return "Rejected";
-
-    case "DISABLED":
-      return "Disabled";
-  }
+  return (
+    <StatusBadge
+      tone={item.tone}
+      dot
+    >
+      {item.label}
+    </StatusBadge>
+  );
 }
