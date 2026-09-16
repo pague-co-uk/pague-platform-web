@@ -10,7 +10,7 @@ import {
   findClients,
 } from "@/features/clients/api/server-clients-api";
 
-import SenderIdsClient from "@/features/sender-ids/components/sender-ids-client";
+import PlatformSenderIdsClient from "@/features/sender-ids/components/platform-sender-ids-client";
 
 import {
   getCurrentUser,
@@ -137,7 +137,7 @@ export default async function SenderIdsPage({
   // ==========================================================================
 
   return (
-    <SenderIdsClient
+    <PlatformSenderIdsClient
       senderIds={
         senderIds.items
       }

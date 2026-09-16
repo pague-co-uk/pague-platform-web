@@ -37,15 +37,23 @@ import {
   PageHeader,
 } from "@/components/layout/page-header";
 
+import {
+  ClientActionSelector,
+} from "@/components/ui/client-action-selector";
+
+import {
+  formatDate,
+} from "@/lib/date/format-date";
+
 import type {
   PaginationMeta,
   SenderId,
   SenderIdStatus,
 } from "@/features/sender-ids/api/sender-ids-api";
 
-import {
-  formatDate,
-} from "@/lib/date/format-date";
+import type {
+  ClientSummary,
+} from "@/features/clients/api/clients-api";
 
 // ============================================================================
 // Types
@@ -55,6 +63,10 @@ interface PlatformSenderIdsClientProps {
   readonly senderIds: SenderId[];
 
   readonly pagination: PaginationMeta;
+
+  readonly canCreateSenderIds: boolean;
+
+  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
@@ -64,6 +76,8 @@ interface PlatformSenderIdsClientProps {
 export default function PlatformSenderIdsClient({
   senderIds,
   pagination,
+  canCreateSenderIds,
+  clients,
 }: PlatformSenderIdsClientProps) {
   const router =
     useRouter();
@@ -81,7 +95,9 @@ export default function PlatformSenderIdsClient({
         render: (senderId) => (
           <div className="min-w-0">
             <Link
-              href={`/sender-ids/${encodeURIComponent(
+              href={`/clients/${encodeURIComponent(
+                senderId.clientId,
+              )}/sender-ids/${encodeURIComponent(
                 senderId.id,
               )}`}
               onClick={(event) =>
@@ -136,9 +152,9 @@ export default function PlatformSenderIdsClient({
       },
 
       {
-        key: "default",
+        key: "isDefault",
         header: "Default",
-        render: (senderId) => (
+        render: (senderId) =>
           senderId.isDefault ? (
             <StatusBadge
               tone="info"
@@ -150,8 +166,7 @@ export default function PlatformSenderIdsClient({
             <span className="text-sm text-slate-400">
               No
             </span>
-          )
-        ),
+          ),
       },
 
       {
@@ -181,12 +196,25 @@ export default function PlatformSenderIdsClient({
         title="Sender IDs"
         description="Manage and monitor Sender IDs across the platform."
       >
-        <Link
-          href="/sender-ids/new"
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
-        >
-          Add Sender ID
-        </Link>
+        {canCreateSenderIds && (
+          <ClientActionSelector
+            clients={clients}
+            actions={[
+              {
+                label:
+                  "Create Sender ID",
+                href: (
+                  clientId,
+                ) =>
+                  `/clients/${encodeURIComponent(
+                    clientId,
+                  )}/sender-ids/new`,
+                variant:
+                  "primary",
+              },
+            ]}
+          />
+        )}
       </PageHeader>
 
       {/* ====================================================================
@@ -309,7 +337,9 @@ export default function PlatformSenderIdsClient({
               senderId,
             ) =>
               router.push(
-                `/clients/${senderId.client.id}/sender-ids/${encodeURIComponent(
+                `/clients/${encodeURIComponent(
+                  senderId.clientId,
+                )}/sender-ids/${encodeURIComponent(
                   senderId.id,
                 )}`,
               )
@@ -353,8 +383,8 @@ function SenderIdStatusBadge({
         | "success"
         | "warning"
         | "danger"
-        | "info"
-        | "neutral";
+        | "neutral"
+        | "info";
       }
     > = {
     PENDING: {

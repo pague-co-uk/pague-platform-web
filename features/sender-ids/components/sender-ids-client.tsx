@@ -38,35 +38,30 @@ import {
 } from "@/components/layout/page-header";
 
 import {
-  ClientActionSelector,
-} from "@/components/ui/client-action-selector";
-
-import {
   formatDate,
 } from "@/lib/date/format-date";
 
 import type {
-  PaginationMeta,
   SenderId,
   SenderIdStatus,
 } from "@/features/sender-ids/api/sender-ids-api";
 
 import type {
-  ClientSummary,
-} from "@/features/clients/api/clients-api";
+  FindSenderIdsResult,
+} from "@/features/sender-ids/api/sender-ids-api";
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface SenderIdsClientProps {
-  readonly senderIds: SenderId[];
+  readonly clientId: string;
 
-  readonly pagination: PaginationMeta;
+  readonly initialSenderIds:
+  | FindSenderIdsResult
+  | null;
 
   readonly canCreateSenderIds: boolean;
-
-  readonly clients: readonly ClientSummary[];
 }
 
 // ============================================================================
@@ -74,13 +69,23 @@ interface SenderIdsClientProps {
 // ============================================================================
 
 export default function SenderIdsClient({
-  senderIds,
-  pagination,
+  clientId,
+  initialSenderIds,
   canCreateSenderIds,
-  clients,
 }: SenderIdsClientProps) {
   const router =
     useRouter();
+
+  const senderIds =
+    initialSenderIds?.items ?? [];
+
+  const pagination =
+    initialSenderIds?.meta ?? {
+      page: 1,
+      pageSize: 20,
+      total: 0,
+      totalPages: 0,
+    };
 
   // ==========================================================================
   // Columns
@@ -96,14 +101,14 @@ export default function SenderIdsClient({
           <div className="min-w-0">
             <Link
               href={`/clients/${encodeURIComponent(
-                senderId.clientId,
+                clientId,
               )}/sender-ids/${encodeURIComponent(
                 senderId.id,
               )}`}
               onClick={(event) =>
                 event.stopPropagation()
               }
-              className="text-sm font-medium text-slate-900 transition hover:text-blue-600"
+              className="text-sm font-semibold text-slate-900 transition hover:text-blue-600"
             >
               {senderId.sender}
             </Link>
@@ -112,24 +117,6 @@ export default function SenderIdsClient({
               {senderId.publicId}
             </p>
           </div>
-        ),
-      },
-
-      {
-        key: "clientId",
-        header: "Client",
-        render: (senderId) => (
-          <Link
-            href={`/clients/${encodeURIComponent(
-              senderId.clientId,
-            )}/sender-ids`}
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-            className="text-sm font-medium text-slate-700 transition hover:text-blue-600"
-          >
-            {senderId.client.displayName}
-          </Link>
         ),
       },
 
@@ -182,51 +169,54 @@ export default function SenderIdsClient({
 
   return (
     <PageContainer>
+      {/* ====================================================================
+          Header
+      ===================================================================== */}
+
       <PageHeader
         title="Sender IDs"
-        description="View and manage Sender IDs across the platform."
+        description="View and manage Sender IDs for this client."
       >
         {canCreateSenderIds && (
-          <ClientActionSelector
-            clients={clients}
-            actions={[
-              {
-                label:
-                  "Create Sender ID",
-                href: (
-                  clientId,
-                ) =>
-                  `/clients/${encodeURIComponent(
-                    clientId,
-                  )}/sender-ids/new`,
-                variant:
-                  "primary",
-              },
-            ]}
-          />
+          <Link
+            href={`/clients/${encodeURIComponent(
+              clientId,
+            )}/sender-ids/new`}
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            Add Sender ID
+          </Link>
         )}
       </PageHeader>
 
+      {/* ====================================================================
+          Client context
+      ===================================================================== */}
+
       <div className="mb-5 rounded-xl border border-slate-200 bg-white px-5 py-4">
         <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-          Platform
+          Client
         </p>
 
         <p className="mt-1 text-sm font-semibold text-slate-900">
-          All clients
+          Sender IDs
         </p>
 
         <p className="mt-1 text-xs text-slate-500">
-          Showing Sender IDs across the platform. Use the filters below to
-          narrow the results.
+          Showing Sender IDs registered for this client.
         </p>
       </div>
 
+      {/* ====================================================================
+          Filters
+      ===================================================================== */}
+
       <FilterBar
         resetParams={[
-          "clientId",
           "status",
           "search",
+          "sender",
+          "isDefault",
           "page",
         ]}
       >
@@ -236,8 +226,8 @@ export default function SenderIdsClient({
         />
 
         <FilterSearch
-          name="clientId"
-          placeholder="Client ID..."
+          name="sender"
+          placeholder="Sender..."
         />
 
         <FilterSelect
@@ -265,18 +255,49 @@ export default function SenderIdsClient({
             },
           ]}
         />
+
+        <FilterSelect
+          name="isDefault"
+          options={[
+            {
+              value: "",
+              label: "All Sender IDs",
+            },
+            {
+              value: "true",
+              label: "Default only",
+            },
+            {
+              value: "false",
+              label: "Non-default",
+            },
+          ]}
+        />
       </FilterBar>
 
+      {/* ====================================================================
+          Table
+      ===================================================================== */}
+
       <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        {senderIds.length === 0 ? (
+        {initialSenderIds === null ? (
+          <EmptyState
+            title="Unable to load Sender IDs"
+            description="The Sender IDs could not be loaded. Please try again."
+          />
+        ) : senderIds.length === 0 ? (
           <EmptyState
             title="No Sender IDs found"
-            description="There are no Sender IDs matching the current filters."
+            description="This client does not have any Sender IDs matching the current filters."
           />
         ) : (
           <DataTable
-            columns={columns}
-            rows={senderIds}
+            columns={
+              columns
+            }
+            rows={
+              senderIds
+            }
             getRowKey={(senderId) =>
               senderId.id
             }
@@ -285,7 +306,7 @@ export default function SenderIdsClient({
             ) =>
               router.push(
                 `/clients/${encodeURIComponent(
-                  senderId.clientId,
+                  clientId,
                 )}/sender-ids/${encodeURIComponent(
                   senderId.id,
                 )}`,
@@ -295,10 +316,16 @@ export default function SenderIdsClient({
         )}
       </div>
 
+      {/* ====================================================================
+          Pagination
+      ===================================================================== */}
+
       {pagination.total > 0 && (
         <div className="mt-4">
           <Pagination
-            meta={pagination}
+            meta={
+              pagination
+            }
           />
         </div>
       )}
@@ -324,7 +351,8 @@ function SenderIdStatusBadge({
         | "success"
         | "warning"
         | "danger"
-        | "neutral";
+        | "neutral"
+        | "info";
       }
     > = {
     PENDING: {
