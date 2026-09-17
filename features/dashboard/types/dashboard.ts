@@ -91,9 +91,10 @@ export interface DashboardStatusBreakdown {
 // ============================================================================
 
 export interface DashboardRoutePerformance {
-  readonly routeId: string;
 
-  readonly connectorId: string;
+  readonly publicId: string;
+
+  readonly connectorName: string;
 
   readonly attempts: number;
 
@@ -102,6 +103,7 @@ export interface DashboardRoutePerformance {
   readonly failed: number;
 
   readonly submissionRate: number;
+
 }
 
 // ============================================================================

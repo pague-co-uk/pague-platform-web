@@ -19,19 +19,19 @@ export function RoutePerformance({
         {data.map(
           (route) => (
             <div
-              key={`${route.routeId}:${route.connectorId}`}
+              key={`${route.publicId}:${route.connectorName}`}
               className="flex items-center justify-between gap-4 px-5 py-4"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-slate-700">
                   Route{" "}
-                  {route.routeId}
+                  {route.publicId}
                 </p>
 
                 <p className="mt-0.5 truncate text-xs text-slate-400">
                   Connector{" "}
                   {
-                    route.connectorId
+                    route.connectorName
                   }
                 </p>
               </div>
