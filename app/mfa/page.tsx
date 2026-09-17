@@ -2,9 +2,10 @@
 
 import {
   FormEvent,
+  Suspense,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 
 import Image from "next/image";
@@ -42,7 +43,7 @@ const mono = JetBrains_Mono({
 // MFA page
 // ============================================================================
 
-export default function MfaPage() {
+function MfaPageContent() {
   const router =
     useRouter();
 
@@ -620,6 +621,14 @@ export default function MfaPage() {
   );
 }
 
+export default function MfaPage() {
+  return (
+    <Suspense fallback={null}>
+      <MfaPageContent />
+    </Suspense>
+  );
+}
+
 // ============================================================================
 // Error handling
 // ============================================================================
@@ -746,3 +755,4 @@ function sanitizeReturnTo(
 
   return value;
 }
+
