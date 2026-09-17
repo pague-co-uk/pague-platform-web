@@ -9,41 +9,73 @@ import {
 import LoginForm from "./login-form";
 
 // ============================================================================
-// Login page
-//
-// This is deliberately a Server Component.
-//
-// Before rendering the login form, we ask the Control Plane whether the
-// browser already has a valid authenticated session.
-//
-// If the session is valid, the user is sent directly to the dashboard.
+// Types
 // ============================================================================
 
-export default async function LoginPage() {
-  // ==========================================================================
-  // Check existing authentication
-  // ==========================================================================
+interface LoginPageProps {
+  searchParams: Promise<{
+    returnTo?: string;
+  }>;
+}
+
+// ============================================================================
+// Login page
+// ============================================================================
+
+export default async function LoginPage({
+  searchParams,
+}: LoginPageProps) {
+  const {
+    returnTo,
+  } = await searchParams;
+
+  const safeReturnTo =
+    sanitizeReturnTo(
+      returnTo,
+    );
 
   const user =
     await getCurrentUser();
-
-  // ==========================================================================
-  // Already authenticated
-  // ==========================================================================
 
   if (
     user &&
     user.active &&
     !user.locked
   ) {
-    redirect("/");
+    redirect(
+      safeReturnTo,
+    );
   }
 
-  // ==========================================================================
-  // Unauthenticated
-  //
-  // Render the client-side login experience.
-  // ==========================================================================
+  return (
+    <LoginForm
+      returnTo={
+        safeReturnTo
+      }
+    />
+  );
+}
 
-  return <LoginForm />;
+// ============================================================================
+// Return URL validation
+// ============================================================================
+
+function sanitizeReturnTo(
+  value: string | undefined,
+): string {
+  if (!value) {
+    return "/";
+  }
+
+  if (
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.startsWith("/\\") ||
+    value.includes("\\") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(value)
+  ) {
+    return "/";
+  }
+
+  return value;
 }

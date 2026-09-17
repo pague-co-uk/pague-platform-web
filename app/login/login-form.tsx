@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import Link from "next/link";
+
 import {
   useRouter,
 } from "next/navigation";
@@ -192,10 +193,20 @@ interface LoginResponse {
 }
 
 // ============================================================================
+// Login form props
+// ============================================================================
+
+interface LoginFormProps {
+  returnTo: string;
+}
+
+// ============================================================================
 // Login page
 // ============================================================================
 
-export default function LoginForm() {
+export default function LoginForm({
+  returnTo,
+}: LoginFormProps) {
   const router =
     useRouter();
 
@@ -399,14 +410,15 @@ export default function LoginForm() {
       // The Next.js /api/auth/login route has already stored the token in
       // the HTTP-only pague_mfa_token cookie.
       //
-      // The browser therefore only needs to navigate to /mfa.
+      // The browser therefore only needs to navigate to /mfa while carrying
+      // the original return URL.
       // ======================================================================
 
       if (
         loginData.requiresMfa
       ) {
         router.replace(
-          "/mfa",
+          `/mfa?returnTo=${encodeURIComponent(returnTo)}`,
         );
 
         return;
@@ -417,10 +429,12 @@ export default function LoginForm() {
       //
       // The login route has already forwarded the Control Plane's
       // authentication cookie to the browser.
+      //
+      // Return the user to the page that originally required authentication.
       // ======================================================================
 
       router.replace(
-        "/",
+        returnTo,
       );
 
       router.refresh();
@@ -740,7 +754,7 @@ export default function LoginForm() {
                     aria-busy={
                       isSubmitting
                     }
-                    className="relative mt-2 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-sm font-medium text-white shadow-[0_8px_32px_rgba(37,99,235,0.35)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_12px_40px_rgba(37,99,235,0.45)] focus:outline-none focus:ring-4 focus:ring-[#3B82F6]/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+                    className="relative mt-2 flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-[#2563EB] to-[#3B82F6] text-sm font-medium text-white shadow-[0_8px_32px_rgba(37,99,235,0.35)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_12px_40px_rgba(37,99,246,0.45)] focus:outline-none focus:ring-4 focus:ring-[#3B82F6]/25 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
                   >
                     {isSubmitting && (
                       <span
@@ -811,14 +825,14 @@ export default function LoginForm() {
 
                                   <div
                                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 ${isActive
-                                      ? "border-[#3B82F6] bg-[#3B82F6]/10 shadow-[0_0_30px_rgba(59,130,246,0.2)]"
-                                      : "border-white/20 bg-[#0B1F3A] hover:border-white/40"
+                                        ? "border-[#3B82F6] bg-[#3B82F6]/10 shadow-[0_0_30px_rgba(59,130,246,0.2)]"
+                                        : "border-white/20 bg-[#0B1F3A] hover:border-white/40"
                                       }`}
                                   >
                                     <IconComponent
                                       className={`h-4 w-4 transition-colors duration-500 ${isActive
-                                        ? "text-[#60A5FA]"
-                                        : "text-white/30 group-hover:text-white/50"
+                                          ? "text-[#60A5FA]"
+                                          : "text-white/30 group-hover:text-white/50"
                                         }`}
                                     />
                                   </div>
@@ -831,8 +845,8 @@ export default function LoginForm() {
                                 <div className="text-center">
                                   <span
                                     className={`block text-[10px] font-medium tracking-[0.12em] transition-colors duration-500 ${isActive
-                                      ? "text-[#60A5FA]"
-                                      : "text-white/30 group-hover:text-white/50"
+                                        ? "text-[#60A5FA]"
+                                        : "text-white/30 group-hover:text-white/50"
                                       }`}
                                   >
                                     {

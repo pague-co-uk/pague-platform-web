@@ -11,6 +11,7 @@ import Image from "next/image";
 
 import {
   useRouter,
+  useSearchParams,
 } from "next/navigation";
 
 import {
@@ -44,6 +45,16 @@ const mono = JetBrains_Mono({
 export default function MfaPage() {
   const router =
     useRouter();
+
+  const searchParams =
+    useSearchParams();
+
+  const returnTo =
+    sanitizeReturnTo(
+      searchParams.get(
+        "returnTo",
+      ),
+    );
 
   const [
     code,
@@ -200,7 +211,7 @@ export default function MfaPage() {
           window.setTimeout(
             () => {
               router.replace(
-                "/login",
+                `/login?returnTo=${encodeURIComponent(returnTo)}`,
               );
             },
             1200,
@@ -247,7 +258,7 @@ export default function MfaPage() {
       // ======================================================================
 
       router.replace(
-        "/",
+        returnTo,
       );
 
       router.refresh();
@@ -577,7 +588,7 @@ export default function MfaPage() {
                 type="button"
                 onClick={() =>
                   router.replace(
-                    "/login",
+                    `/login?returnTo=${encodeURIComponent(returnTo)}`,
                   )
                 }
                 disabled={
@@ -710,4 +721,28 @@ function getErrorMessage(
   }
 
   return fallback;
+}
+
+// ============================================================================
+// Return-to validation
+// ============================================================================
+
+function sanitizeReturnTo(
+  value: string | null,
+): string {
+  if (!value) {
+    return "/";
+  }
+
+  if (
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.startsWith("/\\") ||
+    value.includes("\\") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(value)
+  ) {
+    return "/";
+  }
+
+  return value;
 }

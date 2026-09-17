@@ -353,13 +353,6 @@ export async function POST(
         data: {
           requiresMfa:
             false,
-
-          ...(data.sessionId
-            ? {
-              sessionId:
-                data.sessionId,
-            }
-            : {}),
         },
 
         meta:
