@@ -22,19 +22,18 @@ export function FloatOverview({
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xs font-medium text-slate-500">
-            Available float
+            Available credits
           </p>
 
           <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-            {formatCurrency(
+            {formatNumber(
               float.balance,
-              float.currency,
             )}
           </p>
         </div>
 
         <span className="text-xs text-slate-400">
-          {float.currency}
+          SMS credits
         </span>
       </div>
 
@@ -107,18 +106,5 @@ function formatNumber(
 ): string {
   return new Intl.NumberFormat(
     "en-GB",
-  ).format(value);
-}
-
-function formatCurrency(
-  value: number,
-  currency: string,
-): string {
-  return new Intl.NumberFormat(
-    "en-GB",
-    {
-      style: "currency",
-      currency,
-    },
   ).format(value);
 }
