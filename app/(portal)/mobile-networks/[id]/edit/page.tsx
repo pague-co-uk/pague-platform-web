@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import EditMobileNetworkClient from "@/features/mobile-networks/components/edit-mobile-network-client";
 
 import {
+  findCountries,
   findMobileNetworkById,
   ServerMobileNetworksApiError,
 } from "@/features/mobile-networks/api/server-mobile-networks-api";
 
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { PERMISSIONS } from "@/lib/authorization/permissions";
-
 
 interface EditMobileNetworkPageProps {
   params: Promise<{
@@ -77,6 +77,20 @@ export default async function EditMobileNetworkPage({
     notFound();
   }
 
+  let countries;
+
+  try {
+    countries =
+      await findCountries();
+  } catch (error) {
+    console.error(
+      "Failed to load countries for editing mobile network",
+      error,
+    );
+
+    notFound();
+  }
+
   return (
     <EditMobileNetworkClient
       mobileNetwork={{
@@ -87,7 +101,10 @@ export default async function EditMobileNetworkPage({
         code: mobileNetwork.code,
         countryCode:
           mobileNetwork.countryCode,
+        routingRegex:
+          mobileNetwork.routingRegex,
       }}
+      countries={countries}
     />
   );
 }

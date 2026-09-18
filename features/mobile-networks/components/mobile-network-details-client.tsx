@@ -33,7 +33,6 @@ import {
   StatusBadge,
 } from "@/components/ui/status-badge";
 
-
 import {
   ConfirmModal,
 } from "@/components/ui/confirm-modal";
@@ -106,7 +105,7 @@ export default function MobileNetworkDetailsClient({
   ] = useState(false);
 
   // ==========================================================================
-  // Lifecycle
+  // Actions
   // ==========================================================================
 
   async function handleEnable() {
@@ -277,7 +276,7 @@ export default function MobileNetworkDetailsClient({
             Network information
         ===================================================================== */}
 
-        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="mt-5 grid gap-4 lg:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
               Network
@@ -308,8 +307,28 @@ export default function MobileNetworkDetailsClient({
             </p>
 
             <p className="mt-2 text-lg font-semibold text-slate-900">
-              {mobileNetwork.countryCode}
+              {mobileNetwork.country.name}
             </p>
+
+            <p className="mt-1 font-mono text-sm text-slate-500">
+              {mobileNetwork.country.code}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              Routing Regex
+            </p>
+
+            {mobileNetwork.routingRegex ? (
+              <code className="mt-2 block break-all font-mono text-sm text-slate-900">
+                {mobileNetwork.routingRegex}
+              </code>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500">
+                Not configured
+              </p>
+            )}
           </div>
         </div>
 
@@ -392,75 +411,6 @@ export default function MobileNetworkDetailsClient({
                 </button>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* ====================================================================
-            Prefixes
-        ===================================================================== */}
-
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white">
-          <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="font-semibold text-slate-900">
-                Numbering prefixes
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Manage the prefixes assigned to this
-                mobile network.
-              </p>
-            </div>
-
-            <Link
-              href={`/mobile-networks/${encodeURIComponent(
-                mobileNetwork.id,
-              )}/prefixes`}
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
-            >
-              Manage prefixes
-            </Link>
-          </div>
-
-          <div className="px-5 py-5">
-            {mobileNetwork.prefixes
-              .length === 0 ? (
-              <p className="text-sm text-slate-500">
-                No numbering prefixes have been
-                configured for this network.
-              </p>
-            ) : (
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {mobileNetwork.prefixes.map(
-                  (prefix) => (
-                    <div
-                      key={
-                        prefix.id
-                      }
-                      className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
-                    >
-                      <code className="font-mono text-sm text-slate-700">
-                        {
-                          prefix.prefix
-                        }
-                      </code>
-
-                      <StatusBadge
-                        tone={
-                          prefix.enabled
-                            ? "success"
-                            : "neutral"
-                        }
-                      >
-                        {prefix.enabled
-                          ? "Enabled"
-                          : "Disabled"}
-                      </StatusBadge>
-                    </div>
-                  ),
-                )}
-              </div>
-            )}
           </div>
         </div>
       </PageContainer>

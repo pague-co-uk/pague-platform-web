@@ -45,6 +45,7 @@ import type {
   FindMobileNetworksResult,
   MobileNetwork,
 } from "@/features/mobile-networks/api/mobile-networks-api";
+
 import { formatDate } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -109,22 +110,34 @@ export default function MobileNetworksClient({
       },
 
       {
-        key: "countryCode",
+        key: "country",
         header: "Country",
         render: (network) => (
-          <span className="text-sm text-slate-600">
-            {network.countryCode}
-          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-slate-700">
+              {network.country.name}
+            </p>
+
+            <p className="mt-0.5 font-mono text-xs text-slate-500">
+              {network.country.code}
+            </p>
+          </div>
         ),
       },
 
       {
-        key: "prefixes",
-        header: "Prefixes",
+        key: "routingRegex",
+        header: "Routing Regex",
         render: (network) => (
-          <span className="text-sm text-slate-600">
-            {network.prefixes.length}
-          </span>
+          network.routingRegex ? (
+            <code className="block max-w-xs truncate font-mono text-xs text-slate-600">
+              {network.routingRegex}
+            </code>
+          ) : (
+            <span className="text-sm text-slate-400">
+              Not configured
+            </span>
+          )
         ),
       },
 
@@ -181,7 +194,7 @@ export default function MobileNetworksClient({
       <PageContainer>
         <PageHeader
           title="Mobile Networks"
-          description="Manage mobile networks and their numbering prefixes."
+          description="Manage mobile networks and their routing configuration."
         />
 
         <div className="mt-5 rounded-xl border border-slate-200 bg-white">
@@ -212,7 +225,7 @@ export default function MobileNetworksClient({
     <PageContainer>
       <PageHeader
         title="Mobile Networks"
-        description="Manage mobile networks and their numbering prefixes."
+        description="Manage mobile networks and their routing configuration."
       >
         {canCreateMobileNetworks && (
           <Link

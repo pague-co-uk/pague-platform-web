@@ -10,6 +10,8 @@ import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
 
+
+import { findCountries } from "@/features/mobile-networks/api/server-mobile-networks-api";
 import CreateMobileNetworkClient from "@/features/mobile-networks/components/create-mobile-network-client";
 
 // ============================================================================
@@ -63,10 +65,19 @@ export default async function NewMobileNetworkPage() {
   }
 
   // ==========================================================================
+  // Reference data
+  // ==========================================================================
+
+  const countries =
+    await findCountries();
+
+  // ==========================================================================
   // Render
   // ==========================================================================
 
   return (
-    <CreateMobileNetworkClient />
+    <CreateMobileNetworkClient
+      countries={countries}
+    />
   );
 }

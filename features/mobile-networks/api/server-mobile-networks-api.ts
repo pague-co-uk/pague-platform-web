@@ -7,15 +7,12 @@ import {
 } from "@/lib/control-plane";
 
 import type {
+  Country,
   CreateMobileNetworkInput,
-  CreateMobileNetworkPrefixInput,
-  FindMobileNetworkPrefixesParams,
   FindMobileNetworksParams,
   MobileNetwork,
-  MobileNetworkPrefix,
   PaginationMeta,
   UpdateMobileNetworkInput,
-  UpdateMobileNetworkPrefixInput,
 } from "@/features/mobile-networks/api/mobile-networks-api";
 
 interface ApiErrorResponse {
@@ -39,14 +36,13 @@ interface PaginatedMobileNetworksResponse {
   meta?: PaginationResponse;
 }
 
-interface PaginatedMobileNetworkPrefixesResponse {
+interface CountriesResponse {
   success: boolean;
-  data: MobileNetworkPrefix[];
-  pagination?: PaginationResponse;
-  meta?: PaginationResponse;
+  data: Country[];
 }
 
-export class ServerMobileNetworksApiError extends Error {
+export class ServerMobileNetworksApiError
+  extends Error {
   readonly status: number;
 
   constructor(
@@ -57,6 +53,24 @@ export class ServerMobileNetworksApiError extends Error {
 
     this.name =
       "ServerMobileNetworksApiError";
+
+    this.status =
+      status;
+  }
+}
+
+export class ServerCountriesApiError
+  extends Error {
+  readonly status: number;
+
+  constructor(
+    message: string,
+    status: number,
+  ) {
+    super(message);
+
+    this.name =
+      "ServerCountriesApiError";
 
     this.status =
       status;
@@ -180,38 +194,6 @@ function buildQueryString(
     : "";
 }
 
-function buildPrefixQueryString(
-  params: FindMobileNetworkPrefixesParams = {},
-): string {
-  const searchParams =
-    new URLSearchParams();
-
-  if (
-    params.page !== undefined
-  ) {
-    searchParams.set(
-      "page",
-      String(params.page),
-    );
-  }
-
-  if (
-    params.pageSize !== undefined
-  ) {
-    searchParams.set(
-      "pageSize",
-      String(params.pageSize),
-    );
-  }
-
-  const query =
-    searchParams.toString();
-
-  return query
-    ? `?${query}`
-    : "";
-}
-
 function normalizePagination(
   pagination:
     | PaginationResponse
@@ -226,10 +208,13 @@ function normalizePagination(
     return {
       page:
         pagination.page,
+
       pageSize:
         pagination.pageSize,
+
       total:
         pagination.totalItems,
+
       totalPages:
         pagination.totalPages,
     };
@@ -238,15 +223,73 @@ function normalizePagination(
   return {
     page:
       params.page ?? 1,
+
     pageSize:
       params.pageSize ?? 20,
+
     total:
       fallbackCount,
+
     totalPages:
       fallbackCount > 0
         ? 1
         : 0,
   };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Countries                                                                  */
+/* -------------------------------------------------------------------------- */
+
+export async function findCountries(): Promise<
+  Country[]
+> {
+  const cookie =
+    await getCookieHeader();
+
+  const response =
+    await fetch(
+      `${getControlPlaneUrl()}/api/countries`,
+      {
+        method: "GET",
+        headers: {
+          cookie,
+        },
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    (await response
+      .json()
+      .catch(() => null)) as
+    | CountriesResponse
+    | ApiErrorResponse
+    | null;
+
+  if (!response.ok) {
+    throw new ServerCountriesApiError(
+      getErrorMessage(
+        body,
+        "Unable to retrieve countries.",
+      ),
+      response.status,
+    );
+  }
+
+  if (
+    !body ||
+    typeof body !== "object" ||
+    !("data" in body) ||
+    !Array.isArray(body.data)
+  ) {
+    throw new ServerCountriesApiError(
+      "Invalid country response.",
+      response.status,
+    );
+  }
+
+  return body.data as Country[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -286,6 +329,7 @@ export async function findMobileNetworks(
 
   return {
     items: body.data,
+
     meta: normalizePagination(
       pagination,
       body.data.length,
@@ -484,253 +528,6 @@ export async function disableMobileNetwork(
     }>(
       response,
       "Unable to disable mobile network.",
-    );
-
-  return body.data;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Mobile Network Prefixes                                                    */
-/* -------------------------------------------------------------------------- */
-
-export async function findMobileNetworkPrefixes(
-  id: string,
-  params: FindMobileNetworkPrefixesParams = {},
-): Promise<{
-  items: MobileNetworkPrefix[];
-  meta: PaginationMeta;
-}> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes${buildPrefixQueryString(params)}`,
-      {
-        method: "GET",
-        headers: {
-          cookie,
-        },
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<PaginatedMobileNetworkPrefixesResponse>(
-      response,
-      "Unable to retrieve mobile network prefixes.",
-    );
-
-  const pagination =
-    body.pagination ??
-    body.meta;
-
-  return {
-    items: body.data,
-    meta: normalizePagination(
-      pagination,
-      body.data.length,
-      params,
-    ),
-  };
-}
-
-export async function findMobileNetworkPrefixById(
-  id: string,
-  prefixId: string,
-): Promise<MobileNetworkPrefix> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes/${encodeURIComponent(prefixId)}`,
-      {
-        method: "GET",
-        headers: {
-          cookie,
-        },
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<{
-      success: boolean;
-      data: MobileNetworkPrefix;
-    }>(
-      response,
-      "Unable to retrieve mobile network prefix.",
-    );
-
-  return body.data;
-}
-
-export async function createMobileNetworkPrefix(
-  id: string,
-  input: CreateMobileNetworkPrefixInput,
-): Promise<MobileNetworkPrefix> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes`,
-      {
-        method: "POST",
-        headers: {
-          cookie,
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(
-          input,
-        ),
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<{
-      success: boolean;
-      data: MobileNetworkPrefix;
-    }>(
-      response,
-      "Unable to create mobile network prefix.",
-    );
-
-  return body.data;
-}
-
-export async function updateMobileNetworkPrefix(
-  id: string,
-  prefixId: string,
-  input: UpdateMobileNetworkPrefixInput,
-): Promise<MobileNetworkPrefix> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes/${encodeURIComponent(prefixId)}`,
-      {
-        method: "PUT",
-        headers: {
-          cookie,
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify(
-          input,
-        ),
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<{
-      success: boolean;
-      data: MobileNetworkPrefix;
-    }>(
-      response,
-      "Unable to update mobile network prefix.",
-    );
-
-  return body.data;
-}
-
-export async function deleteMobileNetworkPrefix(
-  id: string,
-  prefixId: string,
-): Promise<void> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes/${encodeURIComponent(prefixId)}`,
-      {
-        method: "DELETE",
-        headers: {
-          cookie,
-        },
-        cache: "no-store",
-      },
-    );
-
-  if (!response.ok) {
-    const body =
-      (await response
-        .json()
-        .catch(() => null)) as unknown;
-
-    throw new ServerMobileNetworksApiError(
-      getErrorMessage(
-        body,
-        "Unable to delete mobile network prefix.",
-      ),
-      response.status,
-    );
-  }
-}
-
-export async function enableMobileNetworkPrefix(
-  id: string,
-  prefixId: string,
-): Promise<MobileNetworkPrefix> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes/${encodeURIComponent(prefixId)}/enable`,
-      {
-        method: "POST",
-        headers: {
-          cookie,
-        },
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<{
-      success: boolean;
-      data: MobileNetworkPrefix;
-    }>(
-      response,
-      "Unable to enable mobile network prefix.",
-    );
-
-  return body.data;
-}
-
-export async function disableMobileNetworkPrefix(
-  id: string,
-  prefixId: string,
-): Promise<MobileNetworkPrefix> {
-  const cookie =
-    await getCookieHeader();
-
-  const response =
-    await fetch(
-      `${getControlPlaneUrl()}/api/mobile-networks/${encodeURIComponent(id)}/prefixes/${encodeURIComponent(prefixId)}/disable`,
-      {
-        method: "POST",
-        headers: {
-          cookie,
-        },
-        cache: "no-store",
-      },
-    );
-
-  const body =
-    await parseResponse<{
-      success: boolean;
-      data: MobileNetworkPrefix;
-    }>(
-      response,
-      "Unable to disable mobile network prefix.",
     );
 
   return body.data;
