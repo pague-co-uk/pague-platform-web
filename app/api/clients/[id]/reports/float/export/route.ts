@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 interface RouteContext {
   params: Promise<{
-    clientId: string;
+    id: string;
   }>;
 }
 
@@ -12,7 +12,7 @@ export async function GET(
   context: RouteContext,
 ) {
   try {
-    const { clientId } =
+    const { id } =
       await context.params;
 
     const { searchParams } =
@@ -31,7 +31,7 @@ export async function GET(
 
     const workbook =
       await exportClientFloatLedgerReport(
-        clientId,
+        id,
         params,
       );
 
