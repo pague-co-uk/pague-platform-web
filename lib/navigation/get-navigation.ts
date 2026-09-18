@@ -65,6 +65,15 @@ interface NavigationDefinition
 //   /clients/:clientId/smpp-accounts
 //   /clients/:clientId/float
 //
+// Reports are not client-scoped in the URL. The report pages determine the
+// applicable client context from the authenticated user.
+//
+// Report routes:
+//
+//   /reports/messages
+//   /reports/routes
+//   /reports/float
+//
 // Client users do not receive platform-wide Clients management navigation.
 // ============================================================================
 
@@ -211,6 +220,62 @@ function getClientNavigation(
         },
       ],
     },
+
+    // ==========================================================================
+    // Reports
+    // ==========================================================================
+
+    {
+      key: "reports",
+
+      label: "Reports",
+
+      icon: "reports",
+
+      children: [
+        {
+          key: "message-reports",
+
+          label: "Messages",
+
+          href:
+            "/reports/messages",
+
+          icon: "messages",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+
+        {
+          key: "route-performance",
+
+          label: "Route Performance",
+
+          href:
+            "/reports/routes",
+
+          icon: "route",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+
+        {
+          key: "float-ledger",
+
+          label: "Float Ledger",
+
+          href:
+            "/reports/float",
+
+          icon: "wallet",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+      ],
+    },
   ];
 }
 
@@ -228,9 +293,19 @@ function getClientNavigation(
 //   /webhooks
 //   /smpp-accounts
 //   /float
+//   /reports
 //
 // Platform resource pages are responsible for client selection/filtering where
 // the underlying resource belongs to a client.
+//
+// Reports are split by report type:
+//
+//   /reports/messages
+//   /reports/routes
+//   /reports/float
+//
+// Each report page is responsible for selecting/filtering the applicable
+// client context.
 // ============================================================================
 
 function getPlatformNavigation(): readonly NavigationDefinition[] {
@@ -450,6 +525,62 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
     },
 
     // ==========================================================================
+    // Reports
+    // ==========================================================================
+
+    {
+      key: "reports",
+
+      label: "Reports",
+
+      icon: "reports",
+
+      children: [
+        {
+          key: "message-reports",
+
+          label: "Messages",
+
+          href:
+            "/reports/messages",
+
+          icon: "messages",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+
+        {
+          key: "route-performance",
+
+          label: "Route Performance",
+
+          href:
+            "/reports/routes",
+
+          icon: "route",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+
+        {
+          key: "float-ledger",
+
+          label: "Float Ledger",
+
+          href:
+            "/reports/float",
+
+          icon: "wallet",
+
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
     // Administration
     // ==========================================================================
 
@@ -479,7 +610,8 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
           label: "Roles",
 
-          href: "/access-control/roles",
+          href:
+            "/access-control/roles",
 
           icon: "roles",
 
@@ -567,7 +699,6 @@ function filterNavigationItem(
   user: CurrentUser,
   item: NavigationDefinition,
 ): NavigationItem | null {
-
   // ==========================================================================
   // Permission
   // ==========================================================================

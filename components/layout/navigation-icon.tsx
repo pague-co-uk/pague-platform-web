@@ -154,7 +154,6 @@ export function NavigationIcon({
             cy="18"
             r="2.5"
           />
-
           <path d="M10.7 7.1 6.3 15.9" />
           <path d="m13.3 7.1 4.4 8.8" />
           <path d="M7.5 18h9" />
@@ -187,7 +186,6 @@ export function NavigationIcon({
         <svg {...commonProps}>
           <path d="M8 12h8" />
           <path d="M12 8v8" />
-
           <rect
             x="3"
             y="8"
@@ -195,7 +193,6 @@ export function NavigationIcon({
             height="8"
             rx="2"
           />
-
           <rect
             x="15"
             y="8"
@@ -219,10 +216,8 @@ export function NavigationIcon({
             cy="19"
             r="2"
           />
-
           <path d="M7 5h5a5 5 0 0 1 5 5v7" />
           <path d="M17 17h2" />
-
           <path d="m15 15 2 2-2 2" />
         </svg>
       );

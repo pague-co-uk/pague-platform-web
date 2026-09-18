@@ -256,6 +256,7 @@ export const PERMISSIONS = {
 
   WEBHOOKS_UPDATE:
     "webhooks:update",
+  REPORTS_READ: "reports.read"
 
 } as const;
 
