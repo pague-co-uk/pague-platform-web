@@ -33,6 +33,7 @@ export interface FindRolesResult {
 export interface CreateRoleInput {
   name: string;
   description?: string;
+  priority: number;
 }
 
 export interface UpdateRoleInput {

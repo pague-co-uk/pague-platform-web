@@ -80,7 +80,7 @@ export default function RolesClient({
             type="button"
             onClick={() =>
               router.push(
-                "/access-control/roles/create",
+                "/access-control/roles/new",
               )
             }
             className="inline-flex h-10 items-center justify-center rounded-md bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
