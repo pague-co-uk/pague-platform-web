@@ -16,6 +16,24 @@ export interface DashboardPeriod {
 }
 
 // ============================================================================
+// Dashboard scope
+// ============================================================================
+
+export type DashboardScope =
+  | "PLATFORM"
+  | "CLIENT";
+
+export interface DashboardViewer {
+  readonly userId: string;
+
+  readonly scope: DashboardScope;
+
+  readonly clientId: string | null;
+
+  readonly clientName: string | null;
+}
+
+// ============================================================================
 // Message status
 // ============================================================================
 
@@ -59,6 +77,28 @@ export interface DashboardMessageSummary {
 }
 
 // ============================================================================
+// KPI summary
+// ============================================================================
+
+export interface DashboardKpiSummary {
+  readonly totalMessages: number;
+
+  readonly delivered: number;
+
+  readonly failed: number;
+
+  readonly deliveryRate: number;
+
+  readonly fifthMetric: {
+    readonly label: string;
+
+    readonly value: number;
+
+    readonly formattedValue: string;
+  };
+}
+
+// ============================================================================
 // Message trend
 // ============================================================================
 
@@ -75,6 +115,18 @@ export interface DashboardTrendPoint {
 }
 
 // ============================================================================
+// Hourly message volume
+// ============================================================================
+
+export interface DashboardHourlyVolume {
+  readonly day: number;
+
+  readonly hour: number;
+
+  readonly count: number;
+}
+
+// ============================================================================
 // Status breakdown
 // ============================================================================
 
@@ -87,11 +139,24 @@ export interface DashboardStatusBreakdown {
 }
 
 // ============================================================================
+// Status / error-code breakdown
+// ============================================================================
+
+export interface DashboardStatusCodeBreakdown {
+  readonly code: string;
+
+  readonly label: string;
+
+  readonly count: number;
+
+  readonly percentage: number;
+}
+
+// ============================================================================
 // Route performance
 // ============================================================================
 
 export interface DashboardRoutePerformance {
-
   readonly publicId: string;
 
   readonly connectorName: string;
@@ -100,10 +165,13 @@ export interface DashboardRoutePerformance {
 
   readonly submitted: number;
 
+  readonly delivered: number;
+
   readonly failed: number;
 
   readonly submissionRate: number;
 
+  readonly deliveryRate: number;
 }
 
 // ============================================================================
@@ -147,6 +215,8 @@ export interface DashboardFloatTrendPoint {
 // ============================================================================
 
 export interface DashboardOperationalSummary {
+  readonly scope: DashboardScope;
+
   readonly clients: {
     readonly active: number;
 
@@ -231,13 +301,21 @@ export interface DashboardActivityItem {
 // ============================================================================
 
 export interface DashboardData {
+  readonly viewer: DashboardViewer;
+
   readonly period: DashboardPeriod;
+
+  readonly kpis: DashboardKpiSummary;
 
   readonly messages: DashboardMessageSummary;
 
   readonly messageTrend: readonly DashboardTrendPoint[];
 
+  readonly hourlyVolume: readonly DashboardHourlyVolume[];
+
   readonly statusBreakdown: readonly DashboardStatusBreakdown[];
+
+  readonly statusCodeBreakdown: readonly DashboardStatusCodeBreakdown[];
 
   readonly routePerformance: readonly DashboardRoutePerformance[];
 
