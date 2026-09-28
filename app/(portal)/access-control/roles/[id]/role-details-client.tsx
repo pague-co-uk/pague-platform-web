@@ -37,6 +37,7 @@ interface RoleDetailsClientProps {
   permissions: readonly RolePermission[];
   canUpdate: boolean;
   canDelete: boolean;
+  canManagePermissions: boolean;
 }
 
 export default function RoleDetailsClient({
@@ -44,6 +45,7 @@ export default function RoleDetailsClient({
   permissions,
   canUpdate,
   canDelete,
+  canManagePermissions,
 }: RoleDetailsClientProps) {
   const router = useRouter();
   const toast = useToast();
@@ -80,10 +82,11 @@ export default function RoleDetailsClient({
   /**
    * Group the COMPLETE permission catalogue by module.
    *
-   * role.permissions only contains permissions currently
-   * assigned to this role. We therefore must use `permissions`
-   * here so that unassigned permissions can also be displayed
-   * and selected.
+   * The complete permission catalogue is only supplied by the
+   * server when the authenticated user is PLATFORM_SUPER_ADMIN.
+   *
+   * role.permissions contains the permissions currently assigned
+   * to this role.
    */
   const groupedPermissions =
     useMemo(() => {
@@ -116,6 +119,10 @@ export default function RoleDetailsClient({
   function togglePermission(
     permissionId: string,
   ) {
+    if (!canManagePermissions) {
+      return;
+    }
+
     setSelectedPermissions(
       (current) => {
         const next = new Set(current);
@@ -136,6 +143,10 @@ export default function RoleDetailsClient({
   function toggleModule(
     modulePermissions: readonly RolePermission[],
   ) {
+    if (!canManagePermissions) {
+      return;
+    }
+
     const allSelected =
       modulePermissions.every(
         (permission) =>
@@ -212,6 +223,15 @@ export default function RoleDetailsClient({
   }
 
   async function handleSavePermissions() {
+    if (!canManagePermissions) {
+      toast.error(
+        "Permission update not allowed",
+        "Only PLATFORM_SUPER_ADMIN can modify role permissions.",
+      );
+
+      return;
+    }
+
     setSavingPermissions(true);
 
     try {
@@ -451,11 +471,13 @@ export default function RoleDetailsClient({
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Select the capabilities granted to this role.
+                {canManagePermissions
+                  ? "Select the capabilities granted to this role."
+                  : "Permissions assigned to this role."}
               </p>
             </div>
 
-            {canUpdate ? (
+            {canManagePermissions ? (
               <button
                 type="button"
                 disabled={
@@ -478,7 +500,9 @@ export default function RoleDetailsClient({
               0 ? (
               <div className="px-6 py-12 text-center">
                 <p className="text-sm text-slate-500">
-                  No permissions are available.
+                  {canManagePermissions
+                    ? "No permissions are available."
+                    : "Permission management is restricted to PLATFORM_SUPER_ADMIN."}
                 </p>
               </div>
             ) : (
@@ -519,7 +543,7 @@ export default function RoleDetailsClient({
                           </p>
                         </div>
 
-                        {canUpdate ? (
+                        {canManagePermissions ? (
                           <button
                             type="button"
                             onClick={() =>
@@ -552,7 +576,7 @@ export default function RoleDetailsClient({
                                 className={`flex gap-3 rounded-md border px-4 py-3 transition ${checked
                                     ? "border-blue-200 bg-blue-50"
                                     : "border-slate-200 bg-white hover:bg-slate-50"
-                                  } ${canUpdate
+                                  } ${canManagePermissions
                                     ? "cursor-pointer"
                                     : "cursor-default"
                                   }`}
@@ -563,7 +587,7 @@ export default function RoleDetailsClient({
                                     checked
                                   }
                                   disabled={
-                                    !canUpdate
+                                    !canManagePermissions
                                   }
                                   onChange={() =>
                                     togglePermission(
