@@ -56,6 +56,12 @@ const API_KEY_CAPABILITIES = [
     description:
       "Allow the API key to submit outbound messages.",
   },
+  {
+    value: "messages.status.read",
+    label: "Read message status",
+    description:
+      "Allow the API key to read the status of a message.",
+  },
 ] as const;
 
 // ============================================================================
