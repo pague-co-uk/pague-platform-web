@@ -6,14 +6,16 @@ import type {
   FindClientFloatLedgerReportParams,
   FindClientMessageReportParams,
   FindClientRoutePerformanceReportParams,
+  FindClientTransactionReportParams,
   FindFloatLedgerReportParams,
   FindFloatLedgerReportResult,
   FindMessageReportParams,
   FindMessageReportResult,
   FindRoutePerformanceReportParams,
   FindRoutePerformanceReportResult,
+  FindTransactionReportParams,
+  FindTransactionReportResult,
 } from "./reports-api";
-
 
 // ============================================================================
 // Error
@@ -249,7 +251,9 @@ export async function findClientMessageReport(
 
   const body =
     await fetchReport(
-      `/api/clients/${encodeURIComponent(clientId)}/reports/messages?${params.toString()}`,
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/messages?${params.toString()}`,
       session,
       "message report",
     );
@@ -403,7 +407,9 @@ export async function findClientRoutePerformanceReport(
 
   const body =
     await fetchReport(
-      `/api/clients/${encodeURIComponent(clientId)}/reports/routes?${params.toString()}`,
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/routes?${params.toString()}`,
       session,
       "route performance report",
     );
@@ -543,7 +549,9 @@ export async function findClientFloatLedgerReport(
 
   const body =
     await fetchReport(
-      `/api/clients/${encodeURIComponent(clientId)}/reports/float?${params.toString()}`,
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/float?${params.toString()}`,
       session,
       "float ledger report",
     );
@@ -553,6 +561,218 @@ export async function findClientFloatLedgerReport(
   >(
     body,
     "float ledger report",
+  );
+}
+
+// ============================================================================
+// Platform transaction report
+// ============================================================================
+
+export async function findPlatformTransactionReport(
+  options: FindTransactionReportParams = {},
+): Promise<FindTransactionReportResult> {
+  const session =
+    await getSessionCookie();
+
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "page",
+    String(options.page ?? 1),
+  );
+
+  params.set(
+    "pageSize",
+    String(options.pageSize ?? 25),
+  );
+
+  if (options.search) {
+    params.set(
+      "search",
+      options.search,
+    );
+  }
+
+  if (options.clientId) {
+    params.set(
+      "clientId",
+      options.clientId,
+    );
+  }
+
+  if (options.clientServiceId) {
+    params.set(
+      "clientServiceId",
+      options.clientServiceId,
+    );
+  }
+
+  if (options.providerId) {
+    params.set(
+      "providerId",
+      options.providerId,
+    );
+  }
+
+  if (options.providerServiceId) {
+    params.set(
+      "providerServiceId",
+      options.providerServiceId,
+    );
+  }
+
+  if (options.currencyId) {
+    params.set(
+      "currencyId",
+      options.currencyId,
+    );
+  }
+
+  if (options.transactionTypeId) {
+    params.set(
+      "transactionTypeId",
+      options.transactionTypeId,
+    );
+  }
+
+  if (options.status) {
+    params.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (options.from) {
+    params.set(
+      "from",
+      options.from,
+    );
+  }
+
+  if (options.to) {
+    params.set(
+      "to",
+      options.to,
+    );
+  }
+
+  const body =
+    await fetchReport(
+      `/api/reports/transactions?${params.toString()}`,
+      session,
+      "transaction report",
+    );
+
+  return parseCollectionResponse<
+    FindTransactionReportResult["items"][number]
+  >(
+    body,
+    "transaction report",
+  );
+}
+
+// ============================================================================
+// Client transaction report
+// ============================================================================
+
+export async function findClientTransactionReport(
+  clientId: string,
+  options: FindClientTransactionReportParams = {},
+): Promise<FindTransactionReportResult> {
+  const session =
+    await getSessionCookie();
+
+  const params =
+    new URLSearchParams();
+
+  params.set(
+    "page",
+    String(options.page ?? 1),
+  );
+
+  params.set(
+    "pageSize",
+    String(options.pageSize ?? 25),
+  );
+
+  if (options.search) {
+    params.set(
+      "search",
+      options.search,
+    );
+  }
+
+  if (options.clientServiceId) {
+    params.set(
+      "clientServiceId",
+      options.clientServiceId,
+    );
+  }
+
+  if (options.providerId) {
+    params.set(
+      "providerId",
+      options.providerId,
+    );
+  }
+
+  if (options.providerServiceId) {
+    params.set(
+      "providerServiceId",
+      options.providerServiceId,
+    );
+  }
+
+  if (options.currencyId) {
+    params.set(
+      "currencyId",
+      options.currencyId,
+    );
+  }
+
+  if (options.transactionTypeId) {
+    params.set(
+      "transactionTypeId",
+      options.transactionTypeId,
+    );
+  }
+
+  if (options.status) {
+    params.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (options.from) {
+    params.set(
+      "from",
+      options.from,
+    );
+  }
+
+  if (options.to) {
+    params.set(
+      "to",
+      options.to,
+    );
+  }
+
+  const body =
+    await fetchReport(
+      `/api/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/transactions?${params.toString()}`,
+      session,
+      "transaction report",
+    );
+
+  return parseCollectionResponse<
+    FindTransactionReportResult["items"][number]
+  >(
+    body,
+    "transaction report",
   );
 }
 
@@ -696,7 +916,9 @@ export async function exportClientMessageReport(
   }
 
   return downloadReport(
-    `/api/clients/${encodeURIComponent(clientId)}/reports/messages/export?${params.toString()}`,
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/reports/messages/export?${params.toString()}`,
     session,
     "message report",
   );
@@ -814,7 +1036,9 @@ export async function exportClientRoutePerformanceReport(
   }
 
   return downloadReport(
-    `/api/clients/${encodeURIComponent(clientId)}/reports/routes/export?${params.toString()}`,
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/reports/routes/export?${params.toString()}`,
     session,
     "route performance report",
   );
@@ -918,9 +1142,187 @@ export async function exportClientFloatLedgerReport(
   }
 
   return downloadReport(
-    `/api/clients/${encodeURIComponent(clientId)}/reports/float/export?${params.toString()}`,
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/reports/float/export?${params.toString()}`,
     session,
     "float ledger report",
+  );
+}
+
+// ============================================================================
+// Export platform transaction report
+// ============================================================================
+
+export async function exportPlatformTransactionReport(
+  options: FindTransactionReportParams = {},
+): Promise<Buffer> {
+  const session =
+    await getSessionCookie();
+
+  const params =
+    new URLSearchParams();
+
+  if (options.search) {
+    params.set(
+      "search",
+      options.search,
+    );
+  }
+
+  if (options.clientId) {
+    params.set(
+      "clientId",
+      options.clientId,
+    );
+  }
+
+  if (options.clientServiceId) {
+    params.set(
+      "clientServiceId",
+      options.clientServiceId,
+    );
+  }
+
+  if (options.providerId) {
+    params.set(
+      "providerId",
+      options.providerId,
+    );
+  }
+
+  if (options.providerServiceId) {
+    params.set(
+      "providerServiceId",
+      options.providerServiceId,
+    );
+  }
+
+  if (options.currencyId) {
+    params.set(
+      "currencyId",
+      options.currencyId,
+    );
+  }
+
+  if (options.transactionTypeId) {
+    params.set(
+      "transactionTypeId",
+      options.transactionTypeId,
+    );
+  }
+
+  if (options.status) {
+    params.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (options.from) {
+    params.set(
+      "from",
+      options.from,
+    );
+  }
+
+  if (options.to) {
+    params.set(
+      "to",
+      options.to,
+    );
+  }
+
+  return downloadReport(
+    `/api/reports/transactions/export?${params.toString()}`,
+    session,
+    "transaction report",
+  );
+}
+
+// ============================================================================
+// Export client transaction report
+// ============================================================================
+
+export async function exportClientTransactionReport(
+  clientId: string,
+  options: FindClientTransactionReportParams = {},
+): Promise<Buffer> {
+  const session =
+    await getSessionCookie();
+
+  const params =
+    new URLSearchParams();
+
+  if (options.search) {
+    params.set(
+      "search",
+      options.search,
+    );
+  }
+
+  if (options.clientServiceId) {
+    params.set(
+      "clientServiceId",
+      options.clientServiceId,
+    );
+  }
+
+  if (options.providerId) {
+    params.set(
+      "providerId",
+      options.providerId,
+    );
+  }
+
+  if (options.providerServiceId) {
+    params.set(
+      "providerServiceId",
+      options.providerServiceId,
+    );
+  }
+
+  if (options.currencyId) {
+    params.set(
+      "currencyId",
+      options.currencyId,
+    );
+  }
+
+  if (options.transactionTypeId) {
+    params.set(
+      "transactionTypeId",
+      options.transactionTypeId,
+    );
+  }
+
+  if (options.status) {
+    params.set(
+      "status",
+      options.status,
+    );
+  }
+
+  if (options.from) {
+    params.set(
+      "from",
+      options.from,
+    );
+  }
+
+  if (options.to) {
+    params.set(
+      "to",
+      options.to,
+    );
+  }
+
+  return downloadReport(
+    `/api/clients/${encodeURIComponent(
+      clientId,
+    )}/reports/transactions/export?${params.toString()}`,
+    session,
+    "transaction report",
   );
 }
 
@@ -1066,6 +1468,7 @@ function parseCollectionResponse<T>(
   resource: string,
 ): {
   readonly items: readonly T[];
+
   readonly meta: {
     readonly page: number;
     readonly pageSize: number;

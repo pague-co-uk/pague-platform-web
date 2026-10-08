@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 
 import {
+  usePathname,
   useRouter,
 } from "next/navigation";
 
@@ -94,6 +95,8 @@ interface ClientDetailsClientProps {
   readonly canRotateWebhookSecrets: boolean;
 
   readonly canReadWebhookDeliveries: boolean;
+
+  readonly canReadClientServices: boolean;
 }
 
 // ============================================================================
@@ -102,27 +105,50 @@ interface ClientDetailsClientProps {
 
 export default function ClientDetailsClient({
   client: initialClient,
+
   canUpdateClient,
+
   canActivateClient,
+
   canSuspendClient,
+
   canDisableClient,
+
   canDeleteClient,
+
   apiKeys,
+
   apiKeysPagination,
+
   webhooks,
+
   webhooksPagination,
+
   canReadApiKeys,
+
   canCreateApiKeys,
+
   canRevokeApiKeys,
+
   canReadWebhooks,
+
   canCreateWebhooks,
+
   canUpdateWebhooks,
+
   canDeleteWebhooks,
+
   canRotateWebhookSecrets,
+
   canReadWebhookDeliveries,
+
+  canReadClientServices,
 }: ClientDetailsClientProps) {
   const router =
     useRouter();
+
+  const pathname =
+    usePathname();
 
   const {
     success,
@@ -150,6 +176,27 @@ export default function ClientDetailsClient({
     actionLoading,
     setActionLoading,
   ] = useState(false);
+
+  // ==========================================================================
+  // Client navigation
+  // ==========================================================================
+
+  const clientBasePath =
+    `/clients/${encodeURIComponent(
+      client.id,
+    )}`;
+
+  const isClientOverviewActive =
+    pathname === clientBasePath;
+
+  const isClientSectionActive = (
+    section: string,
+  ) =>
+    pathname ===
+    `${clientBasePath}/${section}` ||
+    pathname.startsWith(
+      `${clientBasePath}/${section}/`,
+    );
 
   // ==========================================================================
   // Lifecycle action
@@ -280,9 +327,9 @@ export default function ClientDetailsClient({
 
   return (
     <PageContainer>
-      {/* ======================================================================
+      {/* ====================================================================
           Header
-      ======================================================================= */}
+      ===================================================================== */}
 
       <PageHeader
         title="Client details"
@@ -290,9 +337,7 @@ export default function ClientDetailsClient({
       >
         {canUpdateClient && (
           <Link
-            href={`/clients/${encodeURIComponent(
-              client.id,
-            )}/edit`}
+            href={`${clientBasePath}/edit`}
             className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
           >
             Edit client
@@ -300,9 +345,9 @@ export default function ClientDetailsClient({
         )}
       </PageHeader>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Back
-      ======================================================================= */}
+      ===================================================================== */}
 
       <div className="mb-5">
         <Link
@@ -315,9 +360,9 @@ export default function ClientDetailsClient({
         </Link>
       </div>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Identity
-      ======================================================================= */}
+      ===================================================================== */}
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
@@ -361,9 +406,9 @@ export default function ClientDetailsClient({
             </div>
           </div>
 
-          {/* ==================================================================
+          {/* ================================================================
               Lifecycle actions
-          =================================================================== */}
+          ================================================================ */}
 
           <div className="flex flex-wrap items-center gap-2">
             {client.status ===
@@ -471,14 +516,95 @@ export default function ClientDetailsClient({
         </div>
       </section>
 
-      {/* ======================================================================
+      {/* ====================================================================
+          Client navigation
+      ===================================================================== */}
+
+      <nav
+        aria-label="Client navigation"
+        className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white"
+      >
+        <div className="flex min-w-max border-b border-slate-200 px-2">
+          <ClientNavigationLink
+            href={clientBasePath}
+            label="Overview"
+            active={
+              isClientOverviewActive
+            }
+          />
+
+          <ClientNavigationLink
+            href={`${clientBasePath}/messages`}
+            label="Messages"
+            active={isClientSectionActive(
+              "messages",
+            )}
+          />
+
+          <ClientNavigationLink
+            href={`${clientBasePath}/sender-ids`}
+            label="Sender IDs"
+            active={isClientSectionActive(
+              "sender-ids",
+            )}
+          />
+
+          {canReadClientServices && (
+            <ClientNavigationLink
+              href={`${clientBasePath}/services`}
+              label="Services"
+              active={isClientSectionActive(
+                "services",
+              )}
+            />
+          )}
+
+          {canReadApiKeys && (
+            <ClientNavigationLink
+              href={`${clientBasePath}/api-keys`}
+              label="API Keys"
+              active={isClientSectionActive(
+                "api-keys",
+              )}
+            />
+          )}
+
+          {canReadWebhooks && (
+            <ClientNavigationLink
+              href={`${clientBasePath}/webhooks`}
+              label="Webhooks"
+              active={isClientSectionActive(
+                "webhooks",
+              )}
+            />
+          )}
+
+          <ClientNavigationLink
+            href={`${clientBasePath}/smpp-accounts`}
+            label="SMPP Accounts"
+            active={isClientSectionActive(
+              "smpp-accounts",
+            )}
+          />
+
+          <ClientNavigationLink
+            href={`${clientBasePath}/float`}
+            label="Float"
+            active={isClientSectionActive(
+              "float",
+            )}
+          />
+        </div>
+      </nav>
+
+      {/* ====================================================================
           Main grid
-      ======================================================================= */}
+      ===================================================================== */}
 
       <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-3">
-        {/* ====================================================================
+        {/* ==================================================================
             Client information
-        ===================================================================== */}
+        =================================================================== */}
 
         <section className="rounded-xl border border-slate-200 bg-white xl:col-span-2">
           <SectionHeader
@@ -534,9 +660,9 @@ export default function ClientDetailsClient({
           </div>
         </section>
 
-        {/* ====================================================================
+        {/* ==================================================================
             Configuration
-        ===================================================================== */}
+        =================================================================== */}
 
         <section className="rounded-xl border border-slate-200 bg-white">
           <SectionHeader
@@ -571,9 +697,9 @@ export default function ClientDetailsClient({
           </div>
         </section>
 
-        {/* ====================================================================
+        {/* ==================================================================
             API Keys
-        ===================================================================== */}
+        =================================================================== */}
 
         {canReadApiKeys && (
           <section className="rounded-xl border border-slate-200 bg-white xl:col-span-3">
@@ -583,9 +709,7 @@ export default function ClientDetailsClient({
               trailing={
                 <div className="flex shrink-0 items-center gap-2">
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/api-keys`}
+                    href={`${clientBasePath}/api-keys`}
                     className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
                   >
                     Manage
@@ -593,9 +717,7 @@ export default function ClientDetailsClient({
 
                   {canCreateApiKeys && (
                     <Link
-                      href={`/clients/${encodeURIComponent(
-                        client.id,
-                      )}/api-keys/new`}
+                      href={`${clientBasePath}/api-keys/new`}
                       className="inline-flex h-8 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white transition hover:bg-blue-700"
                     >
                       Create key
@@ -618,9 +740,7 @@ export default function ClientDetailsClient({
 
                 {canCreateApiKeys && (
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/api-keys/new`}
+                    href={`${clientBasePath}/api-keys/new`}
                     className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
                   >
                     Create API key
@@ -649,6 +769,7 @@ export default function ClientDetailsClient({
                             {
                               apiKey.prefix
                             }
+                            {" "}
                             ••••••••
                           </span>
 
@@ -693,9 +814,7 @@ export default function ClientDetailsClient({
               apiKeys.length && (
                 <div className="border-t border-slate-100 px-5 py-3 sm:px-6">
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/api-keys`}
+                    href={`${clientBasePath}/api-keys`}
                     className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
                   >
                     View all{" "}
@@ -709,9 +828,9 @@ export default function ClientDetailsClient({
           </section>
         )}
 
-        {/* ====================================================================
+        {/* ==================================================================
             Webhooks
-        ===================================================================== */}
+        =================================================================== */}
 
         {canReadWebhooks && (
           <section className="rounded-xl border border-slate-200 bg-white xl:col-span-3">
@@ -721,9 +840,7 @@ export default function ClientDetailsClient({
               trailing={
                 <div className="flex shrink-0 items-center gap-2">
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/webhooks`}
+                    href={`${clientBasePath}/webhooks`}
                     className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
                   >
                     Manage
@@ -731,9 +848,7 @@ export default function ClientDetailsClient({
 
                   {canCreateWebhooks && (
                     <Link
-                      href={`/clients/${encodeURIComponent(
-                        client.id,
-                      )}/webhooks/create`}
+                      href={`${clientBasePath}/webhooks/create`}
                       className="inline-flex h-8 items-center justify-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white transition hover:bg-blue-700"
                     >
                       Add webhook
@@ -756,9 +871,7 @@ export default function ClientDetailsClient({
 
                 {canCreateWebhooks && (
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/webhooks/create`}
+                    href={`${clientBasePath}/webhooks/create`}
                     className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
                   >
                     Add webhook
@@ -812,9 +925,7 @@ export default function ClientDetailsClient({
               webhooks.length && (
                 <div className="border-t border-slate-100 px-5 py-3 sm:px-6">
                   <Link
-                    href={`/clients/${encodeURIComponent(
-                      client.id,
-                    )}/webhooks`}
+                    href={`${clientBasePath}/webhooks`}
                     className="text-sm font-medium text-slate-600 transition hover:text-slate-900"
                   >
                     View all{" "}
@@ -828,9 +939,9 @@ export default function ClientDetailsClient({
           </section>
         )}
 
-        {/* ====================================================================
+        {/* ==================================================================
             Timestamps
-        ===================================================================== */}
+        =================================================================== */}
 
         <section className="rounded-xl border border-slate-200 bg-white xl:col-span-3">
           <SectionHeader
@@ -856,9 +967,9 @@ export default function ClientDetailsClient({
         </section>
       </div>
 
-      {/* ======================================================================
+      {/* ====================================================================
           Delete confirmation
-      ======================================================================= */}
+      ===================================================================== */}
 
       <ConfirmModal
         open={
@@ -887,6 +998,41 @@ export default function ClientDetailsClient({
         }}
       />
     </PageContainer>
+  );
+}
+
+// ============================================================================
+// Client navigation link
+// ============================================================================
+
+interface ClientNavigationLinkProps {
+  readonly href: string;
+  readonly label: string;
+  readonly active: boolean;
+}
+
+function ClientNavigationLink({
+  href,
+  label,
+  active,
+}: ClientNavigationLinkProps) {
+  return (
+    <Link
+      href={href}
+      className={[
+        "relative inline-flex h-11 items-center px-3 text-sm font-medium transition",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:ring-offset-1",
+        active
+          ? "text-blue-600"
+          : "text-slate-500 hover:text-slate-900",
+      ].join(" ")}
+    >
+      {label}
+
+      {active && (
+        <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-blue-600" />
+      )}
+    </Link>
   );
 }
 

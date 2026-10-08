@@ -19,6 +19,12 @@ const REPORTS = [
       "Review float transactions, credits, references, and ledger activity.",
     href: "/reports/float",
   },
+  {
+    title: "Transactions",
+    description:
+      "Review payment transactions, providers, services, currencies, statuses, and references.",
+    href: "/reports/transactions",
+  },
 ] as const;
 
 export default function ReportsPage() {
@@ -34,7 +40,7 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {REPORTS.map((report) => (
           <Link
             key={report.href}

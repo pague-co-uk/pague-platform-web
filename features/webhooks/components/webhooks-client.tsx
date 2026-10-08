@@ -12,6 +12,7 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { StatusBadge } from "@/components/ui/status-badge";
 
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import type {
   Webhook,
   WebhookPagination,
@@ -163,6 +164,18 @@ export function WebhooksClient({
 
   return (
     <div className="space-y-6 px-6 pt-6 pb-6">
+      {/* Context navigation */}
+      {clientId && (
+        <div className="mb-6">
+          <ContextAwareBackLinks
+            clientHref={`/clients/${encodeURIComponent(
+              clientId,
+            )}`}
+            clientLabel="Back to client"
+            showPlatformLink={false}
+          />
+        </div>
+      )}
       {!client ? (
         <div className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">

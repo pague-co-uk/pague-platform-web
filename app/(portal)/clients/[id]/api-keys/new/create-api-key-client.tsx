@@ -62,6 +62,19 @@ const API_KEY_CAPABILITIES = [
     description:
       "Allow the API key to read the status of a message.",
   },
+  {
+    value: "payments.create",
+    label: "Create payments",
+    description:
+      "Allow the API key to create payment transactions.",
+  },
+  {
+    value: "payments.read",
+    label: "Read payment status",
+    description:
+      "Allow the API key to read the status of a payment transaction.",
+  },
+
 ] as const;
 
 // ============================================================================

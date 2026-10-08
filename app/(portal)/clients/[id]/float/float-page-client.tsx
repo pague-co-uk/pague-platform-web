@@ -54,6 +54,7 @@ import type {
   Client,
 } from "@/features/clients/api/clients-api";
 
+import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
   formatDate,
 } from "@/lib/date/format-date";
@@ -407,6 +408,16 @@ export default function FloatClient({
 
   return (
     <PageContainer>
+      {/* Context navigation */}
+      <div className="mb-6">
+        <ContextAwareBackLinks
+          clientHref={`/clients/${encodeURIComponent(
+            client.id,
+          )}`}
+          clientLabel="Back to client"
+          showPlatformLink={false}
+        />
+      </div>
       {/* ======================================================================
           Header
       ======================================================================= */}
@@ -491,15 +502,6 @@ export default function FloatClient({
             </span>
           </div>
         </div>
-
-        <Link
-          href={`/clients/${encodeURIComponent(
-            client.id,
-          )}`}
-          className="shrink-0 text-sm font-medium text-slate-600 transition hover:text-slate-900"
-        >
-          Back to client
-        </Link>
       </div>
 
       {/* ======================================================================

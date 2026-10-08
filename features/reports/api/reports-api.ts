@@ -2,6 +2,7 @@ import type {
   FloatLedgerReportRow,
   MessageReportRow,
   RoutePerformanceReportRow,
+  TransactionReportRow,
 } from "../types/report-types";
 
 // ============================================================================
@@ -892,6 +893,330 @@ export async function exportClientFloatLedgerReport(
       `${API_BASE}/clients/${encodeURIComponent(
         clientId,
       )}/reports/float/export${query
+        ? `?${query}`
+        : ""
+      }`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  if (!response.ok) {
+    await parseErrorResponse(
+      response,
+    );
+  }
+
+  return response.blob();
+}
+
+// ============================================================================
+// Transactions
+// ============================================================================
+
+export interface FindTransactionReportParams {
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly search?: string;
+  readonly clientId?: string;
+  readonly clientServiceId?: string;
+  readonly providerId?: string;
+  readonly providerServiceId?: string;
+  readonly currencyId?: string;
+  readonly transactionTypeId?: string;
+  readonly status?: string;
+  readonly from?: string;
+  readonly to?: string;
+}
+
+export interface FindClientTransactionReportParams {
+  readonly page?: number;
+  readonly pageSize?: number;
+  readonly search?: string;
+  readonly clientServiceId?: string;
+  readonly providerId?: string;
+  readonly providerServiceId?: string;
+  readonly currencyId?: string;
+  readonly transactionTypeId?: string;
+  readonly status?: string;
+  readonly from?: string;
+  readonly to?: string;
+}
+
+export interface FindTransactionReportResult {
+  readonly items: readonly TransactionReportRow[];
+
+  readonly meta: {
+    readonly page: number;
+    readonly pageSize: number;
+    readonly total: number;
+    readonly totalPages: number;
+  };
+}
+
+// ============================================================================
+// Platform transaction report
+// ============================================================================
+
+export async function findPlatformTransactionReport(
+  params: FindTransactionReportParams = {},
+): Promise<FindTransactionReportResult> {
+  const query =
+    buildQuery({
+      page:
+        params.page ?? 1,
+
+      pageSize:
+        params.pageSize ?? 25,
+
+      clientId:
+        params.clientId,
+
+      search:
+        params.search,
+
+      clientServiceId:
+        params.clientServiceId,
+
+      providerId:
+        params.providerId,
+
+      providerServiceId:
+        params.providerServiceId,
+
+      currencyId:
+        params.currencyId,
+
+      transactionTypeId:
+        params.transactionTypeId,
+
+      status:
+        params.status,
+
+      from:
+        params.from,
+
+      to:
+        params.to,
+    });
+
+  const response =
+    await fetch(
+      `${API_BASE}/reports/transactions?${query}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    (await response
+      .json()
+      .catch(() => null)) as unknown;
+
+  if (!response.ok) {
+    throw new ReportsApiError(
+      getReportErrorMessage(
+        body,
+        "Unable to load transaction report.",
+      ),
+      response.status,
+    );
+  }
+
+  return parseReportResponse<TransactionReportRow>(
+    body,
+    response.status,
+    "transaction report",
+  );
+}
+
+// ============================================================================
+// Client transaction report
+// ============================================================================
+
+export async function findClientTransactionReport(
+  clientId: string,
+  params: FindClientTransactionReportParams = {},
+): Promise<FindTransactionReportResult> {
+  const query =
+    buildQuery({
+      page:
+        params.page ?? 1,
+
+      pageSize:
+        params.pageSize ?? 25,
+
+      search:
+        params.search,
+
+      clientServiceId:
+        params.clientServiceId,
+
+      providerId:
+        params.providerId,
+
+      providerServiceId:
+        params.providerServiceId,
+
+      currencyId:
+        params.currencyId,
+
+      transactionTypeId:
+        params.transactionTypeId,
+
+      status:
+        params.status,
+
+      from:
+        params.from,
+
+      to:
+        params.to,
+    });
+
+  const response =
+    await fetch(
+      `${API_BASE}/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/transactions?${query}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  const body =
+    (await response
+      .json()
+      .catch(() => null)) as unknown;
+
+  if (!response.ok) {
+    throw new ReportsApiError(
+      getReportErrorMessage(
+        body,
+        "Unable to load transaction report.",
+      ),
+      response.status,
+    );
+  }
+
+  return parseReportResponse<TransactionReportRow>(
+    body,
+    response.status,
+    "transaction report",
+  );
+}
+
+// ============================================================================
+// Export platform transaction report
+// ============================================================================
+
+export async function exportPlatformTransactionReport(
+  params: FindTransactionReportParams = {},
+): Promise<Blob> {
+  const query =
+    buildQuery({
+      clientId:
+        params.clientId,
+
+      search:
+        params.search,
+
+      clientServiceId:
+        params.clientServiceId,
+
+      providerId:
+        params.providerId,
+
+      providerServiceId:
+        params.providerServiceId,
+
+      currencyId:
+        params.currencyId,
+
+      transactionTypeId:
+        params.transactionTypeId,
+
+      status:
+        params.status,
+
+      from:
+        params.from,
+
+      to:
+        params.to,
+    });
+
+  const response =
+    await fetch(
+      `${API_BASE}/reports/transactions/export${query
+        ? `?${query}`
+        : ""
+      }`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      },
+    );
+
+  if (!response.ok) {
+    await parseErrorResponse(
+      response,
+    );
+  }
+
+  return response.blob();
+}
+
+// ============================================================================
+// Export client transaction report
+// ============================================================================
+
+export async function exportClientTransactionReport(
+  clientId: string,
+  params: FindClientTransactionReportParams = {},
+): Promise<Blob> {
+  const query =
+    buildQuery({
+      search:
+        params.search,
+
+      clientServiceId:
+        params.clientServiceId,
+
+      providerId:
+        params.providerId,
+
+      providerServiceId:
+        params.providerServiceId,
+
+      currencyId:
+        params.currencyId,
+
+      transactionTypeId:
+        params.transactionTypeId,
+
+      status:
+        params.status,
+
+      from:
+        params.from,
+
+      to:
+        params.to,
+    });
+
+  const response =
+    await fetch(
+      `${API_BASE}/clients/${encodeURIComponent(
+        clientId,
+      )}/reports/transactions/export${query
         ? `?${query}`
         : ""
       }`,

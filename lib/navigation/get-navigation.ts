@@ -33,6 +33,12 @@ export interface NavigationItem {
   href?: string;
   icon: NavigationIconName;
   badge?: string | number;
+
+  /**
+   * When true, this item is active only when the pathname exactly matches href.
+   */
+  exact?: boolean;
+
   children?: readonly NavigationItem[];
 }
 
@@ -63,6 +69,7 @@ interface NavigationDefinition
 //   /clients/:clientId/api-keys
 //   /clients/:clientId/webhooks
 //   /clients/:clientId/smpp-accounts
+//   /clients/:clientId/services
 //   /clients/:clientId/float
 //
 // Reports are not client-scoped in the URL. The report pages determine the
@@ -73,6 +80,7 @@ interface NavigationDefinition
 //   /reports/messages
 //   /reports/routes
 //   /reports/float
+//   /reports/transactions
 //
 // Client users do not receive platform-wide Clients management navigation.
 // ============================================================================
@@ -87,11 +95,8 @@ function getClientNavigation(
 
     {
       key: "dashboard",
-
       label: "Dashboard",
-
       href: "/",
-
       icon: "dashboard",
     },
 
@@ -101,36 +106,25 @@ function getClientNavigation(
 
     {
       key: "messaging",
-
       label: "Messaging",
-
       icon: "messages",
-
       children: [
         {
           key: "messages",
-
           label: "Messages",
-
           href:
             `/clients/${user.clientId}/messages`,
-
           icon: "messages",
-
           permission:
             PERMISSIONS.MESSAGES_READ,
         },
 
         {
           key: "sender-ids",
-
           label: "Sender IDs",
-
           href:
             `/clients/${user.clientId}/sender-ids`,
-
           icon: "sender",
-
           permission:
             PERMISSIONS.SENDER_IDS_READ,
         },
@@ -143,50 +137,35 @@ function getClientNavigation(
 
     {
       key: "infrastructure",
-
       label: "Infrastructure",
-
       icon: "settings",
-
       children: [
         {
           key: "api-keys",
-
           label: "API Keys",
-
           href:
             `/clients/${user.clientId}/api-keys`,
-
           icon: "key",
-
           permission:
             PERMISSIONS.API_KEYS_READ,
         },
 
         {
           key: "webhooks",
-
           label: "Webhooks",
-
           href:
             `/clients/${user.clientId}/webhooks`,
-
           icon: "webhook",
-
           permission:
             PERMISSIONS.WEBHOOKS_READ,
         },
 
         {
           key: "smpp-accounts",
-
           label: "SMPP Accounts",
-
           href:
             `/clients/${user.clientId}/smpp-accounts`,
-
           icon: "smpp",
-
           permission:
             PERMISSIONS.SMPP_ACCOUNTS_READ,
         },
@@ -199,24 +178,38 @@ function getClientNavigation(
 
     {
       key: "finance",
-
       label: "Finance",
-
       icon: "wallet",
-
       children: [
         {
           key: "float",
-
           label: "Float",
-
           href:
             `/clients/${user.clientId}/float`,
-
           icon: "wallet",
-
           permission:
             PERMISSIONS.FLOAT_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
+    // Payments
+    // ==========================================================================
+
+    {
+      key: "payments",
+      label: "Payments",
+      icon: "payments",
+      children: [
+        {
+          key: "client-services",
+          label: "Services",
+          href:
+            `/clients/${user.clientId}/services`,
+          icon: "clients",
+          permission:
+            PERMISSIONS.CLIENT_SERVICES_READ,
         },
       ],
     },
@@ -227,50 +220,45 @@ function getClientNavigation(
 
     {
       key: "reports",
-
       label: "Reports",
-
       icon: "reports",
-
       children: [
         {
           key: "message-reports",
-
           label: "Messages",
-
           href:
             "/reports/messages",
-
           icon: "messages",
-
           permission:
             PERMISSIONS.REPORTS_READ,
         },
 
         {
           key: "route-performance",
-
           label: "Route Performance",
-
           href:
             "/reports/routes",
-
           icon: "route",
-
           permission:
             PERMISSIONS.REPORTS_READ,
         },
 
         {
           key: "float-ledger",
-
           label: "Float Ledger",
-
           href:
             "/reports/float",
-
           icon: "wallet",
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
 
+        {
+          key: "transaction-reports",
+          label: "Transactions",
+          href:
+            "/reports/transactions",
+          icon: "payments",
           permission:
             PERMISSIONS.REPORTS_READ,
         },
@@ -303,6 +291,7 @@ function getClientNavigation(
 //   /reports/messages
 //   /reports/routes
 //   /reports/float
+//   /reports/transactions
 //
 // Each report page is responsible for selecting/filtering the applicable
 // client context.
@@ -316,11 +305,8 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "dashboard",
-
       label: "Dashboard",
-
       href: "/",
-
       icon: "dashboard",
     },
 
@@ -330,47 +316,32 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "network-routing",
-
       label: "Network & Routing",
-
       icon: "network",
-
       children: [
         {
           key: "mobile-networks",
-
           label: "Mobile Networks",
-
           href: "/mobile-networks",
-
           icon: "mobile-network",
-
           permission:
             PERMISSIONS.MOBILE_NETWORKS_READ,
         },
 
         {
           key: "connectors",
-
           label: "Connectors",
-
           href: "/connectors",
-
           icon: "connector",
-
           permission:
             PERMISSIONS.CONNECTORS_READ,
         },
 
         {
           key: "routes",
-
           label: "Routes",
-
           href: "/routes",
-
           icon: "route",
-
           permission:
             PERMISSIONS.ROUTES_READ,
         },
@@ -383,21 +354,15 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "clients",
-
       label: "Clients",
-
       icon: "clients",
-
       children: [
         {
           key: "clients-list",
-
           label: "Clients",
-
           href: "/clients",
-
           icon: "clients",
-
+          exact: true,
           permission:
             PERMISSIONS.CLIENTS_READ,
         },
@@ -410,36 +375,127 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "messaging",
-
       label: "Messaging",
-
       icon: "messages",
-
       children: [
         {
           key: "messages",
-
           label: "Messages",
-
           href: "/messages",
-
           icon: "messages",
-
           permission:
             PERMISSIONS.MESSAGES_READ,
         },
 
         {
           key: "sender-ids",
-
           label: "Sender IDs",
-
           href: "/sender-ids",
-
           icon: "sender",
-
           permission:
             PERMISSIONS.SENDER_IDS_READ,
+        },
+      ],
+    },
+
+    // ==========================================================================
+    // Payments
+    // ==========================================================================
+
+    {
+      key: "payments",
+      label: "Payments",
+      icon: "payments",
+      children: [
+        // ------------------------------------------------------------------------
+        // Services
+        // ------------------------------------------------------------------------
+
+        {
+          key: "payment-services",
+          label: "Services",
+          href: "/services",
+          icon: "connector",
+          permission:
+            PERMISSIONS.SERVICES_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Payment Providers
+        // ------------------------------------------------------------------------
+
+        {
+          key: "payment-providers",
+          label: "Providers",
+          href: "/payment-providers",
+          icon: "mobile-money",
+          permission:
+            PERMISSIONS.PAYMENT_PROVIDERS_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Provider Services
+        // ------------------------------------------------------------------------
+
+        {
+          key: "provider-services",
+          label: "Provider Services",
+          href: "/provider-services",
+          icon: "connector",
+          permission:
+            PERMISSIONS.PROVIDER_SERVICES_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Transaction Types
+        // ------------------------------------------------------------------------
+
+        {
+          key: "transaction-types",
+          label: "Transaction Types",
+          href: "/transaction-types",
+          icon: "route",
+          permission:
+            PERMISSIONS.TRANSACTION_TYPES_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Currencies
+        // ------------------------------------------------------------------------
+
+        {
+          key: "currencies",
+          label: "Currencies",
+          href: "/currencies",
+          icon: "payments",
+          permission:
+            PERMISSIONS.CURRENCIES_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Country Currencies
+        // ------------------------------------------------------------------------
+
+        {
+          key: "country-currencies",
+          label: "Country Currencies",
+          href: "/country-currencies",
+          icon: "mobile-network",
+          permission:
+            PERMISSIONS.COUNTRY_CURRENCIES_READ,
+        },
+
+        // ------------------------------------------------------------------------
+        // Transactions
+        // ------------------------------------------------------------------------
+
+        {
+          key: "payments",
+          label: "Transactions",
+          href: "/payments",
+          icon: "payments",
+          permission:
+            PERMISSIONS.PAYMENTS_READ,
         },
       ],
     },
@@ -450,47 +506,32 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "infrastructure",
-
       label: "Infrastructure",
-
       icon: "settings",
-
       children: [
         {
           key: "api-keys",
-
           label: "API Keys",
-
           href: "/api-keys",
-
           icon: "key",
-
           permission:
             PERMISSIONS.API_KEYS_READ,
         },
 
         {
           key: "webhooks",
-
           label: "Webhooks",
-
           href: "/webhooks",
-
           icon: "webhook",
-
           permission:
             PERMISSIONS.WEBHOOKS_READ,
         },
 
         {
           key: "smpp-accounts",
-
           label: "SMPP Accounts",
-
           href: "/smpp-accounts",
-
           icon: "smpp",
-
           permission:
             PERMISSIONS.SMPP_ACCOUNTS_READ,
         },
@@ -503,21 +544,14 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "finance",
-
       label: "Finance",
-
       icon: "wallet",
-
       children: [
         {
           key: "float",
-
           label: "Float",
-
           href: "/float",
-
           icon: "wallet",
-
           permission:
             PERMISSIONS.FLOAT_READ,
         },
@@ -530,50 +564,45 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "reports",
-
       label: "Reports",
-
       icon: "reports",
-
       children: [
         {
           key: "message-reports",
-
           label: "Messages",
-
           href:
             "/reports/messages",
-
           icon: "messages",
-
           permission:
             PERMISSIONS.REPORTS_READ,
         },
 
         {
           key: "route-performance",
-
           label: "Route Performance",
-
           href:
             "/reports/routes",
-
           icon: "route",
-
           permission:
             PERMISSIONS.REPORTS_READ,
         },
 
         {
           key: "float-ledger",
-
           label: "Float Ledger",
-
           href:
             "/reports/float",
-
           icon: "wallet",
+          permission:
+            PERMISSIONS.REPORTS_READ,
+        },
 
+        {
+          key: "transaction-reports",
+          label: "Transactions",
+          href:
+            "/reports/transactions",
+          icon: "payments",
           permission:
             PERMISSIONS.REPORTS_READ,
         },
@@ -586,48 +615,33 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
 
     {
       key: "administration",
-
       label: "Administration",
-
       icon: "settings",
-
       children: [
         {
           key: "users",
-
           label: "Users",
-
           href: "/users",
-
           icon: "users",
-
           permission:
             PERMISSIONS.USERS_READ,
         },
 
         {
           key: "roles",
-
           label: "Roles",
-
           href:
             "/access-control/roles",
-
           icon: "roles",
-
           permission:
             PERMISSIONS.ROLES_READ,
         },
 
         {
           key: "audit",
-
           label: "Audit Logs",
-
           href: "/audit",
-
           icon: "audit",
-
           permission:
             PERMISSIONS.AUDIT_LOGS_READ,
         },
@@ -685,7 +699,6 @@ export function getNavigation(
   return [
     {
       key: "main",
-
       items,
     },
   ];
@@ -748,6 +761,7 @@ function filterNavigationItem(
   // Client-Safe Navigation Item
   //
   // Deliberately omit `permission`.
+  //
   // Authorization remains server-side.
   // ==========================================================================
 
@@ -767,6 +781,12 @@ function filterNavigationItem(
 
     icon:
       item.icon,
+
+    ...(item.exact
+      ? {
+        exact: true,
+      }
+      : {}),
 
     ...(item.badge !==
       undefined

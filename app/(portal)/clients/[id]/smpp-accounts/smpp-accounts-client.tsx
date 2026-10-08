@@ -12,10 +12,7 @@ import type {
 
 import {
   DataTable,
-} from "@/components/ui/data-table";
-
-import type {
-  DataTableColumn,
+  type DataTableColumn,
 } from "@/components/ui/data-table";
 
 import {
@@ -33,6 +30,10 @@ import {
 import {
   StatusBadge,
 } from "@/components/ui/status-badge";
+
+import {
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
 
 // ============================================================================
 // Props
@@ -77,8 +78,12 @@ export default function SmppAccountsClient({
 
         render: (account) => (
           <Link
-            href={`/clients/${client.id}/smpp-accounts/${account.id}`}
-            className="font-medium text-slate-900 hover:text-slate-600"
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/smpp-accounts/${encodeURIComponent(
+              account.id,
+            )}`}
+            className="font-medium text-slate-900 transition hover:text-slate-600"
           >
             {account.systemId}
           </Link>
@@ -114,8 +119,11 @@ export default function SmppAccountsClient({
 
         header: "Concurrent Binds",
 
-        render: (account) =>
-          account.maxConcurrentBinds,
+        render: (account) => (
+          <span className="text-sm text-slate-700">
+            {account.maxConcurrentBinds}
+          </span>
+        ),
       },
 
       {
@@ -124,7 +132,7 @@ export default function SmppAccountsClient({
         header: "Enquire Link",
 
         render: (account) => (
-          <span>
+          <span className="text-sm text-slate-700">
             {account.enquireLinkInterval}s
           </span>
         ),
@@ -135,10 +143,13 @@ export default function SmppAccountsClient({
 
         header: "Created",
 
-        render: (account) =>
-          formatDate(
-            account.createdAt,
-          ),
+        render: (account) => (
+          <span className="text-sm text-slate-600">
+            {formatDate(
+              account.createdAt,
+            )}
+          </span>
+        ),
       },
 
       {
@@ -151,8 +162,12 @@ export default function SmppAccountsClient({
 
         render: (account) => (
           <Link
-            href={`/clients/${client.id}/smpp-accounts/${account.id}`}
-            className="text-sm font-medium text-slate-700 hover:text-slate-950"
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/smpp-accounts/${encodeURIComponent(
+              account.id,
+            )}`}
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
           >
             View
           </Link>
@@ -162,38 +177,94 @@ export default function SmppAccountsClient({
 
   return (
     <PageContainer>
-      <PageHeader
-        title="SMPP Accounts"
-        description={`SMPP accounts for ${clientName}.`}
-      >
+      {/* Context navigation */}
+      <div className="mb-6">
+        <ContextAwareBackLinks
+          clientHref={`/clients/${encodeURIComponent(
+            client.id,
+          )}`}
+          clientLabel="Back to client"
+          showPlatformLink={false}
+        />
+      </div>
+
+      {/* Page heading */}
+      <div className="mb-8 flex items-start justify-between gap-6">
+        <PageHeader
+          title="SMPP Accounts"
+          description={`SMPP accounts for ${clientName}.`}
+        />
+
         {canCreateSmppAccounts && (
           <Link
-            href={`/clients/${client.id}/smpp-accounts/create`}
-            className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/smpp-accounts/create`}
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
           >
             Create SMPP Account
           </Link>
         )}
-      </PageHeader>
+      </div>
 
-      {smppAccounts.length === 0 ? (
-        <EmptyState
-          title="No SMPP accounts"
-          description="This client does not have any SMPP accounts yet."
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          rows={smppAccounts}
-          getRowKey={(account) =>
-            account.id
-          }
-          onRowClick={(account) => {
-            window.location.href =
-              `/clients/${client.id}/smpp-accounts/${account.id}`;
-          }}
-        />
-      )}
+      {/* Client context */}
+      <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Client
+        </span>
+
+        <span className="h-1 w-1 rounded-full bg-slate-300" />
+
+        <Link
+          href={`/clients/${encodeURIComponent(
+            client.id,
+          )}`}
+          className="truncate text-sm font-medium text-slate-700 transition hover:text-slate-950"
+        >
+          {clientName}
+        </Link>
+
+        <span className="font-mono text-xs text-slate-400">
+          {client.publicId}
+        </span>
+      </div>
+
+      {/* Results */}
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {smppAccounts.length === 0 ? (
+          <EmptyState
+            title="No SMPP accounts"
+            description="This client does not have any SMPP accounts yet."
+          >
+            {canCreateSmppAccounts && (
+              <Link
+                href={`/clients/${encodeURIComponent(
+                  client.id,
+                )}/smpp-accounts/create`}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              >
+                Create SMPP Account
+              </Link>
+            )}
+          </EmptyState>
+        ) : (
+          <DataTable
+            columns={columns}
+            rows={smppAccounts}
+            getRowKey={(account) =>
+              account.id
+            }
+            onRowClick={(account) => {
+              window.location.href =
+                `/clients/${encodeURIComponent(
+                  client.id,
+                )}/smpp-accounts/${encodeURIComponent(
+                  account.id,
+                )}`;
+            }}
+          />
+        )}
+      </div>
     </PageContainer>
   );
 }

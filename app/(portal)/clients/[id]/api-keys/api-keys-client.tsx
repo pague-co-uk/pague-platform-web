@@ -1,18 +1,12 @@
 "use client";
 
-import {
-  useState,
-} from "react";
-
 import Link from "next/link";
-
-import {
-  useRouter,
-} from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import {
   DataTable,
-  DataTableColumn,
+  type DataTableColumn,
 } from "@/components/ui/data-table";
 
 import {
@@ -45,6 +39,10 @@ import {
 } from "@/components/layout/page-header";
 
 import {
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
+
+import {
   useToast,
 } from "@/components/ui/toast";
 
@@ -62,10 +60,6 @@ import {
   formatDate,
 } from "@/lib/date/format-date";
 
-// ============================================================================
-// Types
-// ============================================================================
-
 interface ApiKeysClientProps {
   readonly client: Client;
 
@@ -78,10 +72,6 @@ interface ApiKeysClientProps {
   readonly canRevokeApiKeys: boolean;
 }
 
-// ============================================================================
-// Component
-// ============================================================================
-
 export default function ApiKeysClient({
   client,
   apiKeys,
@@ -89,8 +79,7 @@ export default function ApiKeysClient({
   canCreateApiKeys,
   canRevokeApiKeys,
 }: ApiKeysClientProps) {
-  const router =
-    useRouter();
+  const router = useRouter();
 
   const {
     success,
@@ -100,9 +89,7 @@ export default function ApiKeysClient({
   const [
     selectedApiKey,
     setSelectedApiKey,
-  ] = useState<ApiKey | null>(
-    null,
-  );
+  ] = useState<ApiKey | null>(null);
 
   const [
     revoking,
@@ -112,10 +99,6 @@ export default function ApiKeysClient({
   const clientName =
     client.displayName ||
     client.companyName;
-
-  // ==========================================================================
-  // Revoke
-  // ==========================================================================
 
   async function handleRevoke() {
     if (
@@ -138,9 +121,7 @@ export default function ApiKeysClient({
         `${selectedApiKey.name} has been revoked successfully.`,
       );
 
-      setSelectedApiKey(
-        null,
-      );
+      setSelectedApiKey(null);
 
       router.refresh();
     } catch (error) {
@@ -160,247 +141,229 @@ export default function ApiKeysClient({
     }
   }
 
-  // ==========================================================================
-  // Columns
-  // ==========================================================================
-
-  const columns:
-    DataTableColumn<ApiKey>[] =
-    [
-      {
-        key: "name",
-        header: "Name",
-        render: (apiKey) => (
-          <div className="min-w-0">
-            <Link
-              href={`/clients/${encodeURIComponent(
-                client.id,
-              )}/api-keys/${encodeURIComponent(
-                apiKey.id,
-              )}`}
-              onClick={(event) =>
-                event.stopPropagation()
-              }
-              className="font-medium text-slate-900 transition hover:text-blue-600"
-            >
-              {apiKey.name}
-            </Link>
-
-            <p className="mt-0.5 font-mono text-[11px] text-slate-400">
-              {apiKey.publicId}
-            </p>
-          </div>
-        ),
-      },
-
-      {
-        key: "key",
-        header: "Key",
-        render: (apiKey) => (
-          <code className="font-mono text-xs text-slate-600">
-            {apiKey.prefix}
-            ••••••••
-          </code>
-        ),
-      },
-
-      {
-        key: "status",
-        header: "Status",
-        render: (apiKey) => (
-          <ApiKeyStatusBadge
-            status={
-              apiKey.status
+  const columns: DataTableColumn<ApiKey>[] = [
+    {
+      key: "name",
+      header: "Name",
+      render: (apiKey) => (
+        <div className="min-w-0">
+          <Link
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/api-keys/${encodeURIComponent(
+              apiKey.id,
+            )}`}
+            onClick={(event) =>
+              event.stopPropagation()
             }
-          />
-        ),
-      },
+            className="font-medium text-slate-900 transition hover:text-slate-600"
+          >
+            {apiKey.name}
+          </Link>
 
-      {
-        key: "lastUsedAt",
-        header: "Last used",
-        render: (apiKey) => (
-          <span className="text-sm text-slate-500">
-            {apiKey.lastUsedAt
-              ? formatDate(
-                apiKey.lastUsedAt,
-              )
-              : "Never"}
-          </span>
-        ),
-      },
+          <p className="mt-0.5 font-mono text-[11px] text-slate-400">
+            {apiKey.publicId}
+          </p>
+        </div>
+      ),
+    },
 
-      {
-        key: "expiresAt",
-        header: "Expires",
-        render: (apiKey) => (
-          <span className="text-sm text-slate-500">
-            {apiKey.expiresAt
-              ? formatDate(
-                apiKey.expiresAt,
-              )
-              : "Never"}
-          </span>
-        ),
-      },
+    {
+      key: "key",
+      header: "Key",
+      render: (apiKey) => (
+        <code className="font-mono text-xs text-slate-600">
+          {apiKey.prefix}
+          ••••••••
+        </code>
+      ),
+    },
 
-      {
-        key: "createdAt",
-        header: "Created",
-        render: (apiKey) => (
-          <span className="text-sm text-slate-500">
-            {formatDate(
-              apiKey.createdAt,
+    {
+      key: "status",
+      header: "Status",
+      render: (apiKey) => (
+        <ApiKeyStatusBadge
+          status={apiKey.status}
+        />
+      ),
+    },
+
+    {
+      key: "lastUsedAt",
+      header: "Last used",
+      render: (apiKey) => (
+        <span className="text-sm text-slate-500">
+          {apiKey.lastUsedAt
+            ? formatDate(
+              apiKey.lastUsedAt,
+            )
+            : "Never"}
+        </span>
+      ),
+    },
+
+    {
+      key: "expiresAt",
+      header: "Expires",
+      render: (apiKey) => (
+        <span className="text-sm text-slate-500">
+          {apiKey.expiresAt
+            ? formatDate(
+              apiKey.expiresAt,
+            )
+            : "Never"}
+        </span>
+      ),
+    },
+
+    {
+      key: "createdAt",
+      header: "Created",
+      render: (apiKey) => (
+        <span className="text-sm text-slate-500">
+          {formatDate(
+            apiKey.createdAt,
+          )}
+        </span>
+      ),
+    },
+
+    {
+      key: "actions",
+      header: "",
+      className: "text-right",
+      render: (apiKey) => (
+        <div
+          className="flex items-center justify-end gap-2"
+          onClick={(event) =>
+            event.stopPropagation()
+          }
+        >
+          <Link
+            href={`/clients/${encodeURIComponent(
+              client.id,
+            )}/api-keys/${encodeURIComponent(
+              apiKey.id,
+            )}`}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
+          >
+            View
+          </Link>
+
+          {apiKey.status === "ACTIVE" &&
+            canRevokeApiKeys && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+
+                  setSelectedApiKey(
+                    apiKey,
+                  );
+                }}
+                className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-medium text-red-600 transition hover:bg-red-50 hover:text-red-700"
+              >
+                Revoke
+              </button>
             )}
-          </span>
-        ),
-      },
-
-      {
-        key: "actions",
-        header: "",
-        className:
-          "text-right",
-        render: (apiKey) => (
-          <div className="flex items-center justify-end gap-2">
-            <Link
-              href={`/clients/${encodeURIComponent(
-                client.id,
-              )}/api-keys/${encodeURIComponent(
-                apiKey.id,
-              )}`}
-              onClick={(event) =>
-                event.stopPropagation()
-              }
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-slate-200 px-3 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
-            >
-              View
-            </Link>
-
-            {apiKey.status ===
-              "ACTIVE" &&
-              canRevokeApiKeys && (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-
-                    setSelectedApiKey(
-                      apiKey,
-                    );
-                  }}
-                  className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-medium text-red-600 transition hover:bg-red-50 hover:text-red-700"
-                >
-                  Revoke
-                </button>
-              )}
-          </div>
-        ),
-      },
-    ];
-
-  // ==========================================================================
-  // Render
-  // ==========================================================================
+        </div>
+      ),
+    },
+  ];
 
   return (
     <PageContainer>
-      {/* ======================================================================
-          Header
-      ======================================================================= */}
+      {/* Context navigation */}
+      <div className="mb-6">
+        <ContextAwareBackLinks
+          clientHref={`/clients/${encodeURIComponent(
+            client.id,
+          )}`}
+          clientLabel="Back to client"
+          showPlatformLink={false}
+        />
+      </div>
 
-      <PageHeader
-        title="API Keys"
-        description={`Manage API credentials for ${clientName}.`}
-      >
+      {/* Page heading */}
+      <div className="mb-8 flex items-start justify-between gap-6">
+        <PageHeader
+          title="API Keys"
+          description={`Manage API credentials for ${clientName}.`}
+        />
+
         {canCreateApiKeys && (
           <Link
             href={`/clients/${encodeURIComponent(
               client.id,
             )}/api-keys/new`}
-            className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
           >
             Create API key
           </Link>
         )}
-      </PageHeader>
+      </div>
 
-      {/* ======================================================================
-          Client context
-      ======================================================================= */}
+      {/* Client context */}
+      <div className="mb-6 flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Client
+        </span>
 
-      <div className="mb-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-            Client
-          </p>
-
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Link
-              href={`/clients/${encodeURIComponent(
-                client.id,
-              )}`}
-              className="truncate text-sm font-semibold text-slate-900 transition hover:text-blue-600"
-            >
-              {clientName}
-            </Link>
-
-            <span className="font-mono text-xs text-slate-400">
-              {client.publicId}
-            </span>
-          </div>
-        </div>
+        <span className="h-1 w-1 rounded-full bg-slate-300" />
 
         <Link
           href={`/clients/${encodeURIComponent(
             client.id,
           )}`}
-          className="shrink-0 text-sm font-medium text-slate-600 transition hover:text-slate-900"
+          className="truncate text-sm font-medium text-slate-700 transition hover:text-slate-950"
         >
-          Back to client
+          {clientName}
         </Link>
+
+        <span className="font-mono text-xs text-slate-400">
+          {client.publicId}
+        </span>
       </div>
 
-      {/* ======================================================================
-          Filters
-      ======================================================================= */}
-
-      <FilterBar
-        resetParams={[
-          "status",
-          "page",
-        ]}
-      >
-        <FilterSelect
-          name="status"
-          options={[
-            {
-              value: "",
-              label: "All API keys",
-            },
-            {
-              value: "ACTIVE",
-              label: "Active",
-            },
-            {
-              value: "EXPIRED",
-              label: "Expired",
-            },
-            {
-              value: "REVOKED",
-              label: "Revoked",
-            },
+      {/* Filters */}
+      <div className="mb-6">
+        <FilterBar
+          resetParams={[
+            "status",
+            "page",
           ]}
-        />
-      </FilterBar>
+        >
+          <FilterSelect
+            name="status"
+            options={[
+              {
+                value: "",
+                label: "All API keys",
+              },
+              {
+                value: "ACTIVE",
+                label: "Active",
+              },
+              {
+                value: "EXPIRED",
+                label: "Expired",
+              },
+              {
+                value: "REVOKED",
+                label: "Revoked",
+              },
+            ]}
+          />
+        </FilterBar>
+      </div>
 
-      {/* ======================================================================
-          Table
-      ======================================================================= */}
-
-      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        {apiKeys.length ===
-          0 ? (
+      {/* Results */}
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        {apiKeys.length === 0 ? (
           <EmptyState
             title="No API keys found"
             description="There are no API keys matching the current filters."
@@ -410,7 +373,7 @@ export default function ApiKeysClient({
                 href={`/clients/${encodeURIComponent(
                   client.id,
                 )}/api-keys/create`}
-                className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
               >
                 Create API key
               </Link>
@@ -418,18 +381,12 @@ export default function ApiKeysClient({
           </EmptyState>
         ) : (
           <DataTable
-            columns={
-              columns
-            }
-            rows={
-              apiKeys
-            }
+            columns={columns}
+            rows={apiKeys}
             getRowKey={(apiKey) =>
               apiKey.id
             }
-            onRowClick={(
-              apiKey,
-            ) =>
+            onRowClick={(apiKey) =>
               router.push(
                 `/clients/${encodeURIComponent(
                   client.id,
@@ -442,36 +399,27 @@ export default function ApiKeysClient({
         )}
       </div>
 
-      {/* ======================================================================
-          Pagination
-      ======================================================================= */}
+      {/* Pagination */}
+      {pagination.totalItems > 0 && (
+        <div className="mt-5">
+          <Pagination
+            meta={{
+              page: pagination.page,
+              pageSize:
+                pagination.pageSize,
+              total:
+                pagination.totalItems,
+              totalPages:
+                pagination.totalPages,
+            }}
+          />
+        </div>
+      )}
 
-      {pagination.totalItems >
-        0 && (
-          <div className="mt-4">
-            <Pagination
-              meta={{
-                page:
-                  pagination.page,
-                pageSize:
-                  pagination.pageSize,
-                total:
-                  pagination.totalItems,
-                totalPages:
-                  pagination.totalPages,
-              }}
-            />
-          </div>
-        )}
-
-      {/* ======================================================================
-          Revoke confirmation
-      ======================================================================= */}
-
+      {/* Revoke confirmation */}
       <ConfirmModal
         open={
-          selectedApiKey !==
-          null
+          selectedApiKey !== null
         }
         title="Revoke API key?"
         description={
@@ -486,24 +434,16 @@ export default function ApiKeysClient({
         }
         cancelLabel="Cancel"
         destructive
-        onConfirm={
-          handleRevoke
-        }
+        onConfirm={handleRevoke}
         onCancel={() => {
           if (!revoking) {
-            setSelectedApiKey(
-              null,
-            );
+            setSelectedApiKey(null);
           }
         }}
       />
     </PageContainer>
   );
 }
-
-// ============================================================================
-// Status badge
-// ============================================================================
 
 function ApiKeyStatusBadge({
   status,

@@ -14,12 +14,14 @@ import {
   findApiKeys,
 } from "@/features/api-keys/api/server-api-keys.api";
 
-
 import {
   PERMISSIONS,
 } from "@/lib/authorization/permissions";
 
-import { findWebhooks } from "@/features/webhooks/api/server-webhooks.api";
+import {
+  findWebhooks,
+} from "@/features/webhooks/api/server-webhooks.api";
+
 import ClientDetailsClient from "./client-details-client";
 
 // ============================================================================
@@ -111,6 +113,11 @@ export default async function ClientDetailsPage({
       PERMISSIONS.CLIENTS_DELETE,
     );
 
+  const canReadClientServices =
+    permissions.has(
+      PERMISSIONS.CLIENT_SERVICES_READ,
+    );
+
   const canReadApiKeys =
     permissions.has(
       PERMISSIONS.API_KEYS_READ,
@@ -165,23 +172,25 @@ export default async function ClientDetailsPage({
   let apiKeys = null;
 
   if (canReadApiKeys) {
-    apiKeys = await findApiKeys(
-      id,
-      {
-        page: 1,
-        pageSize: 5,
-      },
-    );
+    apiKeys =
+      await findApiKeys(
+        id,
+        {
+          page: 1,
+          pageSize: 5,
+        },
+      );
   }
 
   let webhooks = null;
 
   if (canReadWebhooks) {
-    webhooks = await findWebhooks({
-      clientId: id,
-      page: 1,
-      pageSize: 5,
-    });
+    webhooks =
+      await findWebhooks({
+        clientId: id,
+        page: 1,
+        pageSize: 5,
+      });
   }
 
   // ==========================================================================
@@ -210,6 +219,10 @@ export default async function ClientDetailsPage({
 
       canDeleteClient={
         canDeleteClient
+      }
+
+      canReadClientServices={
+        canReadClientServices
       }
 
       apiKeys={

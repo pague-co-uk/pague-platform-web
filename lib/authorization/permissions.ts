@@ -1,100 +1,35 @@
 export const PERMISSIONS = {
 
   // ==========================================================================
-  // API Keys
+  // Users
   // ==========================================================================
 
-  API_KEYS_CREATE: "api_keys.create",
+  USERS_READ:
+    "users.read",
 
-  API_KEYS_READ: "api_keys.read",
+  USERS_CREATE:
+    "users.create",
 
-  API_KEYS_REVOKE: "api_keys.revoke",
+  USERS_UPDATE:
+    "users.update",
 
-  // ==========================================================================
-  // Audit Logs
-  // ==========================================================================
+  USERS_DELETE:
+    "users.delete",
 
-  AUDIT_LOGS_READ: "audit_logs.read",
+  USERS_ACTIVATE:
+    "users.activate",
 
-  // ==========================================================================
-  // Clients
-  // ==========================================================================
+  USERS_DEACTIVATE:
+    "users.deactivate",
 
-  CLIENTS_ACTIVATE: "clients.activate",
+  USERS_UNLOCK:
+    "users.unlock",
 
-  CLIENTS_CREATE: "clients.create",
+  USERS_LOCK:
+    "users.lock",
 
-  CLIENTS_DELETE: "clients.delete",
-
-  CLIENTS_DISABLE: "clients.disable",
-
-  CLIENTS_READ: "clients.read",
-
-  CLIENTS_SUSPEND: "clients.suspend",
-
-  CLIENTS_UPDATE: "clients.update",
-
-  // ==========================================================================
-  // Connectors
-  // ==========================================================================
-
-  CONNECTORS_CREATE: "connectors.create",
-
-  CONNECTORS_DELETE: "connectors.delete",
-
-  CONNECTORS_DISABLE: "connectors.disable",
-
-  CONNECTORS_ENABLE: "connectors.enable",
-
-  CONNECTORS_READ: "connectors.read",
-
-  CONNECTORS_SUSPEND: "connectors.suspend",
-
-  CONNECTORS_UPDATE: "connectors.update",
-
-  // ==========================================================================
-  // Float
-  // ==========================================================================
-
-  FLOAT_ADJUST: "float.adjust",
-
-  FLOAT_DEBIT: "float.debit",
-
-  FLOAT_READ: "float.read",
-
-  FLOAT_REFUND: "float.refund",
-
-  FLOAT_TOP_UP: "float.top_up",
-
-  // ==========================================================================
-  // Messages
-  // ==========================================================================
-
-  MESSAGES_CREATE: "messages.create",
-
-  MESSAGES_READ: "messages.read",
-
-  // ==========================================================================
-  // Mobile Networks
-  // ==========================================================================
-
-  MOBILE_NETWORKS_CREATE:
-    "mobile_networks.create",
-
-  MOBILE_NETWORKS_DELETE:
-    "mobile_networks.delete",
-
-  MOBILE_NETWORKS_DISABLE:
-    "mobile_networks.disable",
-
-  MOBILE_NETWORKS_ENABLE:
-    "mobile_networks.enable",
-
-  MOBILE_NETWORKS_READ:
-    "mobile_networks.read",
-
-  MOBILE_NETWORKS_UPDATE:
-    "mobile_networks.update",
+  USERS_ROLES_UPDATE:
+    "users.roles.update",
 
   // ==========================================================================
   // Permissions
@@ -104,65 +39,67 @@ export const PERMISSIONS = {
     "permissions.read",
 
   // ==========================================================================
-  // Platform
-  // ==========================================================================
-
-  PLATFORM_SUPER_ADMIN:
-    "PLATFORM_SUPER_ADMIN",
-
-  // ==========================================================================
   // Roles
   // ==========================================================================
-
-  ROLES_CREATE:
-    "roles.create",
-
-  ROLES_DELETE:
-    "roles.delete",
 
   ROLES_READ:
     "roles.read",
 
+  ROLES_CREATE:
+    "roles.create",
+
   ROLES_UPDATE:
     "roles.update",
 
+  ROLES_DELETE:
+    "roles.delete",
+
   // ==========================================================================
-  // Routes
+  // Clients
   // ==========================================================================
 
-  ROUTES_CREATE:
-    "routes.create",
+  CLIENTS_READ:
+    "clients.read",
 
-  ROUTES_DELETE:
-    "routes.delete",
+  CLIENTS_CREATE:
+    "clients.create",
 
-  ROUTES_DISABLE:
-    "routes.disable",
+  CLIENTS_UPDATE:
+    "clients.update",
 
-  ROUTES_ENABLE:
-    "routes.enable",
+  CLIENTS_DELETE:
+    "clients.delete",
 
-  ROUTES_READ:
-    "routes.read",
+  CLIENTS_ACTIVATE:
+    "clients.activate",
 
-  ROUTES_UPDATE:
-    "routes.update",
+  CLIENTS_SUSPEND:
+    "clients.suspend",
+
+  CLIENTS_DISABLE:
+    "clients.disable",
 
   // ==========================================================================
   // Sender IDs
   // ==========================================================================
 
-  SENDER_IDS_APPROVE:
-    "sender_ids.approve",
+  SENDER_IDS_READ:
+    "sender_ids.read",
 
   SENDER_IDS_CREATE:
     "sender_ids.create",
 
-  SENDER_IDS_DEFAULT_UPDATE:
-    "sender_ids.default.update",
+  SENDER_IDS_UPDATE:
+    "sender_ids.update",
 
   SENDER_IDS_DELETE:
     "sender_ids.delete",
+
+  SENDER_IDS_APPROVE:
+    "sender_ids.approve",
+
+  SENDER_IDS_REJECT:
+    "sender_ids.reject",
 
   SENDER_IDS_DISABLE:
     "sender_ids.disable",
@@ -170,67 +107,151 @@ export const PERMISSIONS = {
   SENDER_IDS_ENABLE:
     "sender_ids.enable",
 
-  SENDER_IDS_READ:
-    "sender_ids.read",
+  SENDER_IDS_DEFAULT_UPDATE:
+    "sender_ids.default.update",
 
-  SENDER_IDS_REJECT:
-    "sender_ids.reject",
+  // ==========================================================================
+  // Mobile Networks
+  // ==========================================================================
 
-  SENDER_IDS_UPDATE:
-    "sender_ids.update",
+  MOBILE_NETWORKS_READ:
+    "mobile_networks.read",
+
+  MOBILE_NETWORKS_CREATE:
+    "mobile_networks.create",
+
+  MOBILE_NETWORKS_UPDATE:
+    "mobile_networks.update",
+
+  MOBILE_NETWORKS_DELETE:
+    "mobile_networks.delete",
+
+  MOBILE_NETWORKS_ENABLE:
+    "mobile_networks.enable",
+
+  MOBILE_NETWORKS_DISABLE:
+    "mobile_networks.disable",
+
+  // ==========================================================================
+  // Connectors
+  // ==========================================================================
+
+  CONNECTORS_READ:
+    "connectors.read",
+
+  CONNECTORS_CREATE:
+    "connectors.create",
+
+  CONNECTORS_UPDATE:
+    "connectors.update",
+
+  CONNECTORS_DELETE:
+    "connectors.delete",
+
+  CONNECTORS_ENABLE:
+    "connectors.enable",
+
+  CONNECTORS_DISABLE:
+    "connectors.disable",
+
+  CONNECTORS_SUSPEND:
+    "connectors.suspend",
+
+  // ==========================================================================
+  // Routes
+  // ==========================================================================
+
+  ROUTES_READ:
+    "routes.read",
+
+  ROUTES_CREATE:
+    "routes.create",
+
+  ROUTES_UPDATE:
+    "routes.update",
+
+  ROUTES_DELETE:
+    "routes.delete",
+
+  ROUTES_ENABLE:
+    "routes.enable",
+
+  ROUTES_DISABLE:
+    "routes.disable",
+
+  // ==========================================================================
+  // API Keys
+  // ==========================================================================
+
+  API_KEYS_READ:
+    "api_keys.read",
+
+  API_KEYS_CREATE:
+    "api_keys.create",
+
+  API_KEYS_REVOKE:
+    "api_keys.revoke",
+
+  // ==========================================================================
+  // Float
+  // ==========================================================================
+
+  FLOAT_READ:
+    "float.read",
+
+  FLOAT_TOP_UP:
+    "float.top_up",
+
+  FLOAT_DEBIT:
+    "float.debit",
+
+  FLOAT_REFUND:
+    "float.refund",
+
+  FLOAT_ADJUST:
+    "float.adjust",
 
   // ==========================================================================
   // SMPP Accounts
   // ==========================================================================
 
-  SMPP_ACCOUNTS_ACTIVATE:
-    "smpp_accounts.activate",
+  SMPP_ACCOUNTS_READ:
+    "smpp_accounts.read",
 
   SMPP_ACCOUNTS_CREATE:
     "smpp_accounts.create",
 
-  SMPP_ACCOUNTS_DISABLE:
-    "smpp_accounts.disable",
+  SMPP_ACCOUNTS_UPDATE:
+    "smpp_accounts.update",
 
   SMPP_ACCOUNTS_PASSWORD_UPDATE:
     "smpp_accounts.password.update",
 
-  SMPP_ACCOUNTS_READ:
-    "smpp_accounts.read",
+  SMPP_ACCOUNTS_ACTIVATE:
+    "smpp_accounts.activate",
 
-  SMPP_ACCOUNTS_UPDATE:
-    "smpp_accounts.update",
+  SMPP_ACCOUNTS_DISABLE:
+    "smpp_accounts.disable",
 
   // ==========================================================================
-  // Users
+  // Audit Logs
   // ==========================================================================
 
-  USERS_ACTIVATE:
-    "users.activate",
+  AUDIT_LOGS_READ:
+    "audit_logs.read",
 
-  USERS_CREATE:
-    "users.create",
+  // ==========================================================================
+  // Messages
+  // ==========================================================================
 
-  USERS_DEACTIVATE:
-    "users.deactivate",
+  MESSAGES_READ:
+    "messages.read",
 
-  USERS_DELETE:
-    "users.delete",
+  MESSAGES_CREATE:
+    "messages.create",
 
-  USERS_LOCK:
-    "users.lock",
-
-  USERS_READ:
-    "users.read",
-
-  USERS_ROLES_UPDATE:
-    "users.roles.update",
-
-  USERS_UNLOCK:
-    "users.unlock",
-
-  USERS_UPDATE:
-    "users.update",
+  MESSAGES_STATUS_READ:
+    "messages.status.read",
 
   // ==========================================================================
   // Webhooks
@@ -239,24 +260,182 @@ export const PERMISSIONS = {
   // currently exist in the authoritative permission set.
   // ==========================================================================
 
+  WEBHOOKS_READ:
+    "webhooks:read",
+
   WEBHOOKS_CREATE:
     "webhooks:create",
+
+  WEBHOOKS_UPDATE:
+    "webhooks:update",
 
   WEBHOOKS_DELETE:
     "webhooks:delete",
 
-  WEBHOOKS_DELIVERIES_READ:
-    "webhooks:deliveries:read",
-
-  WEBHOOKS_READ:
-    "webhooks:read",
-
   WEBHOOKS_ROTATE_SECRET:
     "webhooks:rotate-secret",
 
-  WEBHOOKS_UPDATE:
-    "webhooks:update",
-  REPORTS_READ: "reports.read"
+  WEBHOOKS_DELIVERIES_READ:
+    "webhooks:deliveries:read",
+
+  // ==========================================================================
+  // Platform
+  // ==========================================================================
+
+  PLATFORM_SUPER_ADMIN:
+    "PLATFORM_SUPER_ADMIN",
+
+  CHECK_HEALTH:
+    "CHECK_HEALTH",
+
+  DASHBOARD_READ:
+    "dashboard.read",
+
+  REPORTS_READ:
+    "reports.read",
+
+  REPORTS_EXPORT:
+    "reports.export",
+
+  // ==========================================================================
+  // Services
+  // ==========================================================================
+
+  SERVICES_READ:
+    "services.read",
+
+  SERVICES_CREATE:
+    "services.create",
+
+  SERVICES_UPDATE:
+    "services.update",
+
+  SERVICES_ENABLE:
+    "services.enable",
+
+  SERVICES_DISABLE:
+    "services.disable",
+
+  // ==========================================================================
+  // Client Services
+  // ==========================================================================
+
+  CLIENT_SERVICES_READ:
+    "client_services.read",
+
+  CLIENT_SERVICES_CREATE:
+    "client_services.create",
+
+  CLIENT_SERVICES_UPDATE:
+    "client_services.update",
+
+  CLIENT_SERVICES_ENABLE:
+    "client_services.enable",
+
+  CLIENT_SERVICES_DISABLE:
+    "client_services.disable",
+
+  // ==========================================================================
+  // Payment Providers
+  // ==========================================================================
+
+  PAYMENT_PROVIDERS_READ:
+    "payment_providers.read",
+
+  PAYMENT_PROVIDERS_CREATE:
+    "payment_providers.create",
+
+  PAYMENT_PROVIDERS_UPDATE:
+    "payment_providers.update",
+
+  PAYMENT_PROVIDERS_ENABLE:
+    "payment_providers.enable",
+
+  PAYMENT_PROVIDERS_DISABLE:
+    "payment_providers.disable",
+
+  // ==========================================================================
+  // Provider Services
+  // ==========================================================================
+
+  PROVIDER_SERVICES_READ:
+    "provider_services.read",
+
+  PROVIDER_SERVICES_CREATE:
+    "provider_services.create",
+
+  PROVIDER_SERVICES_UPDATE:
+    "provider_services.update",
+
+  PROVIDER_SERVICES_ENABLE:
+    "provider_services.enable",
+
+  PROVIDER_SERVICES_DISABLE:
+    "provider_services.disable",
+
+  // ==========================================================================
+  // Transaction Types
+  // ==========================================================================
+
+  TRANSACTION_TYPES_READ:
+    "transaction_types.read",
+
+  TRANSACTION_TYPES_CREATE:
+    "transaction_types.create",
+
+  TRANSACTION_TYPES_UPDATE:
+    "transaction_types.update",
+
+  TRANSACTION_TYPES_ENABLE:
+    "transaction_types.enable",
+
+  TRANSACTION_TYPES_DISABLE:
+    "transaction_types.disable",
+
+  // ==========================================================================
+  // Currencies
+  // ==========================================================================
+
+  CURRENCIES_READ:
+    "currencies.read",
+
+  CURRENCIES_CREATE:
+    "currencies.create",
+
+  CURRENCIES_UPDATE:
+    "currencies.update",
+
+  CURRENCIES_ENABLE:
+    "currencies.enable",
+
+  CURRENCIES_DISABLE:
+    "currencies.disable",
+
+  // ==========================================================================
+  // Country Currencies
+  // ==========================================================================
+
+  COUNTRY_CURRENCIES_READ:
+    "country-currencies:read",
+
+  COUNTRY_CURRENCIES_CREATE:
+    "country-currencies:create",
+
+  COUNTRY_CURRENCIES_UPDATE:
+    "country-currencies:update",
+
+  COUNTRY_CURRENCIES_DELETE:
+    "country-currencies:delete",
+
+  // ==========================================================================
+  // Payments
+  // ==========================================================================
+
+  PAYMENTS_CREATE:
+    "payments.create",
+
+  PAYMENTS_READ:
+    "payments.read",
 
 } as const;
 
