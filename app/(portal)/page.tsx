@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -22,7 +23,6 @@ import {
 } from "@/features/dashboard/api/payment-dashboard-api";
 
 import { DashboardContent } from "@/features/dashboard/components/dashboard-content";
-
 import { PaymentDashboardContent } from "@/features/dashboard/components/payment-dashboard-content";
 
 import type {
@@ -34,18 +34,23 @@ import type {
   PaymentDashboardData,
 } from "@/features/dashboard/types/payment-dashboard";
 
-type DashboardTab =
-  | "messages"
-  | "payments";
+type DashboardTab = "messages" | "payments";
+
+const DASHBOARD_PERIODS: {
+  readonly value: DashboardPeriodValue;
+  readonly label: string;
+}[] = [
+    { value: "1d", label: "1 day" },
+    { value: "7d", label: "7 days" },
+    { value: "30d", label: "30 days" },
+    { value: "90d", label: "90 days" },
+  ];
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] =
     useState<DashboardTab>("messages");
 
-  // ==========================================================================
   // Messaging dashboard state
-  // ==========================================================================
-
   const [dashboard, setDashboard] =
     useState<DashboardData | null>(null);
 
@@ -55,110 +60,69 @@ export default function DashboardPage() {
   const [messagesError, setMessagesError] =
     useState<string | null>(null);
 
-  // ==========================================================================
   // Payment dashboard state
-  // ==========================================================================
+  const [paymentDashboard, setPaymentDashboard] =
+    useState<PaymentDashboardData | null>(null);
 
-  const [
-    paymentDashboard,
-    setPaymentDashboard,
-  ] =
-    useState<PaymentDashboardData | null>(
-      null,
-    );
+  const [isLoadingPayments, setIsLoadingPayments] =
+    useState(false);
 
-  const [
-    isLoadingPayments,
-    setIsLoadingPayments,
-  ] = useState(false);
+  const [paymentsError, setPaymentsError] =
+    useState<string | null>(null);
 
-  const [
-    paymentsError,
-    setPaymentsError,
-  ] = useState<string | null>(null);
-
-  // ==========================================================================
   // Shared period
-  // ==========================================================================
-
   const [period, setPeriod] =
     useState<DashboardPeriodValue>("30d");
 
-  // ==========================================================================
   // Load messaging dashboard
-  // ==========================================================================
+  const loadDashboard = useCallback(async () => {
+    setIsLoadingMessages(true);
+    setMessagesError(null);
 
-  const loadDashboard = useCallback(
-    async () => {
-      setIsLoadingMessages(true);
-      setMessagesError(null);
+    try {
+      const result = await getDashboard({ period });
+      setDashboard(result);
+    } catch (error) {
+      console.error(
+        "[Dashboard] Failed to load messaging dashboard.",
+        error,
+      );
 
-      try {
-        const result =
-          await getDashboard({
-            period,
-          });
+      setMessagesError(
+        error instanceof DashboardApiError
+          ? error.message
+          : "Unable to load messaging dashboard. Please try again.",
+      );
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [period]);
 
-        setDashboard(result);
-      } catch (error) {
-        console.error(
-          "[Dashboard] Failed to load messaging dashboard.",
-          error,
-        );
-
-        setMessagesError(
-          error instanceof DashboardApiError
-            ? error.message
-            : "Unable to load messaging dashboard. Please try again.",
-        );
-      } finally {
-        setIsLoadingMessages(false);
-      }
-    },
-    [period],
-  );
-
-  // ==========================================================================
   // Load payment dashboard
-  // ==========================================================================
+  const loadPaymentDashboard = useCallback(async () => {
+    setIsLoadingPayments(true);
+    setPaymentsError(null);
 
-  const loadPaymentDashboard =
-    useCallback(
-      async () => {
-        setIsLoadingPayments(true);
-        setPaymentsError(null);
+    try {
+      const result = await getPaymentDashboard({ period });
+      setPaymentDashboard(result);
+    } catch (error) {
+      console.error(
+        "[Dashboard] Failed to load payment dashboard.",
+        error,
+      );
 
-        try {
-          const result =
-            await getPaymentDashboard({
-              period,
-            });
+      setPaymentsError(
+        error instanceof DashboardApiError
+          ? error.message
+          : "Unable to load payment dashboard. Please try again.",
+      );
+    } finally {
+      setIsLoadingPayments(false);
+    }
+  }, [period]);
 
-          setPaymentDashboard(
-            result,
-          );
-        } catch (error) {
-          console.error(
-            "[Dashboard] Failed to load payment dashboard.",
-            error,
-          );
-
-          setPaymentsError(
-            error instanceof DashboardApiError
-              ? error.message
-              : "Unable to load payment dashboard. Please try again.",
-          );
-        } finally {
-          setIsLoadingPayments(false);
-        }
-      },
-      [period],
-    );
-
-  // ==========================================================================
   // Load the active dashboard
-  // ==========================================================================
-
   useEffect(() => {
     if (activeTab === "messages") {
       void loadDashboard();
@@ -172,13 +136,8 @@ export default function DashboardPage() {
     loadPaymentDashboard,
   ]);
 
-  // ==========================================================================
   // Tab change
-  // ==========================================================================
-
-  function handleTabChange(
-    tab: DashboardTab,
-  ) {
+  function handleTabChange(tab: DashboardTab) {
     setActiveTab(tab);
 
     if (tab === "messages") {
@@ -189,13 +148,8 @@ export default function DashboardPage() {
     setPaymentsError(null);
   }
 
-  // ==========================================================================
   // Period change
-  // ==========================================================================
-
-  function handlePeriodChange(
-    value: DashboardPeriodValue,
-  ) {
+  function handlePeriodChange(value: DashboardPeriodValue) {
     setPeriod(value);
 
     if (activeTab === "messages") {
@@ -212,35 +166,20 @@ export default function DashboardPage() {
         description="Overview of your messaging and payment platform."
       />
 
-      {/* ==================================================================
-          Dashboard tabs
-          ================================================================== */}
-
+      {/* Dashboard tabs */}
       <div className="mt-6 border-y border-slate-200 bg-white">
         <div className="flex">
           <DashboardTabButton
-            active={
-              activeTab === "messages"
-            }
-            onClick={() =>
-              handleTabChange(
-                "messages",
-              )
-            }
+            active={activeTab === "messages"}
+            onClick={() => handleTabChange("messages")}
             variant="messages"
           >
             Messages
           </DashboardTabButton>
 
           <DashboardTabButton
-            active={
-              activeTab === "payments"
-            }
-            onClick={() =>
-              handleTabChange(
-                "payments",
-              )
-            }
+            active={activeTab === "payments"}
+            onClick={() => handleTabChange("payments")}
             variant="payments"
           >
             Payments
@@ -248,57 +187,24 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ==================================================================
-          Messages dashboard
-          ================================================================== */}
-
+      {/* Messages dashboard */}
       {activeTab === "messages" && (
         <>
-          <div className="mt-4 flex items-center justify-between gap-4">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
             <p className="text-xs text-slate-500">
-              Showing messaging activity
-              for the selected period.
+              Showing messaging activity for the selected period.
             </p>
 
-            <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
-              <PeriodButton
-                active={
-                  period === "7d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "7d",
-                  )
-                }
-              >
-                7 days
-              </PeriodButton>
-
-              <PeriodButton
-                active={
-                  period === "30d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "30d",
-                  )
-                }
-              >
-                30 days
-              </PeriodButton>
-
-              <PeriodButton
-                active={
-                  period === "90d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "90d",
-                  )
-                }
-              >
-                90 days
-              </PeriodButton>
+            <div className="flex flex-wrap rounded-lg border border-slate-200 bg-white p-1">
+              {DASHBOARD_PERIODS.map(({ value, label }) => (
+                <PeriodButton
+                  key={value}
+                  active={period === value}
+                  onClick={() => handlePeriodChange(value)}
+                >
+                  {label}
+                </PeriodButton>
+              ))}
             </div>
           </div>
 
@@ -309,15 +215,11 @@ export default function DashboardPage() {
               <div className="rounded-xl border border-slate-200 bg-white">
                 <ErrorState
                   title="Unable to load messaging dashboard"
-                  description={
-                    messagesError
-                  }
+                  description={messagesError}
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      void loadDashboard()
-                    }
+                    onClick={() => void loadDashboard()}
                     className="cursor-pointer rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Try again
@@ -325,67 +227,30 @@ export default function DashboardPage() {
                 </ErrorState>
               </div>
             ) : dashboard ? (
-              <DashboardContent
-                dashboard={
-                  dashboard
-                }
-              />
+              <DashboardContent dashboard={dashboard} />
             ) : null}
           </div>
         </>
       )}
 
-      {/* ==================================================================
-          Payments dashboard
-          ================================================================== */}
-
+      {/* Payments dashboard */}
       {activeTab === "payments" && (
         <>
-          <div className="mt-4 flex items-center justify-between gap-4">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
             <p className="text-xs text-slate-500">
-              Showing payment activity
-              for the selected period.
+              Showing payment activity for the selected period.
             </p>
 
-            <div className="flex shrink-0 rounded-lg border border-slate-200 bg-white p-1">
-              <PeriodButton
-                active={
-                  period === "7d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "7d",
-                  )
-                }
-              >
-                7 days
-              </PeriodButton>
-
-              <PeriodButton
-                active={
-                  period === "30d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "30d",
-                  )
-                }
-              >
-                30 days
-              </PeriodButton>
-
-              <PeriodButton
-                active={
-                  period === "90d"
-                }
-                onClick={() =>
-                  handlePeriodChange(
-                    "90d",
-                  )
-                }
-              >
-                90 days
-              </PeriodButton>
+            <div className="flex flex-wrap rounded-lg border border-slate-200 bg-white p-1">
+              {DASHBOARD_PERIODS.map(({ value, label }) => (
+                <PeriodButton
+                  key={value}
+                  active={period === value}
+                  onClick={() => handlePeriodChange(value)}
+                >
+                  {label}
+                </PeriodButton>
+              ))}
             </div>
           </div>
 
@@ -396,15 +261,11 @@ export default function DashboardPage() {
               <div className="rounded-xl border border-slate-200 bg-white">
                 <ErrorState
                   title="Unable to load payment dashboard"
-                  description={
-                    paymentsError
-                  }
+                  description={paymentsError}
                 >
                   <button
                     type="button"
-                    onClick={() =>
-                      void loadPaymentDashboard()
-                    }
+                    onClick={() => void loadPaymentDashboard()}
                     className="cursor-pointer rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     Try again
@@ -412,11 +273,7 @@ export default function DashboardPage() {
                 </ErrorState>
               </div>
             ) : paymentDashboard ? (
-              <PaymentDashboardContent
-                dashboard={
-                  paymentDashboard
-                }
-              />
+              <PaymentDashboardContent dashboard={paymentDashboard} />
             ) : null}
           </div>
         </>
@@ -425,10 +282,7 @@ export default function DashboardPage() {
   );
 }
 
-// ============================================================================
 // Dashboard tab button
-// ============================================================================
-
 function DashboardTabButton({
   active,
   onClick,
@@ -438,9 +292,7 @@ function DashboardTabButton({
   readonly active: boolean;
   readonly onClick: () => void;
   readonly children: ReactNode;
-  readonly variant:
-  | "messages"
-  | "payments";
+  readonly variant: "messages" | "payments";
 }) {
   const activeTextClass =
     variant === "messages"
@@ -477,10 +329,7 @@ function DashboardTabButton({
   );
 }
 
-// ============================================================================
 // Period button
-// ============================================================================
-
 function PeriodButton({
   active,
   onClick,
@@ -494,6 +343,7 @@ function PeriodButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={[
         "cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition",
         active
