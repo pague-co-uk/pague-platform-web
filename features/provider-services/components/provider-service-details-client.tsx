@@ -1,12 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+
 import {
-  useRouter,
-} from "next/navigation";
+  PageContainer,
+} from "@/components/layout/page-container";
+
 import {
-  useState,
-} from "react";
+  ContextAwareBackLinks,
+} from "@/components/ui/context-aware-back-links";
+
+import {
+  StatusBadge,
+} from "@/components/ui/status-badge";
+
+import {
+  ConfirmModal,
+} from "@/components/ui/confirm-modal";
+
+import {
+  useToast,
+} from "@/components/ui/toast";
 
 import {
   disableProviderService,
@@ -16,25 +31,16 @@ import {
 import type {
   ProviderService,
 } from "@/features/provider-services/types/provider-service.types";
-
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
-import { StatusBadge } from "@/components/ui/status-badge";
-import {
-  useToast,
-} from "@/components/ui/toast";
-
+import { formatDate } from "@/lib/date/format-date";
 
 interface ProviderServiceDetailsClientProps {
-  initialProviderService:
-  | ProviderService
-  | null;
-  canUpdate: boolean;
-  canEnable: boolean;
-  canDisable: boolean;
+  readonly initialProviderService: ProviderService | null;
+  readonly canUpdate: boolean;
+  readonly canEnable: boolean;
+  readonly canDisable: boolean;
 }
+
+type LifecycleAction = "enable" | "disable" | null;
 
 export default function ProviderServiceDetailsClient({
   initialProviderService,
@@ -42,32 +48,17 @@ export default function ProviderServiceDetailsClient({
   canEnable,
   canDisable,
 }: ProviderServiceDetailsClientProps) {
-  const router =
-    useRouter();
-
   const {
     success,
     error: showError,
   } = useToast();
 
-  const [
-    providerService,
-    setProviderService,
-  ] = useState(
+  const [providerService, setProviderService] = useState(
     initialProviderService,
   );
 
-  const [
-    action,
-    setAction,
-  ] = useState<
-    "enable" | "disable" | null
-  >(null);
-
-  const [
-    actionLoading,
-    setActionLoading,
-  ] = useState(false);
+  const [action, setAction] = useState<LifecycleAction>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   if (!providerService) {
     return (
@@ -78,32 +69,23 @@ export default function ProviderServiceDetailsClient({
           showPlatformLink
         />
 
-        <PageHeader
-          title="Provider Service"
-          description="The requested provider service could not be found."
-        />
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="text-lg font-semibold text-slate-900">
+            Provider service not found
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            The requested provider service could not be found.
+          </p>
+        </div>
       </PageContainer>
     );
   }
 
-  function requestEnable() {
-    setAction("enable");
-  }
-
-  function requestDisable() {
-    setAction("disable");
-  }
-
-  function closeConfirmModal() {
-    if (actionLoading) {
-      return;
-    }
-
-    setAction(null);
-  }
+  const isActive = providerService.active;
 
   async function confirmAction() {
-    if (!action) {
+    if (!action || actionLoading) {
       return;
     }
 
@@ -112,26 +94,17 @@ export default function ProviderServiceDetailsClient({
     try {
       const updated =
         action === "enable"
-          ? await enableProviderService(
-            providerService!.id,
-          )
-          : await disableProviderService(
-            providerService!.id,
-          );
+          ? await enableProviderService(providerService!.id)
+          : await disableProviderService(providerService!.id);
 
-      setProviderService(
-        updated,
-      );
-
+      setProviderService(updated);
       setAction(null);
 
       success(
         action === "enable"
           ? "Provider service enabled"
           : "Provider service disabled",
-        `${updated.providerName} / ${updated.serviceName} was ${action === "enable"
-          ? "enabled"
-          : "disabled"
+        `${updated.providerName} / ${updated.serviceName} was ${action === "enable" ? "enabled" : "disabled"
         } successfully.`,
       );
     } catch (error) {
@@ -152,218 +125,203 @@ export default function ProviderServiceDetailsClient({
     <PageContainer>
       <ContextAwareBackLinks
         clientHref="/provider-services"
-        clientLabel="Provider Services"
+        clientLabel="Back to provider services"
         showPlatformLink
       />
 
-      <PageHeader
-        title={`${providerService.providerName} / ${providerService.serviceName}`}
-        description="View and manage the payment provider service configuration."
-      />
+      <div className="mt-6 space-y-6">
+        {/* Heading, status and actions */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+                {providerService.providerName} / {providerService.serviceName}
+              </h1>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <StatusBadge
-            tone={
-              providerService.active
-                ? "success"
-                : "neutral"
-            }
-            dot
-          >
-            {providerService.active
-              ? "Active"
-              : "Disabled"}
-          </StatusBadge>
+              <StatusBadge
+                tone={isActive ? "success" : "neutral"}
+                dot
+              >
+                {isActive ? "Active" : "Disabled"}
+              </StatusBadge>
+            </div>
 
-          <div className="flex items-center gap-2">
+            <p className="mt-2 text-sm text-slate-500">
+              <span className="font-mono text-slate-600">
+                {providerService.providerCode}
+              </span>
+
+              <span className="mx-3 text-slate-300">/</span>
+
+              {providerService.serviceCategory}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
             {canUpdate && (
               <Link
-                href={`/provider-services/${providerService.id}/edit`}
-                className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium"
+                href={`/provider-services/${encodeURIComponent(
+                  providerService.id,
+                )}/edit`}
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
               >
                 Edit
               </Link>
             )}
 
-            {providerService.active
-              ? canDisable && (
-                <button
-                  type="button"
-                  onClick={
-                    requestDisable
-                  }
-                  className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium text-destructive"
-                >
-                  Disable
-                </button>
-              )
-              : canEnable && (
-                <button
-                  type="button"
-                  onClick={
-                    requestEnable
-                  }
-                  className="inline-flex items-center rounded-md px-4 py-2 text-sm font-medium"
-                >
-                  Enable
-                </button>
-              )}
+            {isActive && canDisable && (
+              <button
+                type="button"
+                onClick={() => setAction("disable")}
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-red-300 bg-white px-4 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-50"
+              >
+                Disable
+              </button>
+            )}
+
+            {!isActive && canEnable && (
+              <button
+                type="button"
+                onClick={() => setAction("enable")}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
+              >
+                Enable
+              </button>
+            )}
           </div>
         </div>
 
-        <section className="rounded-lg border p-6">
-          <h2 className="text-base font-semibold">
-            Provider
-          </h2>
+        {/* Provider details */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-sm font-semibold text-slate-900">
+              Provider details
+            </h2>
+          </div>
 
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Name
-              </dt>
-
-              <dd className="mt-1 font-medium">
+          <dl className="divide-y divide-slate-100">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Name</dt>
+              <dd className="text-sm font-medium text-slate-900 sm:col-span-2">
                 {providerService.providerName}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Code
-              </dt>
-
-              <dd className="mt-1 font-mono text-sm">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Code</dt>
+              <dd className="font-mono text-sm text-slate-900 sm:col-span-2">
                 {providerService.providerCode}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Status
-              </dt>
-
-              <dd className="mt-1">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Status</dt>
+              <dd className="text-sm text-slate-900 sm:col-span-2">
                 {providerService.providerStatus}
               </dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-lg border p-6">
-          <h2 className="text-base font-semibold">
-            Service
-          </h2>
+        {/* Service details */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-sm font-semibold text-slate-900">
+              Service details
+            </h2>
+          </div>
 
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Name
-              </dt>
-
-              <dd className="mt-1 font-medium">
+          <dl className="divide-y divide-slate-100">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Name</dt>
+              <dd className="text-sm font-medium text-slate-900 sm:col-span-2">
                 {providerService.serviceName}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Code
-              </dt>
-
-              <dd className="mt-1 font-mono text-sm">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Code</dt>
+              <dd className="font-mono text-sm text-slate-900 sm:col-span-2">
                 {providerService.serviceCode}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Category
-              </dt>
-
-              <dd className="mt-1">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Category</dt>
+              <dd className="text-sm text-slate-900 sm:col-span-2">
                 {providerService.serviceCategory}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Status
-              </dt>
-
-              <dd className="mt-1">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Status</dt>
+              <dd className="text-sm text-slate-900 sm:col-span-2">
                 {providerService.serviceStatus}
               </dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-lg border p-6">
-          <h2 className="text-base font-semibold">
-            Configuration
-          </h2>
+        {/* Configuration */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-sm font-semibold text-slate-900">
+              Configuration
+            </h2>
+          </div>
 
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                External Service Code
+          <dl className="divide-y divide-slate-100">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">
+                External service code
               </dt>
-
-              <dd className="mt-1 font-mono text-sm">
-                {providerService.externalServiceCode ??
-                  "—"}
+              <dd className="font-mono text-sm text-slate-900 sm:col-span-2">
+                {providerService.externalServiceCode || "—"}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">
                 Configuration
               </dt>
-
-              <dd className="mt-1">
-                {providerService.configuration
-                  ? (
-                    <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
-                      {JSON.stringify(
-                        providerService.configuration,
-                        null,
-                        2,
-                      )}
-                    </pre>
-                  )
-                  : "—"}
+              <dd className="min-w-0 sm:col-span-2">
+                {providerService.configuration &&
+                  Object.keys(providerService.configuration).length > 0 ? (
+                  <pre className="overflow-x-auto rounded-lg bg-slate-950 p-4 font-mono text-xs leading-6 text-slate-100">
+                    {JSON.stringify(
+                      providerService.configuration,
+                      null,
+                      2,
+                    )}
+                  </pre>
+                ) : (
+                  <span className="text-sm text-slate-900">—</span>
+                )}
               </dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-lg border p-6">
-          <h2 className="text-base font-semibold">
-            Record Information
-          </h2>
+        {/* Timestamps */}
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4">
+            <h2 className="text-sm font-semibold text-slate-900">
+              Timestamps
+            </h2>
+          </div>
 
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Created
-              </dt>
-
-              <dd className="mt-1 text-sm">
-                {new Date(
-                  providerService.createdAt,
-                ).toLocaleString()}
+          <dl className="divide-y divide-slate-100">
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Created</dt>
+              <dd className="text-sm text-slate-900 sm:col-span-2">
+                {formatDate(new Date(providerService.createdAt))}
               </dd>
             </div>
 
-            <div>
-              <dt className="text-sm text-muted-foreground">
-                Last Updated
-              </dt>
-
-              <dd className="mt-1 text-sm">
-                {new Date(
-                  providerService.updatedAt,
-                ).toLocaleString()}
+            <div className="grid gap-1 px-6 py-4 sm:grid-cols-3 sm:gap-4">
+              <dt className="text-sm text-slate-500">Last updated</dt>
+              <dd className="text-sm text-slate-900 sm:col-span-2">
+                {formatDate(new Date(providerService.updatedAt))}
               </dd>
             </div>
           </dl>
@@ -377,34 +335,21 @@ export default function ProviderServiceDetailsClient({
             ? "Enable provider service?"
             : "Disable provider service?"
         }
-        description={`${providerService.providerName
-          } / ${providerService.serviceName
-          } will be ${action === "enable"
-            ? "enabled"
-            : "disabled"
+        description={`${providerService.providerName} / ${providerService.serviceName
+          } will be ${action === "enable" ? "enabled" : "disabled"
           }.`}
-        confirmLabel={
-          action === "enable"
-            ? "Enable"
-            : "Disable"
-        }
+        confirmLabel={action === "enable" ? "Enable" : "Disable"}
         confirmingLabel={
-          action === "enable"
-            ? "Enabling..."
-            : "Disabling..."
+          action === "enable" ? "Enabling..." : "Disabling..."
         }
-        confirming={
-          actionLoading
-        }
-        destructive={
-          action === "disable"
-        }
-        onConfirm={
-          confirmAction
-        }
-        onCancel={
-          closeConfirmModal
-        }
+        confirming={actionLoading}
+        destructive={action === "disable"}
+        onConfirm={confirmAction}
+        onCancel={() => {
+          if (!actionLoading) {
+            setAction(null);
+          }
+        }}
       />
     </PageContainer>
   );

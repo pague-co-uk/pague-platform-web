@@ -492,7 +492,7 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
         {
           key: "payments",
           label: "Transactions",
-          href: "/payments",
+          href: "/transactions",
           icon: "payments",
           permission:
             PERMISSIONS.PAYMENTS_READ,
