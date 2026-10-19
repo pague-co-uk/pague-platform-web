@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import {
   useState,
@@ -44,7 +47,7 @@ interface ApiKeyDetailsClientProps {
 // Date
 // ============================================================================
 
-function formatDate(
+function formatDateBase(
   value: string | null,
 ): string {
   if (!value) {
@@ -59,7 +62,6 @@ function formatDate(
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Africa/Nairobi",
     },
   ).format(
     new Date(value),
@@ -76,6 +78,8 @@ export default function ApiKeyDetailsClient({
   canRevoke,
   showPlatformBackLink,
 }: ApiKeyDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const {
     success,
     error: showError,

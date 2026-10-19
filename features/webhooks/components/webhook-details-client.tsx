@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
@@ -40,7 +43,7 @@ interface WebhookDetailsClientProps {
   showPlatformBackLink: boolean;
 }
 
-function formatDate(
+function formatDateBase(
   value: string,
 ): string {
   return new Intl.DateTimeFormat(
@@ -51,7 +54,6 @@ function formatDate(
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Africa/Nairobi",
     },
   ).format(
     new Date(value),
@@ -67,6 +69,8 @@ export function WebhookDetailsClient({
   canReadDeliveries,
   showPlatformBackLink,
 }: WebhookDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const {

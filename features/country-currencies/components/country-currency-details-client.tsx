@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,7 +17,7 @@ import {
 
 import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import type { CountryCurrency } from "@/features/country-currencies/types/country-currency.types";
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 interface CountryCurrencyDetailsClientProps {
   countryCurrency: CountryCurrency;
@@ -27,6 +30,8 @@ export function CountryCurrencyDetailsClient({
   canUpdate,
   canDelete,
 }: CountryCurrencyDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
   const { success, error } = useToast();
 

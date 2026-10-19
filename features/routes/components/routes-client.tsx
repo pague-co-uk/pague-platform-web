@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -68,12 +71,11 @@ interface RoutesClientProps {
   canDisableRoutes: boolean;
 }
 
-function formatDate(value: string): string {
+function formatDateBase(value: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    timeZone: "Africa/Nairobi",
   }).format(new Date(value));
 }
 
@@ -117,6 +119,8 @@ export default function RoutesClient({
   canEnableRoutes,
   canDisableRoutes,
 }: RoutesClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const columns: DataTableColumn<RouteResponse>[] = [

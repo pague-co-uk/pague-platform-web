@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 
 import {
@@ -24,7 +27,7 @@ import type {
 } from "@/features/clients/api/clients-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -47,6 +50,8 @@ export default function FloatLedgerEntryClient({
   entry,
   showPlatformBackLink,
 }: FloatLedgerEntryClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const clientName =
     client.displayName ||
     client.companyName;

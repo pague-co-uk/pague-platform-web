@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useMemo,
   useState,
@@ -42,7 +45,7 @@ import type {
 } from "@/features/audit-logs/api/audit-logs-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -207,6 +210,8 @@ export default function AuditLogsClient({
   clients,
   users,
 }: AuditLogsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const pathname = usePathname();

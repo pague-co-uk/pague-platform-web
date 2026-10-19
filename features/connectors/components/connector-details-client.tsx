@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useState,
 } from "react";
@@ -105,7 +108,7 @@ function maskConfiguration(
   return value;
 }
 
-function formatDate(
+function formatDateBase(
   value: string,
 ): string {
   return new Intl.DateTimeFormat(
@@ -114,7 +117,6 @@ function formatDate(
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-      timeZone: "Africa/Nairobi",
     },
   ).format(
     new Date(value),
@@ -165,6 +167,8 @@ export default function ConnectorDetailsClient({
   canDisable,
   canSuspend,
 }: ConnectorDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const {

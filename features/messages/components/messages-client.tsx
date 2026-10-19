@@ -1,4 +1,7 @@
 "use client";
+
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
 import { RetryMessageButton } from "./retry-message-button";
 import { MessageListControls } from "./message-list-controls";
 import { MessageRetryProgress } from "./message-retry-progress";
@@ -51,7 +54,7 @@ import type {
 } from "@/features/messages/api/messages-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -78,6 +81,8 @@ export default function MessagesClient({
   pagination,
   canCreateMessages,
 }: MessagesClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 
@@ -170,7 +175,7 @@ export default function MessagesClient({
         render: (message) => (
           <span className="whitespace-nowrap text-sm text-slate-600">
             {formatDate(
-              message.createdAt, "Africa/Nairobi",
+              message.createdAt,
             )}
           </span>
         ),

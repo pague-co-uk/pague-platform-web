@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useState,
 } from "react";
@@ -50,7 +53,7 @@ import type {
 } from "@/features/webhooks/api/webhooks-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -144,6 +147,8 @@ export default function ClientDetailsClient({
 
   canReadClientServices,
 }: ClientDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 

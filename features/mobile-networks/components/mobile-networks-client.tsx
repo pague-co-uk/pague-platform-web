@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useRouter,
 } from "next/navigation";
@@ -46,7 +49,7 @@ import type {
   MobileNetwork,
 } from "@/features/mobile-networks/api/mobile-networks-api";
 
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 // ============================================================================
 // Types
@@ -68,6 +71,8 @@ export default function MobileNetworksClient({
   initialMobileNetworks,
   canCreateMobileNetworks,
 }: MobileNetworksClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 

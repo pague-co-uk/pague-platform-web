@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
@@ -41,7 +44,7 @@ import type {
   ConnectorStatus,
   PaginationMeta
 } from "@/features/connectors/api/connectors-api";
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 interface ConnectorsClientProps {
   initialConnectors: Connector[];
@@ -126,6 +129,8 @@ export default function ConnectorsClient({
   canDisable,
   canSuspend,
 }: ConnectorsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const columns: DataTableColumn<Connector>[] =

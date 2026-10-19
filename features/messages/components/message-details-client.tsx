@@ -1,4 +1,7 @@
 "use client";
+
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
 import { RetryMessageButton } from "./retry-message-button";
 import { MessageRetryProgress } from "./message-retry-progress";
 
@@ -32,7 +35,7 @@ import type {
 } from "@/features/messages/api/messages-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -58,6 +61,8 @@ export default function MessageDetailsClient({
   showPlatformBackLink,
   canRetryMessages,
 }: MessageDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const clientName =
     client.displayName ||
     client.companyName;
@@ -449,9 +454,11 @@ function MessageRouteAttemptCard({
 }: {
   readonly attempt: MessageRouteAttempt;
 }) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   return (
     <div className="px-5 py-5">
-      {attempt.scheduledAt && <p className="mb-2 text-xs text-slate-500">Scheduled: {formatDate(attempt.scheduledAt, "Africa/Nairobi")}</p>}
+      {attempt.scheduledAt && <p className="mb-2 text-xs text-slate-500">Scheduled: {formatDate(attempt.scheduledAt)}</p>}
       {/* --------------------------------------------------------------------
           Attempt header
       --------------------------------------------------------------------- */}
@@ -754,6 +761,8 @@ function AttemptDate({
   readonly label: string;
   readonly value: string | null;
 }) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   return (
     <div>
       <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">

@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -57,7 +60,7 @@ import type {
 } from "@/features/clients/api/clients-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 interface ApiKeysClientProps {
@@ -79,6 +82,8 @@ export default function ApiKeysClient({
   canCreateApiKeys,
   canRevokeApiKeys,
 }: ApiKeysClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const {

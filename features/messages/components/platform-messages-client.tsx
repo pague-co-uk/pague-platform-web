@@ -1,4 +1,7 @@
 "use client";
+
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
 import { RetryMessageButton } from "./retry-message-button";
 import { MessageListControls } from "./message-list-controls";
 import { MessageRetryProgress } from "./message-retry-progress";
@@ -55,7 +58,7 @@ import {
 } from "@/components/ui/client-action-selector";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -82,6 +85,8 @@ export default function PlatformMessagesClient({
   canCreateMessages,
   clients,
 }: PlatformMessagesClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 
@@ -192,7 +197,7 @@ export default function PlatformMessagesClient({
         render: (message) => (
           <span className="whitespace-nowrap text-sm text-slate-600">
             {formatDate(
-              message.createdAt, "Africa/Nairobi",
+              message.createdAt,
             )}
           </span>
         ),

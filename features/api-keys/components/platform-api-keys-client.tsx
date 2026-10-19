@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 
 import {
@@ -50,7 +53,7 @@ import type {
 } from "@/features/clients/api/clients-api";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -77,6 +80,8 @@ export default function PlatformApiKeysClient({
   canCreateApiKeys,
   clients,
 }: PlatformApiKeysClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 

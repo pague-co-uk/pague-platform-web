@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useCallback,
   useState,
@@ -31,7 +34,7 @@ import {
   setDefaultSenderId,
 } from "../api/sender-ids-api";
 
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
@@ -80,6 +83,8 @@ export default function SenderIdDetailsClient({
   canDefaultUpdateSenderIds,
   showPlatformBackLink,
 }: SenderIdDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const [

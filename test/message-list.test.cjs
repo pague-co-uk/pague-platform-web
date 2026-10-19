@@ -7,6 +7,7 @@ const React = require('react');
 const { renderToStaticMarkup } = require('react-dom/server');
 
 function load(file, mocks = {}, globals = {}) {
+  mocks = { '@/lib/date/use-local-date-formatter': { useLocalDateFormatter: formatter => formatter }, ...mocks };
   const source = fs.readFileSync(file, 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const context = { exports: {}, URLSearchParams, ...globals, require: name => name in mocks ? mocks[name] : require(name) };
@@ -52,7 +53,7 @@ test('date and page-size controls render without depending on result count', () 
   assert.match(markup, /type="number"/);
   assert.match(markup, /value="50"/);
   assert.match(markup, /value="2026-10-19"/);
-  assert.match(markup, /Africa\/Nairobi/);
+  assert.match(markup, /local timezone/);
 });
 
 test('manual retry API uses scoped POST and propagates conflicts', async () => {
@@ -110,4 +111,32 @@ test('retry proxy forwards the session cookie and preserves API status', async (
   assert.equal(call.options.headers.Cookie, 'session=test-session');
   assert.equal(call.options.method, 'POST');
   assert.equal(response.status, 409);
+});
+
+
+test('date formatting follows the visitor timezone, including day boundaries', () => {
+  const { formatDate } = load('lib/date/format-date.ts');
+  const previous = process.env.TZ;
+  try {
+    process.env.TZ = 'Asia/Shanghai';
+    assert.equal(formatDate('2026-10-19T20:30:00Z'), '20 Oct 2026, 04:30');
+    process.env.TZ = 'Africa/Nairobi';
+    assert.equal(formatDate('2026-10-19T20:30:00Z'), '19 Oct 2026, 23:30');
+    process.env.TZ = 'America/New_York';
+    assert.equal(formatDate('2026-07-19T20:30:00Z'), '19 Jul 2026, 16:30');
+    assert.equal(formatDate('2026-01-19T20:30:00Z'), '19 Jan 2026, 15:30');
+    assert.equal(formatDate('invalid'), 'invalid');
+  } finally {
+    if (previous === undefined) delete process.env.TZ; else process.env.TZ = previous;
+  }
+});
+
+test('local date formatter waits until hydration before formatting', () => {
+  for (const hydrated of [false, true]) {
+    const { useLocalDateFormatter } = load('lib/date/use-local-date-formatter.ts', {
+      react: { useSyncExternalStore: (_, client, server) => hydrated ? client() : server() },
+    });
+    const format = useLocalDateFormatter(value => `local: ${value}`);
+    assert.equal(format('date'), hydrated ? 'local: date' : '—');
+  }
 });

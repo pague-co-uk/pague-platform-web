@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useState,
 } from "react";
@@ -69,6 +72,8 @@ export default function SmppAccountDetailsClient({
   canDisableSmppAccounts,
   showPlatformBackLink,
 }: SmppAccountDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const {
@@ -1173,7 +1178,7 @@ function DetailItem({
 // Date formatting
 // ============================================================================
 
-function formatDate(
+function formatDateBase(
   value: string,
 ) {
   return new Intl.DateTimeFormat(
@@ -1181,7 +1186,6 @@ function formatDate(
     {
       dateStyle: "medium",
       timeStyle: "short",
-      timeZone: "Africa/Nairobi",
     },
   ).format(
     new Date(value),

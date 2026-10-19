@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import {
   useState,
 } from "react";
@@ -56,7 +59,7 @@ import type {
 
 import { ContextAwareBackLinks } from "@/components/ui/context-aware-back-links";
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 // ============================================================================
@@ -94,6 +97,8 @@ export default function FloatClient({
   canTopUpFloat,
   canAdjustFloat,
 }: FloatClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 

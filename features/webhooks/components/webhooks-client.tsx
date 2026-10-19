@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -33,12 +36,11 @@ interface WebhooksClientProps {
   canCreateWebhooks: boolean;
 }
 
-function formatDate(value: string): string {
+function formatDateBase(value: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    timeZone: "Africa/Nairobi",
   }).format(new Date(value));
 }
 
@@ -49,6 +51,8 @@ export function WebhooksClient({
   pagination,
   canCreateWebhooks,
 }: WebhooksClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
   const searchParams = useSearchParams();
 

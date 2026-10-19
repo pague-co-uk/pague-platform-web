@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useState } from "react";
 
@@ -31,7 +34,7 @@ import {
 import type {
   ProviderService,
 } from "@/features/provider-services/types/provider-service.types";
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 interface ProviderServiceDetailsClientProps {
   readonly initialProviderService: ProviderService | null;
@@ -48,6 +51,8 @@ export default function ProviderServiceDetailsClient({
   canEnable,
   canDisable,
 }: ProviderServiceDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const {
     success,
     error: showError,

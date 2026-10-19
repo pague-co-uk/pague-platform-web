@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 
 import {
@@ -68,6 +71,8 @@ export default function PlatformSmppAccountsClient({
   canCreateSmppAccounts,
   clients,
 }: PlatformSmppAccountsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router = useRouter();
 
   const columns: DataTableColumn<PlatformSmppAccount>[] =
@@ -308,7 +313,7 @@ function SmppAccountStatusBadge({
 // Formatting
 // ============================================================================
 
-function formatDate(
+function formatDateBase(
   value: string,
 ): string {
   return new Intl.DateTimeFormat(
@@ -319,7 +324,6 @@ function formatDate(
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      timeZone: "Africa/Nairobi",
     },
   ).format(new Date(value));
 }

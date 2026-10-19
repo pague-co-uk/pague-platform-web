@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 import { useState } from "react";
 
@@ -17,7 +20,7 @@ import type {
 } from "@/features/audit-logs/api/audit-logs-api";
 
 import { PageHeader } from "@/components/layout/page-header";
-import { formatDate } from "@/lib/date/format-date";
+import { formatDate as formatDateBase } from "@/lib/date/format-date";
 
 interface AuditLogDetailsClientProps {
   readonly auditLog: AuditLog;
@@ -399,6 +402,8 @@ function JsonPanel({
 export default function AuditLogDetailsClient({
   auditLog,
 }: AuditLogDetailsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const changed = changedKeys(
     auditLog.oldValues,
     auditLog.newValues,

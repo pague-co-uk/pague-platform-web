@@ -1,5 +1,8 @@
 "use client";
 
+import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
+
+
 import Link from "next/link";
 
 import {
@@ -38,7 +41,7 @@ import {
 } from "@/components/layout/page-header";
 
 import {
-  formatDate,
+  formatDate as formatDateBase,
 } from "@/lib/date/format-date";
 
 import type {
@@ -73,6 +76,8 @@ export default function SenderIdsClient({
   initialSenderIds,
   canCreateSenderIds,
 }: SenderIdsClientProps) {
+  const formatDate = useLocalDateFormatter(formatDateBase);
+
   const router =
     useRouter();
 
