@@ -1181,7 +1181,7 @@ function formatDate(
     {
       dateStyle: "medium",
       timeStyle: "short",
-      timeZone: "UTC",
+      timeZone: "Africa/Nairobi",
     },
   ).format(
     new Date(value),

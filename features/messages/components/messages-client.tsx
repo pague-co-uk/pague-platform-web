@@ -170,7 +170,7 @@ export default function MessagesClient({
         render: (message) => (
           <span className="whitespace-nowrap text-sm text-slate-600">
             {formatDate(
-              message.createdAt, "Africa/Blantyre",
+              message.createdAt, "Africa/Nairobi",
             )}
           </span>
         ),

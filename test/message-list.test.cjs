@@ -52,7 +52,7 @@ test('date and page-size controls render without depending on result count', () 
   assert.match(markup, /type="number"/);
   assert.match(markup, /value="50"/);
   assert.match(markup, /value="2026-10-19"/);
-  assert.match(markup, /Africa\/Blantyre/);
+  assert.match(markup, /Africa\/Nairobi/);
 });
 
 test('manual retry API uses scoped POST and propagates conflicts', async () => {

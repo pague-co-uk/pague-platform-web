@@ -192,7 +192,7 @@ export default function PlatformMessagesClient({
         render: (message) => (
           <span className="whitespace-nowrap text-sm text-slate-600">
             {formatDate(
-              message.createdAt, "Africa/Blantyre",
+              message.createdAt, "Africa/Nairobi",
             )}
           </span>
         ),

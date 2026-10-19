@@ -46,7 +46,7 @@ function Controls({ query, pageSize }: { query: string; pageSize: number }) {
         </label>
         <button type="submit" className="h-9 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">Apply</button>
       </div>
-      <p className="mt-2 text-xs text-slate-500">Dates use Africa/Blantyre time (UTC+02:00).</p>
+      <p className="mt-2 text-xs text-slate-500">Dates use Africa/Nairobi time (UTC+03:00).</p>
       {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
     </form>
   );

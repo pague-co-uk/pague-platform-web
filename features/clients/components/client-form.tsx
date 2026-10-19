@@ -51,7 +51,7 @@ const DEFAULT_VALUES: ClientFormValues = {
   email: "",
   phone: "",
   rateLimitPerSecond: "100",
-  timezone: "Africa/Blantyre",
+  timezone: "Africa/Nairobi",
 };
 
 // ============================================================================
@@ -540,7 +540,7 @@ export default function ClientForm({
                   event.target.value,
                 )
               }
-              placeholder="Africa/Blantyre"
+              placeholder="Africa/Nairobi"
               disabled={busy}
               className={getInputClassName(
                 !!errors.timezone,

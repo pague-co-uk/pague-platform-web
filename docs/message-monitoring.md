@@ -4,7 +4,7 @@ Client and platform message lists have created-date range inputs and a numeric
 items-per-page input (1–100, default 20). Apply preserves the other URL filters
 and resets pagination to page 1. Clearing filters retains the selected page size.
 Controls remain available when the result set is empty or fits on one page.
-Dates use Africa/Blantyre time and the end date includes the whole selected day.
+Dates use Africa/Nairobi time and the end date includes the whole selected day.
 Lists display and sort by creation time, which does not change during retries.
 
 The API supplies lightweight retry progress. Pending same-route submissions are

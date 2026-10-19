@@ -1,6 +1,6 @@
 export function formatDate(
   value: string | Date,
-  timeZone?: string,
+  timeZone: string = "Africa/Nairobi",
 ): string {
   const date =
     new Date(value);

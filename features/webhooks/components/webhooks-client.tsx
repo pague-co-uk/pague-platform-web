@@ -38,7 +38,7 @@ function formatDate(value: string): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: "Africa/Nairobi",
   }).format(new Date(value));
 }
 

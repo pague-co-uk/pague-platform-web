@@ -451,7 +451,7 @@ function MessageRouteAttemptCard({
 }) {
   return (
     <div className="px-5 py-5">
-      {attempt.scheduledAt && <p className="mb-2 text-xs text-slate-500">Scheduled: {formatDate(attempt.scheduledAt, "Africa/Blantyre")}</p>}
+      {attempt.scheduledAt && <p className="mb-2 text-xs text-slate-500">Scheduled: {formatDate(attempt.scheduledAt, "Africa/Nairobi")}</p>}
       {/* --------------------------------------------------------------------
           Attempt header
       --------------------------------------------------------------------- */}

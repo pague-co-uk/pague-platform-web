@@ -7,6 +7,6 @@ export function MessageRetryProgress({ message }: { message: Message }) {
   const pending = message.currentStatus === "ROUTED" && progress.latestAttemptStatus === "PENDING";
   return <div className="mt-1 text-xs text-slate-500">
     {pending ? (progress.routeSubmissionCount > 1 ? "Retry scheduled" : "Submission scheduled") : `${progress.attemptCount} submission${progress.attemptCount === 1 ? "" : "s"}`}
-    {pending && progress.scheduledAt && <span className="block">{formatDate(progress.scheduledAt, "Africa/Blantyre")}</span>}
+    {pending && progress.scheduledAt && <span className="block">{formatDate(progress.scheduledAt, "Africa/Nairobi")}</span>}
   </div>;
 }
