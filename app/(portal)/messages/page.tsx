@@ -1,3 +1,4 @@
+import { messagePageNumber, messagePageSize } from "@/features/messages/utils/message-pagination";
 import {
   PageContainer,
 } from "@/components/layout/page-container";
@@ -34,6 +35,8 @@ interface MessagesPageProps {
     senderIdId?: string;
     status?: string;
     encoding?: string;
+    createdFrom?: string;
+    createdTo?: string;
     submittedFrom?: string;
     submittedTo?: string;
   }>;
@@ -86,15 +89,9 @@ export default async function MessagesPage({
   // Pagination
   // ==========================================================================
 
-  const page =
-    Number(query.page) > 0
-      ? Number(query.page)
-      : 1;
+  const page = messagePageNumber(query.page);
 
-  const pageSize =
-    Number(query.pageSize) > 0
-      ? Number(query.pageSize)
-      : 20;
+  const pageSize = messagePageSize(query.pageSize);
 
   // ==========================================================================
   // Messages
@@ -118,6 +115,8 @@ export default async function MessagesPage({
       encoding:
         query.encoding as
         | undefined,
+      createdFrom: query.createdFrom,
+      createdTo: query.createdTo,
       submittedFrom:
         query.submittedFrom,
       submittedTo:

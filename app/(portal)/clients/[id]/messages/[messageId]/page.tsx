@@ -115,6 +115,7 @@ export default async function MessageDetailsPage({
 
   return (
     <MessageDetailsClient
+      canRetryMessages={user?.roles?.some(role => role.permissions?.some(permission => permission.name === PERMISSIONS.MESSAGES_CREATE)) ?? false}
       client={client}
       message={message}
       showPlatformBackLink={

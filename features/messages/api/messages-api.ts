@@ -50,6 +50,10 @@ export interface MessageRouteAttempt {
 
   attemptNumber: number;
 
+  routeSubmissionNumber?: number;
+
+  scheduledAt?: string | null;
+
   priority: number;
 
   status: MessageRouteAttemptStatus;
@@ -99,6 +103,12 @@ export interface MessageRouteAttempt {
 // ============================================================================
 
 export interface Message {
+  retryProgress?: {
+    attemptCount: number;
+    routeSubmissionCount: number;
+    latestAttemptStatus: MessageRouteAttemptStatus | null;
+    scheduledAt: string | null;
+  };
   id: string;
 
   publicId: string;
@@ -167,6 +177,10 @@ export interface FindMessagesParams {
   destination?: string;
 
   senderIdId?: string;
+
+  createdFrom?: string;
+
+  createdTo?: string;
 
   submittedFrom?: string;
 
@@ -770,6 +784,9 @@ function buildQueryString(
     );
   }
 
+  if (params.createdFrom) searchParams.set("createdFrom", params.createdFrom);
+  if (params.createdTo) searchParams.set("createdTo", params.createdTo);
+
   if (
     params.submittedFrom
   ) {
@@ -1211,4 +1228,11 @@ export async function createMessagesFromSpreadsheet(
   }
 
   return data as Message[];
+}
+export async function retryMessage(clientId: string, messageId: string): Promise<void> {
+  const response = await fetch(
+    `/api/clients/${encodeURIComponent(clientId)}/messages/${encodeURIComponent(messageId)}/retry`,
+    { method: "POST", credentials: "include", cache: "no-store" },
+  );
+  await parseResponse(response, "Unable to retry this message.");
 }

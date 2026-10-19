@@ -1,4 +1,7 @@
 "use client";
+import { RetryMessageButton } from "./retry-message-button";
+import { MessageListControls } from "./message-list-controls";
+import { MessageRetryProgress } from "./message-retry-progress";
 
 import Link from "next/link";
 
@@ -150,25 +153,34 @@ export default function MessagesClient({
         key: "status",
         header: "Status",
         render: (message) => (
+          <div>
           <MessageStatusBadge
             status={
               message.currentStatus
             }
           />
+            <MessageRetryProgress message={message} />
+          </div>
         ),
       },
 
       {
-        key: "submittedAt",
-        header: "Submitted",
+        key: "createdAt",
+        header: "Created",
         render: (message) => (
           <span className="whitespace-nowrap text-sm text-slate-600">
             {formatDate(
-              message.submittedAt,
+              message.createdAt, "Africa/Blantyre",
             )}
           </span>
         ),
       },
+      ...(canCreateMessages ? [{
+        key: "retry", header: "Actions",
+        render: (message: Message) => message.currentStatus === "FAILED" ? (
+          <RetryMessageButton key={message.updatedAt} clientId={message.clientId} messageId={message.id} />
+        ) : null,
+      }] : []),
     ];
 
 
@@ -249,6 +261,7 @@ Header
       Filters
   ======================================================================= */}
 
+    <MessageListControls pageSize={pagination.pageSize} />
     <FilterBar
       resetParams={[
         "status",
@@ -256,7 +269,7 @@ Header
         "search",
         "destination",
         "senderIdId",
-        "submittedFrom",
+        "createdFrom", "createdTo", "submittedFrom",
         "submittedTo",
         "page",
       ]}

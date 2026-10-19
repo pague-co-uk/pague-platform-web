@@ -1,5 +1,6 @@
 export function formatDate(
   value: string | Date,
+  timeZone?: string,
 ): string {
   const date =
     new Date(value);
@@ -15,6 +16,7 @@ export function formatDate(
   return new Intl.DateTimeFormat(
     "en-GB",
     {
+      timeZone,
       day: "2-digit",
       month: "short",
       year: "numeric",

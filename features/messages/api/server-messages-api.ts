@@ -94,6 +94,9 @@ export async function findMessages(
     );
   }
 
+  if (params.createdFrom) searchParams.set("createdFrom", params.createdFrom);
+  if (params.createdTo) searchParams.set("createdTo", params.createdTo);
+
   if (
     params.submittedFrom
   ) {
@@ -303,6 +306,9 @@ export async function findPlatformMessages(
       params.senderIdId,
     );
   }
+
+  if (params.createdFrom) searchParams.set("createdFrom", params.createdFrom);
+  if (params.createdTo) searchParams.set("createdTo", params.createdTo);
 
   if (
     params.submittedFrom

@@ -96,6 +96,13 @@ const APPLICATIONS = [
     description:
       "Delivers client delivery receipts to webhook endpoints",
   },
+
+  {
+    key: "payment-processor",
+    name: "Payment Processor",
+    description:
+      "Processes payments through configured providers",
+  },
 ] as const;
 
 // ============================================================================

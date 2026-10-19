@@ -100,9 +100,8 @@ export function FilterBar({
       }
     }
 
-    router.push(
-      pathname,
-    );
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname);
   };
 
   const hasFilters =

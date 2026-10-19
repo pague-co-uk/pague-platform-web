@@ -1,4 +1,6 @@
 "use client";
+import { RetryMessageButton } from "./retry-message-button";
+import { MessageRetryProgress } from "./message-retry-progress";
 
 import Link from "next/link";
 
@@ -43,6 +45,7 @@ interface MessageDetailsClientProps {
   readonly message: Message;
 
   readonly showPlatformBackLink: boolean;
+  readonly canRetryMessages: boolean;
 }
 
 // ============================================================================
@@ -53,6 +56,7 @@ export default function MessageDetailsClient({
   client,
   message,
   showPlatformBackLink,
+  canRetryMessages,
 }: MessageDetailsClientProps) {
   const clientName =
     client.displayName ||
@@ -68,6 +72,9 @@ export default function MessageDetailsClient({
         title="Message details"
         description={`View message ${message.publicId}.`}
       >
+        {canRetryMessages && message.currentStatus === "FAILED" && (
+          <RetryMessageButton key={message.updatedAt} clientId={message.clientId} messageId={message.id} />
+        )}
         <ContextAwareBackLinks
           showPlatformLink={
             showPlatformBackLink
@@ -243,6 +250,7 @@ export default function MessageDetailsClient({
                 Routing attempts
               </h2>
 
+              <MessageRetryProgress message={message} />
               <p className="mt-1 text-xs text-slate-500">
                 Routes and connectors used while processing this message.
               </p>
@@ -443,6 +451,7 @@ function MessageRouteAttemptCard({
 }) {
   return (
     <div className="px-5 py-5">
+      {attempt.scheduledAt && <p className="mb-2 text-xs text-slate-500">Scheduled: {formatDate(attempt.scheduledAt, "Africa/Blantyre")}</p>}
       {/* --------------------------------------------------------------------
           Attempt header
       --------------------------------------------------------------------- */}
@@ -463,6 +472,7 @@ function MessageRouteAttemptCard({
           </div>
 
           <p className="mt-1 text-xs text-slate-500">
+            {attempt.routeSubmissionNumber ? (attempt.routeSubmissionNumber === 1 ? "Initial submission · " : `Retry ${attempt.routeSubmissionNumber - 1} · `) : ""}
             Route priority{" "}
             {attempt.priority}
           </p>
