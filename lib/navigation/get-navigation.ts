@@ -224,6 +224,10 @@ function getClientNavigation(
       icon: "reports",
       children: [
         {
+          key: 'report-builder', label: 'Report Builder', href: '/reports/builder',
+          icon: 'reports', permission: PERMISSIONS.REPORT_BUILDER_READ,
+        },
+        {
           key: "message-reports",
           label: "Messages",
           href:
@@ -567,6 +571,14 @@ function getPlatformNavigation(): readonly NavigationDefinition[] {
       label: "Reports",
       icon: "reports",
       children: [
+        {
+          key: 'report-builder', label: 'Report Builder', href: '/reports/builder',
+          icon: 'reports', permission: PERMISSIONS.REPORT_BUILDER_READ,
+        },
+        {
+          key: 'report-connections', label: 'Database Connections', href: '/reports/connections',
+          icon: 'connector', permission: PERMISSIONS.REPORT_CONNECTIONS_MANAGE,
+        },
         {
           key: "message-reports",
           label: "Messages",

@@ -1,4 +1,13 @@
 import Link from "next/link";
+import { PageContainer } from "@/components/layout/page-container";
+import { PageHeader } from "@/components/layout/page-header";
+
+import { requireAuth } from "@/lib/auth/require-auth";
+import {
+  hasPermission,
+  isPlatformUser,
+} from "@/lib/authorization/authorization";
+import { BUILDER } from "@/features/report-builder/types";
 
 const REPORTS = [
   {
@@ -27,40 +36,57 @@ const REPORTS = [
   },
 ] as const;
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const user = await requireAuth();
+  const reports = [
+    ...REPORTS,
+    ...(hasPermission(user, BUILDER.read)
+      ? [
+          {
+            title: "Report Builder",
+            description:
+              "Build reusable Excel reports from connected databases.",
+            href: "/reports/builder",
+          },
+        ]
+      : []),
+    ...(isPlatformUser(user) && hasPermission(user, BUILDER.connections)
+      ? [
+          {
+            title: "Database Connections",
+            description: "Manage read-only database connections for reporting.",
+            href: "/reports/connections",
+          },
+        ]
+      : []),
+  ];
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">
-          Reports
-        </h1>
-
-        <p className="mt-1 text-sm text-gray-600">
-          Review platform activity and download detailed reports.
-        </p>
-      </div>
-
+    <PageContainer>
+      <PageHeader
+        title="Reports"
+        description="Review platform activity and download detailed reports."
+      />
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {REPORTS.map((report) => (
+        {reports.map((report) => (
           <Link
             key={report.href}
             href={report.href}
-            className="rounded-lg border border-gray-200 bg-white p-6 transition hover:border-gray-300 hover:shadow-sm"
+            className="rounded-xl border border-slate-200 bg-white p-6 transition hover:border-gray-300 hover:shadow-sm"
           >
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-slate-900">
               {report.title}
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-gray-600">
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               {report.description}
             </p>
 
-            <div className="mt-4 text-sm font-medium text-gray-900">
+            <div className="mt-4 text-sm font-medium text-slate-900">
               View report →
             </div>
           </Link>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }
