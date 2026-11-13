@@ -40,7 +40,7 @@ const DASHBOARD_PERIODS: {
   readonly value: DashboardPeriodValue;
   readonly label: string;
 }[] = [
-    { value: "1d", label: "1 day" },
+    { value: "1d", label: "Today" },
     { value: "7d", label: "7 days" },
     { value: "30d", label: "30 days" },
     { value: "90d", label: "90 days" },
@@ -74,7 +74,7 @@ export default function DashboardPage() {
 
   // Shared period
   const [period, setPeriod] =
-    useState<DashboardPeriodValue>("30d");
+    useState<DashboardPeriodValue>("1d");
 
   // Load messaging dashboard
   const loadDashboard = useCallback(async () => {

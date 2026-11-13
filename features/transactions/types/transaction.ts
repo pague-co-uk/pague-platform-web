@@ -60,6 +60,8 @@ export interface Transaction {
 }
 
 export interface TransactionListParams {
+  createdFrom?: string;
+  createdTo?: string;
   page?: number;
   pageSize?: number;
   search?: string;
@@ -74,6 +76,7 @@ export interface TransactionListParams {
 }
 
 export interface TransactionListMeta {
+  statusCounts?: Record<string, number>;
   page: number;
   pageSize: number;
   total: number;

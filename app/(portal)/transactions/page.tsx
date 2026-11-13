@@ -1,3 +1,5 @@
+import { FilteredResultSummary } from "@/components/ui/filtered-result-summary";
+import { MessageListControls } from "@/features/messages/components/message-list-controls";
 import { notFound } from "next/navigation";
 
 import {
@@ -40,6 +42,8 @@ interface TransactionsPageProps {
     search?: string;
     status?: string;
     sort?: string;
+    createdFrom?: string;
+    createdTo?: string;
   }>;
 }
 
@@ -164,6 +168,8 @@ export default async function TransactionsPage({
 
   const transactionResponse =
     await findTransactions({
+      createdFrom: params.createdFrom,
+      createdTo: params.createdTo,
       page,
       pageSize,
       search:
@@ -193,6 +199,9 @@ export default async function TransactionsPage({
             params.status
           }
         />
+
+        <MessageListControls pageSize={pageSize} />
+        <FilteredResultSummary total={transactionResponse.meta.total} counts={transactionResponse.meta.statusCounts} kind="transactions" />
 
         <TransactionsTable
           transactions={

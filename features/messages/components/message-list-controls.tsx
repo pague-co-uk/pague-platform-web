@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { CalendarDays, Clock3 } from "lucide-react";
-import { messageListQuery } from "../utils/message-pagination";
+import { messageListQuery, dateTimeFilterInput, dateTimeFilterInstant } from "../utils/message-pagination";
 
 export function MessageListControls({ pageSize }: { pageSize: number }) {
   const params = useSearchParams();
@@ -15,15 +15,21 @@ function Controls({ query, pageSize }: { query: string; pageSize: number }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = new URLSearchParams(query);
-  const [from, setFrom] = useState(params.get("createdFrom") ?? "");
-  const [to, setTo] = useState(params.get("createdTo") ?? "");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [size, setSize] = useState(String(pageSize));
   const [error, setError] = useState("");
+  useEffect(() => {
+    const current = new URLSearchParams(query);
+    setFrom(dateTimeFilterInput(current.get("createdFrom") ?? ""));
+    setTo(dateTimeFilterInput(current.get("createdTo") ?? ""));
+  }, [query]);
 
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
-      router.push(`${pathname}?${messageListQuery(query, from, to, size)}`);
+      if (from && to && dateTimeFilterInstant(from) >= dateTimeFilterInstant(to)) throw new Error("Created from must be earlier than created to.");
+      router.push(`${pathname}?${messageListQuery(query, dateTimeFilterInstant(from), dateTimeFilterInstant(to), size)}`);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Invalid filters.");
     }
@@ -38,14 +44,14 @@ function Controls({ query, pageSize }: { query: string; pageSize: number }) {
           <span>Created from</span>
           <span className="relative block">
             <CalendarDays aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input type="date" value={from} onChange={event => setFrom(event.target.value)} className={dateInputClass} />
+            <input type="datetime-local" value={from} onChange={event => setFrom(event.target.value)} className={dateInputClass} />
           </span>
         </label>
         <label className="block space-y-2 text-xs font-semibold text-slate-600">
-          <span>Created to <span className="font-normal text-slate-400">(inclusive)</span></span>
+          <span>Created to <span className="font-normal text-slate-400">(before this time)</span></span>
           <span className="relative block">
             <CalendarDays aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input type="date" value={to} onChange={event => setTo(event.target.value)} className={dateInputClass} />
+            <input type="datetime-local" value={to} onChange={event => setTo(event.target.value)} className={dateInputClass} />
           </span>
         </label>
         <label className="block space-y-2 text-xs font-semibold text-slate-600">

@@ -11,6 +11,7 @@ import type {
 // ============================================================================
 
 interface TransactionsPaginationResponse {
+  statusCounts?: Record<string, number>;
   page: number;
   pageSize: number;
   totalItems: number;
@@ -355,6 +356,10 @@ function buildQuery(
     );
   }
 
+  for (const key of ["createdFrom", "createdTo"] as const) {
+    if (options[key]) searchParams.set(key, options[key]);
+  }
+
   if (options.sort) {
     searchParams.set(
       "sort",
@@ -448,6 +453,7 @@ export async function findTransactions(
     items: body.data.data,
 
     meta: {
+      statusCounts: body.data.pagination.statusCounts,
       page:
         body.data.pagination.page,
 

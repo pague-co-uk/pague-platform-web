@@ -1,16 +1,20 @@
 "use client";
 
+import { SmsSegmentSummary } from "@/components/ui/sms-segment-summary";
+
+
+import { MessageVolumeChart } from "./message-volume-chart";
 import Link from "next/link";
 import { NetworkActivityChart, MonthlyOutcomesChart } from "./messaging-activity-charts";
 import {
   useState,
+  useId,
   type ReactNode,
 } from "react";
 
 import type {
   DashboardActivityItem,
   DashboardData,
-  DashboardHourlyVolume,
   DashboardMessageStatus,
   DashboardStatusCodeBreakdown,
   DashboardTrendPoint,
@@ -229,6 +233,8 @@ export function DashboardContent({
         />
       </section>
 
+      <SmsSegmentSummary totalSegments={dashboard.messages.totalSegments} breakdown={dashboard.messages.segmentBreakdown} />
+
       <NetworkActivityChart series={dashboard.networkActivity ?? []} />
       {dashboard.monthlyOutcomes && <MonthlyOutcomesChart outcomes={dashboard.monthlyOutcomes} onYearChange={onYearChange} />}
 
@@ -252,22 +258,7 @@ export function DashboardContent({
             </div>
           </section>
 
-          <div className="grid grid-cols-1 gap-5 ">
-            <section className={CARD}>
-              <SectionHeader
-                icon="clock"
-                title="Messages by hour"
-              />
 
-              <div className="overflow-x-auto px-5 pb-5">
-                <HourlyHeatmap
-                  data={
-                    dashboard.hourlyVolume
-                  }
-                />
-              </div>
-            </section>
-          </div>
         </div>
 
         <div className="space-y-5">
@@ -300,26 +291,8 @@ export function DashboardContent({
           </section>
 
           <section className={CARD}>
-            <SectionHeader
-              icon="send"
-              title="Route performance"
-            />
-
-            <div className="overflow-x-auto">
-              {dashboard.routePerformance
-                .length === 0 ? (
-                <EmptyState
-                  title="No route activity"
-                  description="There is no route activity for the selected period."
-                />
-              ) : (
-                <RoutesTable
-                  routes={
-                    dashboard.routePerformance
-                  }
-                />
-              )}
-            </div>
+            <SectionHeader icon="send" title="Messages per sender ID" description="Message counts by sender over the selected period." />
+            <MessageVolumeChart label="Messages per sender ID" items={(dashboard.senderActivity ?? []).map((item, index) => ({ key: String(index), name: item.sender ?? "Unassigned sender", messages: item.messages }))} />
           </section>
         </div>
       </div>
@@ -446,123 +419,7 @@ export function DashboardContent({
             description="Messaging activity across platform clients."
           />
 
-          <div className="overflow-x-auto">
-            {dashboard.clients.length ===
-              0 ? (
-              <EmptyState
-                title="No client activity"
-                description="There is no client messaging activity for the selected period."
-              />
-            ) : (
-              <table className="w-full min-w-[700px] text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 text-left">
-                    <Th className="px-5 text-left">
-                      Client
-                    </Th>
-
-                    <Th>
-                      Messages
-                    </Th>
-
-                    <Th>
-                      Delivered
-                    </Th>
-
-                    <Th>
-                      Failed
-                    </Th>
-
-                    <Th className="px-5">
-                      Delivery rate
-                    </Th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {dashboard.clients.map(
-                    (client) => (
-                      <tr
-                        key={
-                          client.clientId
-                        }
-                        className="border-b border-slate-50 last:border-0"
-                      >
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-xs font-semibold text-violet-700">
-                              {getInitials(
-                                client.name,
-                              )}
-                            </div>
-
-                            <div>
-                              <p className="font-medium text-slate-900">
-                                {client.name}
-                              </p>
-
-                              <p className="text-xs text-slate-400">
-                                {client.publicId}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-
-                        <Td>
-                          {formatNumber(
-                            client.messages,
-                          )}
-                        </Td>
-
-                        <Td>
-                          {formatNumber(
-                            client.delivered,
-                          )}
-                        </Td>
-
-                        <Td>
-                          {formatNumber(
-                            client.failed,
-                          )}
-                        </Td>
-
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <span
-                              className={rateBadge(
-                                client.deliveryRate,
-                              )}
-                            >
-                              {formatPercent(
-                                client.deliveryRate,
-                              )}
-                            </span>
-
-                            <span
-                              className={[
-                                "hidden rounded-md px-2 py-0.5 text-[11px] font-medium sm:inline-flex",
-                                client.status ===
-                                  "ACTIVE"
-                                  ? "bg-emerald-50 text-emerald-600"
-                                  : client.status ===
-                                    "SUSPENDED"
-                                    ? "bg-amber-50 text-amber-600"
-                                    : "bg-slate-100 text-slate-500",
-                              ].join(" ")}
-                            >
-                              {formatActivityAction(
-                                client.status,
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <MessageVolumeChart label="Client activity" items={dashboard.clients.map(client => ({ key: client.clientId, name: client.name, messages: client.messages }))} />
         </section>
       )}
 
@@ -797,10 +654,7 @@ function Sparkline({
     )
     .join(" ");
 
-  const id = `spark-${color.replace(
-    "#",
-    "",
-  )}`;
+  const id = `spark-${useId().replace(/:/g, "")}`;
 
   return (
     <svg
@@ -820,7 +674,7 @@ function Sparkline({
           <stop
             offset="0%"
             stopColor={color}
-            stopOpacity="0.25"
+            stopOpacity="0.10"
           />
 
           <stop
@@ -1494,144 +1348,6 @@ function ChartLegend({
 // Status donut
 // ============================================================================
 
-function HourlyHeatmap({
-  data,
-}: {
-  data: readonly DashboardHourlyVolume[];
-}) {
-  const days = [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-  ];
-
-  const hours = [
-    0, 4, 8, 12, 16, 20,
-  ];
-
-  const max = Math.max(
-    1,
-    ...data.map(
-      (d) => d.count,
-    ),
-  );
-
-  const values = new Map(
-    data.map((d) => [
-      `${d.day}:${d.hour}`,
-      d.count,
-    ]),
-  );
-
-  return (
-    <div className="min-w-[360px]">
-      <div
-        className="grid gap-[2px]"
-        style={{
-          gridTemplateColumns:
-            "40px repeat(7, minmax(0, 1fr))",
-        }}
-      >
-        <div />
-
-        {days.map((d) => (
-          <div
-            key={d}
-            className="pb-1 text-center text-[11px] text-slate-400"
-          >
-            {d}
-          </div>
-        ))}
-
-        {Array.from(
-          {
-            length: 24,
-          },
-          (_, hour) => (
-            <div
-              key={hour}
-              className="contents"
-            >
-              <div className="flex items-center text-[11px] text-slate-400">
-                {hours.includes(
-                  hour,
-                )
-                  ? `${String(
-                    hour,
-                  ).padStart(
-                    2,
-                    "0",
-                  )}:00`
-                  : ""}
-              </div>
-
-              {days.map(
-                (
-                  label,
-                  i,
-                ) => {
-                  const count =
-                    values.get(
-                      `${i + 1}:${hour}`,
-                    ) ?? 0;
-
-                  const intensity =
-                    count / max;
-
-                  return (
-                    <div
-                      key={`${i}:${hour}`}
-                      title={`${label}, ${hour}:00 — ${formatNumber(
-                        count,
-                      )} messages`}
-                      className="h-2.5 rounded-[2px]"
-                      style={{
-                        backgroundColor: `rgba(79, 70, 229, ${count ===
-                          0
-                          ? 0.07
-                          : 0.14 +
-                          intensity *
-                          0.86
-                          })`,
-                      }}
-                    />
-                  );
-                },
-              )}
-            </div>
-          ),
-        )}
-      </div>
-
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400">
-        <span>
-          Low volume
-        </span>
-
-        <span
-          className="h-2 flex-1 rounded-full"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(79,70,229,0.12), rgba(79,70,229,1))",
-          }}
-        />
-
-        <span>
-          High volume
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Tables & rows
-// ============================================================================
-
 function StatusCodeRow({
   item,
 }: {
@@ -1717,90 +1433,6 @@ function StatusCodeRow({
     </div>
   );
 }
-
-function RoutesTable({
-  routes,
-}: {
-  routes: DashboardData["routePerformance"];
-}) {
-  const maxAttempts = Math.max(
-    1,
-    ...routes.map(
-      (r) => r.attempts,
-    ),
-  );
-
-  return (
-    <table className="w-full min-w-[420px] text-sm">
-      <thead>
-        <tr className="border-b border-slate-100">
-          <Th className="px-5 text-left">
-            Route
-          </Th>
-
-          <th className="px-3 py-3" />
-
-          <Th>
-            Messages
-          </Th>
-
-          <Th className="px-5">
-            Success rate
-          </Th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {routes.map((route) => (
-          <tr
-            key={`${route.publicId}:${route.connectorName}`}
-            className="border-b border-slate-50 last:border-0"
-          >
-            <td className="px-5 py-3">
-              <p className="font-medium text-slate-900">
-                {route.publicId}
-              </p>
-
-              <p className="text-xs text-slate-400">
-                {route.connectorName}
-              </p>
-            </td>
-
-            <td className="w-24 px-3 py-3">
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-indigo-500"
-                  style={{
-                    width: `${(route.attempts /
-                      maxAttempts) *
-                      100
-                      }%`,
-                  }}
-                />
-              </div>
-            </td>
-
-            <Td>
-              {formatNumber(
-                route.attempts,
-              )}
-            </Td>
-
-            <td className="px-5 py-3 text-right text-sm font-medium tabular-nums text-emerald-600">
-              {formatPercent(
-                route.deliveryRate,
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-// ============================================================================
-// Operational card
-// ============================================================================
 
 function OperationalCard({
   title,

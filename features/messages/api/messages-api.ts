@@ -189,6 +189,9 @@ export interface FindMessagesParams {
 }
 
 export interface PaginationMeta {
+  totalSegments?: number;
+  segmentBreakdown?: Array<{ segmentCount: number; messageCount: number; totalSegments: number }>;
+  statusCounts?: Record<string, number>;
   page: number;
 
   pageSize: number;
@@ -296,6 +299,9 @@ export interface PaginatedMessagesResponse<
   data: T[];
 
   pagination?: {
+  totalSegments?: number;
+  segmentBreakdown?: Array<{ segmentCount: number; messageCount: number; totalSegments: number }>;
+    statusCounts?: Record<string, number>;
     page: number;
 
     pageSize: number;
@@ -310,6 +316,9 @@ export interface PaginatedMessagesResponse<
   };
 
   meta?: {
+  totalSegments?: number;
+  segmentBreakdown?: Array<{ segmentCount: number; messageCount: number; totalSegments: number }>;
+    statusCounts?: Record<string, number>;
     page: number;
 
     pageSize: number;
@@ -900,6 +909,9 @@ export async function findMessages(
 
     meta: pagination
       ? {
+        statusCounts: pagination.statusCounts,
+        totalSegments: pagination.totalSegments,
+        segmentBreakdown: pagination.segmentBreakdown,
         page:
           pagination.page,
 
@@ -970,6 +982,9 @@ export async function findPlatformMessages(
 
     meta: pagination
       ? {
+        statusCounts: pagination.statusCounts,
+        totalSegments: pagination.totalSegments,
+        segmentBreakdown: pagination.segmentBreakdown,
         page:
           pagination.page,
 

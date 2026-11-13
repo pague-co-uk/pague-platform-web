@@ -52,7 +52,9 @@ test('date and page-size controls render without depending on result count', () 
   assert.match(markup, /Items per page/);
   assert.match(markup, /type="number"/);
   assert.match(markup, /value="50"/);
-  assert.match(markup, /value="2026-10-19"/);
+  assert.equal((markup.match(/type="datetime-local"/g) ?? []).length, 2);
+  // Local values are applied after hydration to avoid server/device timezone mismatches.
+  assert.match(markup, /value=""/);
   assert.match(markup, /local timezone/);
 });
 
@@ -182,10 +184,53 @@ test('sender selection composes with client, date and status filters', () => {
 });
 
 test('message counts remain visible on single-page, empty, and filtered result sets', () => {
-  const { MessageResultCount } = load('features/messages/components/message-result-count.tsx');
+  const { MessageResultCount } = load('features/messages/components/message-result-count.tsx', { '@/components/ui/filtered-result-summary': load('components/ui/filtered-result-summary.tsx'), '@/components/ui/sms-segment-summary': load('components/ui/sms-segment-summary.tsx') });
   const render = (page, pageSize, total, count) => renderToStaticMarkup(React.createElement(MessageResultCount, { pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }, count })).replace(/<[^>]+>/g, '');
-  assert.equal(render(1, 20, 5, 5), 'Showing 1–5 of 5 messages');
-  assert.equal(render(1, 20, 0, 0), 'Showing 0–0 of 0 messages');
-  assert.equal(render(2, 20, 27, 7), 'Showing 21–27 of 27 messages');
-  assert.equal(render(3, 20, 27, 0), 'Showing 0–0 of 27 messages');
+  assert.ok(render(1, 20, 5, 5).endsWith('Showing 1–5 of 5 messages'));
+  assert.ok(render(1, 20, 0, 0).endsWith('Showing 0–0 of 0 messages'));
+  assert.ok(render(2, 20, 27, 7).endsWith('Showing 21–27 of 27 messages'));
+  assert.ok(render(3, 20, 27, 0).endsWith('Showing 0–0 of 27 messages'));
+});
+
+
+test('date-time filters preserve local time as an explicit UTC instant', () => {
+  const { dateTimeFilterInput, dateTimeFilterInstant } = load('features/messages/utils/message-pagination.ts');
+  const previous = process.env.TZ;
+  try {
+    process.env.TZ = 'Africa/Blantyre';
+    assert.equal(dateTimeFilterInstant('2026-11-13T14:30'), '2026-11-13T12:30:00.000Z');
+    assert.equal(dateTimeFilterInput('2026-11-13T12:30:00.000Z'), '2026-11-13T14:30');
+    assert.equal(dateTimeFilterInput('2026-11-13'), '2026-11-13T00:00');
+    assert.throws(() => dateTimeFilterInstant('invalid'));
+  } finally { if (previous === undefined) delete process.env.TZ; else process.env.TZ = previous; }
+});
+
+test('filtered summaries show totals across all pages with each status including zero', () => {
+  const { FilteredResultSummary } = load('components/ui/filtered-result-summary.tsx');
+  const html = renderToStaticMarkup(React.createElement(FilteredResultSummary, { total: 104, counts: { DELIVERED: 100, FAILED: 2, ROUTING_FAILED: 1, SUBMITTED: 1, QUEUED: 0 }, kind: 'messages' }));
+  assert.match(html, /104 messages match your filters/);
+  assert.match(html, /Delivered \(successful\)/);
+  assert.match(html, /Routing failures/);
+  assert.match(html, />100<\/dd>/);
+  assert.match(html, /Queued/);
+});
+
+
+test('SMS segments show the message multiplier and total parts', () => {
+  const { SmsSegmentSummary } = load('components/ui/sms-segment-summary.tsx');
+  const text = renderToStaticMarkup(React.createElement(SmsSegmentSummary, { totalSegments: 25, breakdown: [{ segmentCount: 1, messageCount: 5, totalSegments: 5 }, { segmentCount: 2, messageCount: 10, totalSegments: 20 }] })).replace(/<[^>]+>/g, '');
+  assert.match(text, /SMS segments.*25/);
+  assert.match(text, /10 messages × 2 segments = 20/);
+  assert.match(text, /5 messages × 1 segment = 5/);
+});
+
+test('activity graphs show named categories in volume order without internal identifiers', () => {
+  const { MessageVolumeChart } = load('features/dashboard/components/message-volume-chart.tsx');
+  const html = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Client activity', items: [{ key: 'hidden-client-id-1', name: 'Small client', messages: 5 }, { key: 'hidden-client-id-2', name: 'Busy client', messages: 20 }] }));
+  assert.ok(html.indexOf('Busy client') < html.indexOf('Small client'));
+  assert.match(html, /20 messages/);
+  assert.match(html, /width:25%/);
+  assert.doesNotMatch(html, /hidden-client-id/);
+  const empty = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Sender activity', items: [] }));
+  assert.match(empty, /No messaging activity/);
 });

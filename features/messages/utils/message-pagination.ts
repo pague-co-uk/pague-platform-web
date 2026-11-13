@@ -21,3 +21,19 @@ export function messageListQuery(query: string, from: string, to: string, size: 
   next.delete("page");
   return next.toString();
 }
+
+/** Inputs use the browser's local timezone; transport uses explicit UTC instants. */
+export function dateTimeFilterInstant(value: string): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(+date)) throw new Error("Enter a valid date and time.");
+  return date.toISOString();
+}
+export function dateTimeFilterInput(value: string): string {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return `${value}T00:00`;
+  const date = new Date(value);
+  if (!Number.isFinite(+date)) return "";
+  const pad = (number: number) => String(number).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}

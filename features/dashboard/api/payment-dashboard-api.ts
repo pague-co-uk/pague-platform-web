@@ -116,7 +116,7 @@ export async function getPaymentDashboard(
   searchParams.set(
     "period",
     params.period ??
-    "30d",
+    "1d",
   );
 
   const response =

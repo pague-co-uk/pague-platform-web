@@ -118,7 +118,7 @@ export async function getDashboard(
   searchParams.set(
     "period",
     params.period ??
-    "30d",
+    "1d",
   );
 
   if (params.year !== undefined) searchParams.set("year", String(params.year));

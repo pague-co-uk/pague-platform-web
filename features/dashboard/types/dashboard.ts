@@ -60,6 +60,8 @@ export type DashboardClientStatus =
 // ============================================================================
 
 export interface DashboardMessageSummary {
+  readonly totalSegments: number;
+  readonly segmentBreakdown: ReadonlyArray<{ segmentCount: number; messageCount: number; totalSegments: number }>;
   readonly routingFailures: number;
   readonly total: number;
 
@@ -316,13 +318,12 @@ export interface DashboardData {
 
   readonly messageTrend: readonly DashboardTrendPoint[];
 
-  readonly hourlyVolume: readonly DashboardHourlyVolume[];
 
   readonly statusBreakdown: readonly DashboardStatusBreakdown[];
 
   readonly statusCodeBreakdown: readonly DashboardStatusCodeBreakdown[];
 
-  readonly routePerformance: readonly DashboardRoutePerformance[];
+  readonly senderActivity: ReadonlyArray<{ sender: string | null; messages: number }>;
 
   readonly float: DashboardFloatSummary;
 

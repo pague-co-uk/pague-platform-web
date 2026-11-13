@@ -2,6 +2,7 @@
 
 import {
   useState,
+  useId,
   type ReactNode,
 } from "react";
 
@@ -509,10 +510,7 @@ function Sparkline({
     )
     .join(" ");
 
-  const gradientId = `payment-spark-${color.replace(
-    "#",
-    "",
-  )}`;
+  const gradientId = `payment-spark-${useId().replace(/:/g, "")}`;
 
   return (
     <svg
@@ -532,7 +530,7 @@ function Sparkline({
           <stop
             offset="0%"
             stopColor={color}
-            stopOpacity="0.25"
+            stopOpacity="0.10"
           />
 
           <stop
@@ -982,7 +980,7 @@ function TransactionTrendChart({
             <stop
               offset="0%"
               stopColor="#22c55e"
-              stopOpacity="0.22"
+              stopOpacity="0.10"
             />
 
             <stop
