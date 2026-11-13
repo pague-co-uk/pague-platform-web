@@ -153,9 +153,6 @@ export function TransactionDetails({
         </div>
 
         <dl className="space-y-5 p-6">
-          <DetailRow label="Transaction ID">
-            {transaction.id}
-          </DetailRow>
 
           <DetailRow label="Public ID">
             {transaction.publicId}
@@ -230,9 +227,7 @@ export function TransactionDetails({
             </div>
           </DetailRow>
 
-          <DetailRow label="Client service">
-            {transaction.clientServiceId}
-          </DetailRow>
+
         </dl>
       </div>
 

@@ -60,6 +60,7 @@ export type DashboardClientStatus =
 // ============================================================================
 
 export interface DashboardMessageSummary {
+  readonly routingFailures: number;
   readonly total: number;
 
   readonly queued: number;

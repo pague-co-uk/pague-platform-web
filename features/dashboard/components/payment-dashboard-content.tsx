@@ -10,7 +10,6 @@ import type {
   PaymentDashboardData,
   PaymentDashboardTransaction,
   PaymentProviderPerformance,
-  PaymentStatusBreakdown,
   PaymentTransactionTrendPoint,
   PaymentTransactionTypeBreakdown,
 } from "../types/payment-dashboard";
@@ -36,7 +35,7 @@ const TONES: Record<
   violet: {
     tile:
       "bg-violet-100 text-violet-600",
-    stroke: "#8b5cf6",
+    stroke: "var(--chart-primary, #8b5cf6)",
   },
 
   green: {
@@ -48,7 +47,7 @@ const TONES: Record<
   blue: {
     tile:
       "bg-blue-100 text-blue-600",
-    stroke: "#3b82f6",
+    stroke: "var(--chart-primary, #3b82f6)",
   },
 
   orange: {
@@ -62,18 +61,6 @@ const TONES: Record<
       "bg-red-100 text-red-500",
     stroke: "#ef4444",
   },
-};
-
-const STATUS_COLORS: Record<
-  string,
-  string
-> = {
-  PENDING: "#f59e0b",
-  PROCESSING: "#3b82f6",
-  SUCCESS: "#22c55e",
-  FAILED: "#ef4444",
-  REVERSED: "#8b5cf6",
-  CANCELLED: "#94a3b8",
 };
 
 const CARD =
@@ -96,7 +83,9 @@ export function PaymentDashboardContent({
     dashboard.transactionTrend;
 
   const periodLabel =
-    dashboard.period.days === 7
+    dashboard.period.days === 1
+      ? "Today"
+      : dashboard.period.days === 7
       ? "Last 7 days"
       : dashboard.period.days === 90
         ? "Last 90 days"
@@ -237,7 +226,7 @@ export function PaymentDashboardContent({
           Activity + status
       ====================================================================== */}
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.9fr)_minmax(320px,1fr)]">
+      <div className="grid grid-cols-1 gap-5 ">
         <section className={CARD}>
           <SectionHeader
             icon="rate"
@@ -252,35 +241,7 @@ export function PaymentDashboardContent({
           </div>
         </section>
 
-        <section className={CARD}>
-          <SectionHeader
-            icon="chart"
-            title="Transaction status"
-            description="Distribution of transaction outcomes."
-          />
 
-          <div className="flex flex-col items-center gap-5 p-5 sm:flex-row xl:flex-col 2xl:flex-row">
-            <StatusDonut
-              data={
-                dashboard.statusBreakdown
-              }
-              total={
-                dashboard.summary.total
-              }
-            />
-
-            <div className="w-full flex-1 space-y-3">
-              {dashboard.statusBreakdown.map(
-                (item) => (
-                  <StatusLegendRow
-                    key={item.status}
-                    item={item}
-                  />
-                ),
-              )}
-            </div>
-          </div>
-        </section>
       </div>
 
       {/* ======================================================================
@@ -1249,141 +1210,6 @@ function ChartLegend({
 
 // ============================================================================
 // Status donut
-// ============================================================================
-
-function StatusDonut({
-  data,
-  total,
-}: {
-  data: readonly PaymentStatusBreakdown[];
-  total: number;
-}) {
-  const radius = 48;
-
-  const circumference =
-    2 * Math.PI * radius;
-
-  let accumulated = 0;
-
-  return (
-    <div className="relative h-44 w-44 shrink-0">
-      <svg
-        viewBox="0 0 120 120"
-        className="h-full w-full -rotate-90"
-      >
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke="#eef2f7"
-          strokeWidth="13"
-        />
-
-        {data
-          .filter(
-            (item) =>
-              item.percentage > 0,
-          )
-          .map((item) => {
-            const length =
-              (item.percentage /
-                100) *
-              circumference;
-
-            const offset =
-              -accumulated;
-
-            accumulated +=
-              length;
-
-            return (
-              <circle
-                key={item.status}
-                cx="60"
-                cy="60"
-                r={radius}
-                fill="none"
-                stroke={
-                  STATUS_COLORS[
-                  item.status
-                  ] ??
-                  "#94a3b8"
-                }
-                strokeWidth="13"
-                strokeDasharray={`${length} ${circumference -
-                  length
-                  }`}
-                strokeDashoffset={
-                  offset
-                }
-              />
-            );
-          })}
-      </svg>
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-semibold tracking-tight text-slate-950">
-          {formatNumber(total)}
-        </span>
-
-        <span className="text-[11px] text-slate-400">
-          Transactions
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Status legend
-// ============================================================================
-
-function StatusLegendRow({
-  item,
-}: {
-  item: PaymentStatusBreakdown;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{
-            backgroundColor:
-              STATUS_COLORS[
-              item.status
-              ] ??
-              "#94a3b8",
-          }}
-        />
-
-        <span className="truncate text-sm text-slate-700">
-          {formatStatus(
-            item.status,
-          )}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium tabular-nums text-slate-800">
-          {formatNumber(
-            item.count,
-          )}
-        </span>
-
-        <span className="w-12 text-right text-xs tabular-nums text-slate-400">
-          {formatPercent(
-            item.percentage,
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Currency volume table
 // ============================================================================
 
 function CurrencyVolumeTable({

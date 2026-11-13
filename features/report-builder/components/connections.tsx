@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { findClients, type ClientSummary } from "@/features/clients/api/clients-api";
 import { PageContainer } from "@/components/layout/page-container";
 import { PageHeader } from "@/components/layout/page-header";
 
@@ -23,6 +24,8 @@ export function Connections() {
   const [editing, setEditing] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState("");
+  const [clients, setClients] = useState<readonly ClientSummary[]>([]);
+  const [clientError, setClientError] = useState("");
   const [settings, setSettings] = useState(defaults);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +47,22 @@ export function Connections() {
       active = false;
     };
   }, []);
+  useEffect(() => {
+    let active = true;
+    async function loadClients() {
+      try {
+        const first = await findClients({ page: 1, pageSize: 100 });
+        const items = [...first.items];
+        for (let page = 2; page <= first.meta.totalPages; page++) items.push(...(await findClients({ page, pageSize: 100 })).items);
+        if (active) setClients(items);
+      } catch {
+        if (active) setClientError("Client selection requires access to the client directory.");
+      }
+    }
+    void loadClients();
+    return () => { active = false; };
+  }, []);
+
   function edit(c?: Connection) {
     setEditing(c?.id || "new");
     setName(c?.name || "");
@@ -273,14 +292,13 @@ export function Connections() {
                 </>
               )}
               <label className="grid gap-2 text-sm text-slate-700">
-                Assigned client ID (optional)
-                <input
-                  maxLength={36}
-                  className={control}
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  placeholder="Leave blank for platform-only access"
-                />
+                Assigned client (optional)
+                <select className={control} value={clientId} onChange={event => setClientId(event.target.value)}>
+                  <option value="">Platform administrators only</option>
+                  {clientId && !clients.some(client => client.id === clientId) && <option value={clientId}>{connections.find(connection => connection.clientId === clientId)?.clientName || "Assigned client"}</option>}
+                  {clients.map(client => <option key={client.id} value={client.id}>{client.displayName || client.companyName}</option>)}
+                </select>
+                {clientError && <span className="text-xs text-amber-700">{clientError}</span>}
               </label>
             </fieldset>
             <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 bg-slate-50/50 px-6 py-4">
@@ -322,7 +340,7 @@ export function Connections() {
                   <p className="mt-1 text-sm text-slate-500">
                     {c.settings?.engine} · {c.settings?.database} ·{" "}
                     {c.clientId
-                      ? "Client: " + c.clientId
+                      ? "Client: " + (c.clientName || "Assigned client")
                       : "Platform administrators only"}
                   </p>
                 </div>

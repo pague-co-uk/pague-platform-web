@@ -42,3 +42,35 @@ The browser posts through the client-scoped Next API proxy to the control-plane
 retry endpoint. The control plane checks permission and eligibility; hiding the
 button is not the authorization boundary. This requires the corresponding API and
 routing-service changes to be deployed together.
+
+## Dashboard outcomes and readable filters
+
+The dashboard uses message creation time consistently for totals, daily traffic,
+hourly traffic and client comparisons. Delivery failures are failed messages with
+at least one route attempt. Failed messages with no route attempt are reported
+separately as routing failures. Retrying messages use their current state, so a
+historical routing failure does not also appear as a current failure.
+
+Delivery success = delivered / (delivered + delivery failures + expired).
+Queued, routed, submitted and routing failures do not affect this completed-outcome
+rate. Submitted is a separate current-state metric awaiting a delivery receipt.
+An empty denominator produces zero.
+
+Client and sender filters display names. Filter options use `messages.read` and
+the existing client scope, so message readers do not need directory permissions.
+Changing client clears the sender selection. Search also matches client display
+and company names and sender text. Other filters and date controls compose.
+
+Deploy the API and frontend together for the new filter-options endpoints and
+routing-failure summary property.
+
+## Themes and identifiers
+
+The header theme button switches Blue and Pague rose, drawn from the invoice's
+rose, peach, navy and warm paper palette. A one-year SameSite cookie stores the
+choice; the root layout applies it on the server to avoid a theme flash.
+
+Routine displays use entity names, codes or public references. Message attempts
+use attempt numbers; ledger message references resolve in a batch within each
+entry's client. Original IDs are retained for links, API requests and financial
+reconciliation. Audit technical references remain behind a disclosure for support.

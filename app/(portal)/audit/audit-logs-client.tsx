@@ -1,5 +1,7 @@
 "use client";
 
+import { auditEntityLabel } from "@/features/audit-logs/entity-label";
+
 import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
 
 
@@ -365,7 +367,7 @@ export default function AuditLogsClient({
 
       case "entity":
         return entityType && entityId
-          ? `Showing activity for ${entityType} ${entityId}.`
+          ? `Showing activity for the selected ${entityType.replace(/[_-]/g, " ")} record.`
           : "Enter an entity type and entity ID.";
 
       default:
@@ -471,7 +473,7 @@ export default function AuditLogsClient({
           </p>
 
           <p className="mt-0.5 max-w-[220px] truncate font-mono text-[11px] text-slate-600">
-            {auditLog.entityId}
+            {auditEntityLabel(auditLog)}
           </p>
         </div>
       ),
@@ -485,7 +487,7 @@ export default function AuditLogsClient({
       render: (auditLog) =>
         auditLog.userId ? (
           <span className="font-mono text-xs font-medium text-slate-700">
-            {auditLog.userId}
+            {auditLog.userName || "Former user"}
           </span>
         ) : (
           <span className="text-sm font-medium text-slate-500">
@@ -502,7 +504,7 @@ export default function AuditLogsClient({
       render: (auditLog) =>
         auditLog.clientId ? (
           <span className="font-mono text-xs font-medium text-slate-700">
-            {auditLog.clientId}
+            {auditLog.clientName || "Former client"}
           </span>
         ) : (
           <span className="text-sm text-slate-500">

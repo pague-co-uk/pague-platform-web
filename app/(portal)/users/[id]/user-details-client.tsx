@@ -806,21 +806,7 @@ export default function UserDetailsClient({
               }
             />
 
-            <InfoItem
-              label="Client ID"
-              value={
-                user.clientId
-              }
-              mono
-            />
-
-            <InfoItem
-              label="User ID"
-              value={
-                user.id
-              }
-              mono
-            />
+            <InfoItem label="Client" value={user.clientName || "Client name unavailable"} />
           </div>
         </section>
 

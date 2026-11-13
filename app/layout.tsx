@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { ThemeProvider } from "@/components/ui/theme-toggle";
 import { ToastProvider } from "@/components/ui/toast";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -18,16 +20,20 @@ export const metadata: Metadata = {
   description: "Pague Platform is a comprehensive solution for managing and optimizing your communication and payment processes. It provides a seamless experience for businesses to send communications, handle transactions, track payments, and gain insights into their financial operations. With Pague Platform, you can streamline your payment workflows, enhance security, and improve customer satisfaction.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = (await cookies()).get("pague-theme")?.value === "pague" ? "pague" : "blue";
   return (
     <html
       lang="en"
+      data-theme={theme}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <ThemeProvider initialTheme={theme}>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

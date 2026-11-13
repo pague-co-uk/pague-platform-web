@@ -654,14 +654,6 @@ export default function ClientDetailsClient({
               }
               mono
             />
-
-            <InfoItem
-              label="Internal ID"
-              value={
-                client.id
-              }
-              mono
-            />
           </div>
         </section>
 

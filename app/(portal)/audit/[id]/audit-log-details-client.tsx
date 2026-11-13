@@ -1,5 +1,7 @@
 "use client";
 
+import { auditEntityLabel } from "@/features/audit-logs/entity-label";
+
 import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
 
 
@@ -460,30 +462,25 @@ export default function AuditLogDetailsClient({
               value={auditLog.entityType}
             />
 
+            <details className="text-xs text-slate-500"><summary className="cursor-pointer">Technical reference</summary><p className="mt-2 font-mono">{auditLog.id}</p></details>
+
             <Field
-              label="Audit ID"
-              value={auditLog.id}
+              label="Entity"
+              value={auditEntityLabel(auditLog)}
               mono
               copyable
             />
 
             <Field
-              label="Entity ID"
-              value={auditLog.entityId}
+              label="Client"
+              value={auditLog.clientName || (auditLog.clientId ? "Former client" : "Platform")}
               mono
               copyable
             />
 
             <Field
-              label="Client ID"
-              value={auditLog.clientId}
-              mono
-              copyable
-            />
-
-            <Field
-              label="User ID"
-              value={auditLog.userId}
+              label="User"
+              value={auditLog.userName || (auditLog.userId ? "Former user" : "System")}
               mono
               copyable
             />

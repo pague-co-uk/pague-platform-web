@@ -1,3 +1,4 @@
+import { getMessageFilterOptions } from "@/features/messages/api/server-messages-api";
 import { messagePageNumber, messagePageSize } from "@/features/messages/utils/message-pagination";
 import Link from "next/link";
 
@@ -139,8 +140,11 @@ export default async function MessagesPage({
     ),
   ]);
 
+  const { senderIds: senderOptions } = await getMessageFilterOptions(clientId);
+
   return (
     <MessagesClient
+      senderIds={senderOptions}
       client={client}
       messages={
         messages.items

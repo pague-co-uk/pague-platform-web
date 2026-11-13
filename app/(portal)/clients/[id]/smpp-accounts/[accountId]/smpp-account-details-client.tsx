@@ -553,9 +553,7 @@ export default function SmppAccountDetailsClient({
               {clientName}
             </Link>
 
-            <p className="mt-0.5 font-mono text-[11px] text-slate-400">
-              {client.id}
-            </p>
+
           </div>
         </section>
 
@@ -608,12 +606,6 @@ export default function SmppAccountDetailsClient({
                 </StatusBadge>
               </div>
             </div>
-
-            <DetailItem
-              label="Client ID"
-              value={account.clientId}
-              mono
-            />
 
             <DetailItem
               label="Created"

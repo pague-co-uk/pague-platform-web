@@ -380,7 +380,7 @@ export default function FloatClient({
         render: (entry) => (
           <div className="min-w-0">
             <p className="truncate font-mono text-xs text-slate-600">
-              {entry.referenceId ??
+              {entry.referenceLabel ?? (entry.referenceType === "MESSAGE" ? "Message unavailable" : entry.referenceId) ??
                 "—"}
             </p>
 

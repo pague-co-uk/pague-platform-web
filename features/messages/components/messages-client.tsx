@@ -1,5 +1,7 @@
 "use client";
 
+import type { SenderId } from "@/features/sender-ids/api/sender-ids-api";
+
 import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
 
 import { RetryMessageButton } from "./retry-message-button";
@@ -64,6 +66,8 @@ import {
 interface MessagesClientProps {
   readonly client: Client;
 
+  readonly senderIds: readonly Pick<SenderId, "id" | "sender">[];
+
   readonly messages: Message[];
 
   readonly pagination: PaginationMeta;
@@ -77,6 +81,7 @@ interface MessagesClientProps {
 
 export default function MessagesClient({
   client,
+  senderIds,
   messages,
   pagination,
   canCreateMessages,
@@ -268,21 +273,17 @@ Header
 
     <MessageListControls pageSize={pagination.pageSize} />
     <FilterBar
-      resetParams={[
-        "status",
-        "encoding",
-        "search",
-        "destination",
-        "senderIdId",
-        "createdFrom", "createdTo", "submittedFrom",
-        "submittedTo",
-        "page",
-      ]}
+      resetParams={["page"]}
     >
       <FilterSearch
         name="search"
-        placeholder="Search messages..."
+        placeholder="Search names, sender, content or recipient..."
       />
+
+        <FilterSelect name="senderIdId" placeholder="All sender IDs" options={[
+          { value: "", label: "All sender IDs" },
+          ...senderIds.map(sender => ({ value: sender.id, label: sender.sender })),
+        ]} />
 
       <FilterSearch
         name="destination"

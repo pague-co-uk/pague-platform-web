@@ -17,6 +17,8 @@ export type LedgerReferenceType =
   | "IMPORT";
 
 export interface FloatLedgerEntry {
+  referenceLabel?: string | null;
+  createdByName?: string | null;
   id: string;
   publicId: string;
   clientId: string;

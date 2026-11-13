@@ -3,6 +3,8 @@
 // ============================================================================
 
 export interface AuditLog {
+  readonly clientName?: string | null;
+  readonly userName?: string | null;
   readonly id: string;
 
   readonly clientId: string | null;

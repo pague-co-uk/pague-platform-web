@@ -11,7 +11,6 @@ import type {
   DashboardData,
   DashboardHourlyVolume,
   DashboardMessageStatus,
-  DashboardStatusBreakdown,
   DashboardStatusCodeBreakdown,
   DashboardTrendPoint,
 } from "../types/dashboard";
@@ -36,7 +35,7 @@ const TONES: Record<
 > = {
   violet: {
     tile: "bg-violet-100 text-violet-600",
-    stroke: "#8b5cf6",
+    stroke: "var(--chart-primary, #8b5cf6)",
   },
   green: {
     tile: "bg-emerald-100 text-emerald-600",
@@ -44,7 +43,7 @@ const TONES: Record<
   },
   blue: {
     tile: "bg-blue-100 text-blue-600",
-    stroke: "#3b82f6",
+    stroke: "var(--chart-primary, #3b82f6)",
   },
   orange: {
     tile: "bg-orange-100 text-orange-500",
@@ -54,18 +53,6 @@ const TONES: Record<
     tile: "bg-red-100 text-red-500",
     stroke: "#ef4444",
   },
-};
-
-const STATUS_COLORS: Record<
-  DashboardMessageStatus,
-  string
-> = {
-  QUEUED: "#94a3b8",
-  ROUTED: "#64748b",
-  SUBMITTED: "#3b82f6",
-  DELIVERED: "#2563eb",
-  FAILED: "#ef4444",
-  EXPIRED: "#f59e0b",
 };
 
 const CARD =
@@ -84,14 +71,13 @@ export function DashboardContent({
     dashboard.viewer.scope ===
     "PLATFORM";
 
-  const clientId =
-    dashboard.viewer.clientId;
-
   const trend =
     dashboard.messageTrend;
 
   const periodLabel =
-    dashboard.period.days === 7
+    dashboard.period.days === 1
+      ? "Today"
+      : dashboard.period.days === 7
       ? "Last 7 days"
       : dashboard.period.days === 90
         ? "Last 90 days"
@@ -165,7 +151,7 @@ export function DashboardContent({
 
       <section
         aria-label="Dashboard metrics"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
       >
         {messagesHref ? (
           <Link
@@ -204,15 +190,10 @@ export function DashboardContent({
         <KpiCard
           label="Delivery success rate"
           value={`${dashboard.kpis.deliveryRate.toFixed(1)}%`}
-          description="Successful delivery rate"
+          description="Among completed routed messages"
           icon="delivered"
           tone="green"
-          spark={trend.map((t) =>
-            t.sent > 0
-              ? (t.delivered / t.sent) *
-              100
-              : 0,
-          )}
+
         />
 
         <KpiCard
@@ -228,56 +209,8 @@ export function DashboardContent({
           )}
         />
 
-        {isPlatform || !floatHref ? (
-          <KpiCard
-            label={
-              dashboard.kpis.fifthMetric
-                .label
-            }
-            value={
-              dashboard.kpis.fifthMetric
-                .formattedValue
-            }
-            description={
-              isPlatform
-                ? "Currently active"
-                : "Current available balance"
-            }
-            icon={
-              isPlatform
-                ? "clients"
-                : "float"
-            }
-            tone="orange"
-          />
-        ) : (
-          <Link
-            href={floatHref}
-            className="block h-full rounded-2xl transition hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-          >
-            <KpiCard
-              label={
-                dashboard.kpis.fifthMetric.label
-              }
-              value={
-                dashboard.kpis.fifthMetric
-                  .formattedValue
-              }
-              description={
-                isPlatform
-                  ? "Currently active"
-                  : "Current available balance"
-              }
-              icon={
-                isPlatform
-                  ? "clients"
-                  : "float"
-              }
-              tone="orange"
-              clickable
-            />
-          </Link>
-        )}
+        <KpiCard label="Submitted" value={formatCompactNumber(dashboard.messages.submitted)} description="Awaiting a delivery receipt" icon="clock" tone="orange" />
+        <KpiCard label="Routing failures" value={formatCompactNumber(dashboard.messages.routingFailures)} description="Failed before a route was selected" icon="failed" tone="red" />
 
         <KpiCard
           label="Failed messages"
@@ -313,20 +246,7 @@ export function DashboardContent({
             </div>
           </section>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.35fr_1fr]">
-            <section className={CARD}>
-              <SectionHeader
-                icon="rate"
-                title="Messages by date"
-              />
-
-              <div className="px-5 pb-5">
-                <StackedAreaChart
-                  data={trend}
-                />
-              </div>
-            </section>
-
+          <div className="grid grid-cols-1 gap-5 ">
             <section className={CARD}>
               <SectionHeader
                 icon="clock"
@@ -347,37 +267,8 @@ export function DashboardContent({
         <div className="space-y-5">
           <section className={CARD}>
             <SectionHeader
-              icon="clients"
-              title="Delivery status breakdown"
-            />
-
-            <div className="flex flex-col items-center gap-5 p-5 sm:flex-row xl:flex-col 2xl:flex-row">
-              <StatusDonut
-                data={
-                  dashboard.statusBreakdown
-                }
-                total={
-                  dashboard.messages.total
-                }
-              />
-
-              <div className="w-full flex-1 space-y-3">
-                {dashboard.statusBreakdown.map(
-                  (item) => (
-                    <StatusLegendRow
-                      key={item.status}
-                      item={item}
-                    />
-                  ),
-                )}
-              </div>
-            </div>
-          </section>
-
-          <section className={CARD}>
-            <SectionHeader
               icon="failed"
-              title="Messages by status code"
+              title="Provider error causes"
             />
 
             <div className="p-5">
@@ -405,7 +296,7 @@ export function DashboardContent({
           <section className={CARD}>
             <SectionHeader
               icon="send"
-              title="Top routes by volume"
+              title="Route performance"
             />
 
             <div className="overflow-x-auto">
@@ -1295,7 +1186,7 @@ function ChartTooltip({
         <TooltipValue
           label="Delivered"
           value={item.delivered}
-          color="#2563eb"
+          color="var(--chart-primary, #2563eb)"
         />
 
         <TooltipValue
@@ -1404,7 +1295,7 @@ function TrendChart({
   const series = [
     {
       label: "Delivered",
-      color: "#2563eb",
+      color: "var(--chart-primary, #2563eb)",
       d: path(
         data.map(
           (d) => d.delivered,
@@ -1466,13 +1357,13 @@ function TrendChart({
           >
             <stop
               offset="0%"
-              stopColor="#3b82f6"
+              stopColor="var(--chart-primary, #3b82f6)"
               stopOpacity="0.28"
             />
 
             <stop
               offset="100%"
-              stopColor="#3b82f6"
+              stopColor="var(--chart-primary, #3b82f6)"
               stopOpacity="0.02"
             />
           </linearGradient>
@@ -1514,7 +1405,7 @@ function TrendChart({
                 data[hover.index]
                   .delivered,
               )}
-              color="#2563eb"
+              color="var(--chart-primary, #2563eb)"
             />
 
             <HoverPoint
@@ -1572,195 +1463,6 @@ function HoverPoint({
 // Stacked area chart
 // ============================================================================
 
-function StackedAreaChart({
-  data,
-}: {
-  data: readonly DashboardTrendPoint[];
-}) {
-  if (data.length === 0) {
-    return (
-      <EmptyState
-        title="No message activity"
-        description="Nothing to show for this period."
-      />
-    );
-  }
-
-  const layers = [
-    {
-      label: "Delivered",
-      color: "#6366f1",
-      get: (
-        d: DashboardTrendPoint,
-      ) => d.delivered,
-    },
-    {
-      label: "Expired",
-      color: "#fb923c",
-      get: (
-        d: DashboardTrendPoint,
-      ) => d.expired,
-    },
-    {
-      label: "Failed",
-      color: "#f87171",
-      get: (
-        d: DashboardTrendPoint,
-      ) => d.failed,
-    },
-  ];
-
-  const totals = data.map(
-    (d) =>
-      layers.reduce(
-        (sum, l) =>
-          sum + l.get(d),
-        0,
-      ),
-  );
-
-  const max = Math.max(
-    1,
-    ...totals,
-  );
-
-  const s = chartScale(
-    max,
-    data.length,
-  );
-
-  const {
-    hover,
-    handleMove,
-    handleLeave,
-  } = useChartHover(
-    data.length,
-    s,
-  );
-
-  const cumulative =
-    layers.map((_, li) =>
-      data.map((d) =>
-        layers
-          .slice(0, li + 1)
-          .reduce(
-            (sum, l) =>
-              sum + l.get(d),
-            0,
-          ),
-      ),
-    );
-
-  return (
-    <div>
-      <ChartFrame
-        max={max}
-        data={data}
-        scale={s}
-        hover={hover}
-        onHover={handleMove}
-        onLeave={handleLeave}
-      >
-        {[...layers]
-          .reverse()
-          .map((layer, ri) => {
-            const li =
-              layers.length -
-              1 -
-              ri;
-
-            const top =
-              cumulative[li];
-
-            const bottom =
-              li === 0
-                ? data.map(
-                  () => 0,
-                )
-                : cumulative[
-                li - 1
-                ];
-
-            const upper = top
-              .map(
-                (v, i) =>
-                  `${i
-                    ? "L"
-                    : "M"
-                  } ${s.x(i)} ${s.y(v)}`,
-              )
-              .join(" ");
-
-            const lower =
-              bottom
-                .map(
-                  (_, i) => {
-                    const reverseIndex =
-                      data.length -
-                      1 -
-                      i;
-
-                    return `L ${s.x(
-                      reverseIndex,
-                    )} ${s.y(
-                      bottom[
-                      reverseIndex
-                      ],
-                    )}`;
-                  },
-                )
-                .join(" ");
-
-            return (
-              <path
-                key={layer.label}
-                d={`${upper} ${lower} Z`}
-                fill={
-                  layer.color
-                }
-                fillOpacity="0.55"
-              />
-            );
-          })}
-
-        {hover &&
-          layers.map(
-            (layer) => (
-              <HoverPoint
-                key={
-                  layer.label
-                }
-                x={s.x(
-                  hover.index,
-                )}
-                y={s.y(
-                  layer.get(
-                    data[
-                    hover.index
-                    ],
-                  ),
-                )}
-                color={
-                  layer.color
-                }
-              />
-            ),
-          )}
-      </ChartFrame>
-
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-4">
-        {layers.map((l) => (
-          <ChartLegend
-            key={l.label}
-            label={l.label}
-            color={l.color}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function ChartLegend({
   label,
   color,
@@ -1784,139 +1486,6 @@ function ChartLegend({
 
 // ============================================================================
 // Status donut
-// ============================================================================
-
-function StatusDonut({
-  data,
-  total,
-}: {
-  data: readonly DashboardStatusBreakdown[];
-  total: number;
-}) {
-  const radius = 48;
-
-  const circumference =
-    2 * Math.PI * radius;
-
-  let accumulated = 0;
-
-  return (
-    <div className="relative h-44 w-44 shrink-0">
-      <svg
-        viewBox="0 0 120 120"
-        className="h-full w-full -rotate-90"
-      >
-        <circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke="#eef2f7"
-          strokeWidth="13"
-        />
-
-        {data
-          .filter(
-            (item) =>
-              item.percentage > 0,
-          )
-          .map((item) => {
-            const length =
-              (item.percentage /
-                100) *
-              circumference;
-
-            const offset =
-              -accumulated;
-
-            accumulated +=
-              length;
-
-            return (
-              <circle
-                key={item.status}
-                cx="60"
-                cy="60"
-                r={radius}
-                fill="none"
-                stroke={
-                  STATUS_COLORS[
-                  item.status
-                  ]
-                }
-                strokeWidth="13"
-                strokeDasharray={`${length} ${circumference -
-                  length
-                  }`}
-                strokeDashoffset={
-                  offset
-                }
-              />
-            );
-          })}
-      </svg>
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-semibold tracking-tight text-slate-950">
-          {formatNumber(total)}
-        </span>
-
-        <span className="text-[11px] text-slate-400">
-          Total messages
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Status legend row
-// ============================================================================
-
-function StatusLegendRow({
-  item,
-}: {
-  item: DashboardStatusBreakdown;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span
-          className="h-2.5 w-2.5 shrink-0 rounded-full"
-          style={{
-            backgroundColor:
-              STATUS_COLORS[
-              item.status
-              ],
-          }}
-        />
-
-        <span className="truncate text-sm text-slate-700">
-          {formatStatus(
-            item.status,
-          )}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium tabular-nums text-slate-800">
-          {formatNumber(
-            item.count,
-          )}
-        </span>
-
-        <span className="w-12 text-right text-xs tabular-nums text-slate-400">
-          {formatPercent(
-            item.percentage,
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Hourly heatmap
 // ============================================================================
 
 function HourlyHeatmap({

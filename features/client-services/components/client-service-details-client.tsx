@@ -348,50 +348,6 @@ export default function ClientServiceDetailsClient({
           </dl>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-base font-semibold text-slate-950">
-              Identifiers
-            </h2>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Internal identifiers for this assignment.
-            </p>
-          </div>
-
-          <dl className="space-y-5">
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Assignment ID
-              </dt>
-
-              <dd className="mt-1 break-all font-mono text-xs text-slate-700">
-                {clientService.id}
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Client ID
-              </dt>
-
-              <dd className="mt-1 break-all font-mono text-xs text-slate-700">
-                {clientService.clientId}
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                Service ID
-              </dt>
-
-              <dd className="mt-1 break-all font-mono text-xs text-slate-700">
-                {clientService.serviceId}
-              </dd>
-            </div>
-          </dl>
-        </section>
-
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3">
           <div className="mb-6">
             <h2 className="text-base font-semibold text-slate-950">

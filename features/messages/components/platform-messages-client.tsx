@@ -1,5 +1,7 @@
 "use client";
 
+import type { SenderId } from "@/features/sender-ids/api/sender-ids-api";
+
 import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
 
 import { RetryMessageButton } from "./retry-message-button";
@@ -66,13 +68,15 @@ import {
 // ============================================================================
 
 interface PlatformMessagesClientProps {
+  readonly senderIds: readonly Pick<SenderId, "id" | "sender">[];
+
   readonly messages: Message[];
 
   readonly pagination: PaginationMeta;
 
   readonly canCreateMessages: boolean;
 
-  readonly clients: readonly ClientSummary[];
+  readonly clients: readonly Pick<ClientSummary, "id" | "displayName" | "companyName" | "publicId">[];
 }
 
 // ============================================================================
@@ -80,6 +84,7 @@ interface PlatformMessagesClientProps {
 // ============================================================================
 
 export default function PlatformMessagesClient({
+  senderIds,
   messages,
   pagination,
   canCreateMessages,
@@ -268,27 +273,22 @@ export default function PlatformMessagesClient({
 
       <MessageListControls pageSize={pagination.pageSize} />
       <FilterBar
-        resetParams={[
-          "clientId",
-          "status",
-          "encoding",
-          "search",
-          "destination",
-          "senderIdId",
-          "createdFrom", "createdTo", "submittedFrom",
-          "submittedTo",
-          "page",
-        ]}
+        resetParams={["page"]}
       >
         <FilterSearch
           name="search"
-          placeholder="Search messages..."
+          placeholder="Search names, sender, content or recipient..."
         />
 
-        <FilterSearch
-          name="clientId"
-          placeholder="Client ID..."
-        />
+        <FilterSelect name="clientId" placeholder="All clients" resetParams={["page", "senderIdId"]} options={[
+          { value: "", label: "All clients" },
+          ...clients.map(client => ({ value: client.id, label: client.displayName || client.companyName })),
+        ]} />
+
+        <FilterSelect name="senderIdId" placeholder="All sender IDs" options={[
+          { value: "", label: "All sender IDs" },
+          ...senderIds.map(sender => ({ value: sender.id, label: sender.sender })),
+        ]} />
 
         <FilterSearch
           name="destination"

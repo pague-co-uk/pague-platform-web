@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import Link from "next/link";
 
@@ -316,6 +317,8 @@ export function AppHeader({
         {/* ==================================================================
             Account menu
         ================================================================== */}
+
+        <ThemeToggle />
 
         <div
           ref={

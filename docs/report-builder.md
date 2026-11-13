@@ -6,6 +6,12 @@ control-plane session, server permission checks, portal shell, and styling.
 
 ## Setup
 
+The canonical report models and migration live in the shared
+`@pague-co-uk/sms-gateway-db` package (`sms-gateway-db/prisma` in this workspace).
+The API keeps a synchronized copy for its own Prisma Client. After updating the
+shared package dependency, run `npx pague-db sync` from `api` before deploying
+migrations or regenerating the client.
+
 In the `api` project:
 
 1. Install dependencies with `npm ci`.

@@ -177,7 +177,7 @@ export default function FloatLedgerEntryClient({
           >
             {entry.referenceId ? (
               <span className="font-mono text-xs">
-                {entry.referenceId}
+                {entry.referenceLabel ?? (entry.referenceType === "MESSAGE" ? "Message unavailable" : entry.referenceId)}
               </span>
             ) : (
               "—"
@@ -204,7 +204,7 @@ export default function FloatLedgerEntryClient({
           >
             {entry.createdById ? (
               <span className="font-mono text-xs">
-                {entry.createdById}
+                {entry.createdByName || "Former user"}
               </span>
             ) : (
               "System"
@@ -226,14 +226,6 @@ export default function FloatLedgerEntryClient({
           {/* ------------------------------------------------------------------
               Entry ID
           ------------------------------------------------------------------- */}
-
-          <DetailRow
-            label="Entry ID"
-          >
-            <span className="break-all font-mono text-xs">
-              {entry.id}
-            </span>
-          </DetailRow>
         </div>
       </div>
     </PageContainer>

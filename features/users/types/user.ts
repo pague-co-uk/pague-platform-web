@@ -18,6 +18,7 @@ export interface RoleResponse {
 }
 
 export interface UserSummary {
+  clientName?: string;
   id: string;
   clientId: string;
   username: string;

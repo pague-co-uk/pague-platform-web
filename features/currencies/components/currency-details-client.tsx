@@ -312,11 +312,6 @@ export function CurrencyDetailsClient({
           </h2>
 
           <div className="mt-5 grid gap-6 sm:grid-cols-2">
-            <DetailItem
-              label="Currency ID"
-              value={currency.id}
-              mono
-            />
 
             <DetailItem
               label="Created"

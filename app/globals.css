@@ -12,12 +12,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
@@ -57,4 +51,87 @@ button[class*="bg-blue-"]:focus-visible,
 a[class*=" h-"][class*="bg-blue-"]:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgb(59 130 246), 0 0 0 4px white;
+}
+
+/* Invoice palette: rose, peach, warm paper and navy ink. Rebind brand utilities
+   across navigation, forms and focus states; retain semantic status colors. */
+:root[data-theme="pague"] {
+  --background: #fffaf8;
+  --foreground: #132e57;
+  --chart-primary: #c92b68;
+  --chart-secondary: #ed966e;
+  --color-blue-50: #fff3f5;
+  --color-blue-100: #ffe3e9;
+  --color-blue-200: #ffcbd7;
+  --color-blue-300: #ffa1b9;
+  --color-blue-400: #f7759c;
+  --color-blue-500: #e94f87;
+  --color-blue-600: #c92b68;
+  --color-blue-700: #aa1952;
+  --color-blue-800: #8d1947;
+  --color-blue-900: #75183e;
+  --color-blue-950: #470b24;
+  --color-sky-50: #fff3f5;
+  --color-sky-100: #ffe3e9;
+  --color-sky-200: #ffcbd7;
+  --color-sky-300: #ffa1b9;
+  --color-sky-400: #f7759c;
+  --color-sky-500: #e94f87;
+  --color-sky-600: #c92b68;
+  --color-sky-700: #aa1952;
+  --color-sky-800: #8d1947;
+  --color-sky-900: #75183e;
+  --color-sky-950: #470b24;
+  --color-indigo-50: #fff3f5;
+  --color-indigo-100: #ffe3e9;
+  --color-indigo-200: #ffcbd7;
+  --color-indigo-300: #ffa1b9;
+  --color-indigo-400: #f7759c;
+  --color-indigo-500: #e94f87;
+  --color-indigo-600: #c92b68;
+  --color-indigo-700: #aa1952;
+  --color-indigo-800: #8d1947;
+  --color-indigo-900: #75183e;
+  --color-indigo-950: #470b24;
+  --color-violet-50: #fff3f5;
+  --color-violet-100: #ffe3e9;
+  --color-violet-200: #ffcbd7;
+  --color-violet-300: #ffa1b9;
+  --color-violet-400: #f7759c;
+  --color-violet-500: #e94f87;
+  --color-violet-600: #c92b68;
+  --color-violet-700: #aa1952;
+  --color-violet-800: #8d1947;
+  --color-violet-900: #75183e;
+  --color-violet-950: #470b24;
+  --color-slate-50: #fffaf8;
+  --color-slate-100: #faf0ed;
+  --color-slate-200: #eededb;
+  --color-slate-300: #d4c5c5;
+  --color-slate-400: #9c929c;
+  --color-slate-500: #716b80;
+  --color-slate-600: #535773;
+  --color-slate-700: #344560;
+  --color-slate-800: #233855;
+  --color-slate-900: #132e57;
+  --color-slate-950: #0b203e;
+}
+:root[data-theme="pague"] button[class*="bg-blue-"],
+:root[data-theme="pague"] a[class*=" h-"][class*="bg-blue-"] {
+  background-color: var(--color-blue-600) !important;
+}
+:root[data-theme="pague"] button[class*="bg-blue-"]:hover:not(:disabled),
+:root[data-theme="pague"] a[class*=" h-"][class*="bg-blue-"]:hover {
+  background-color: var(--color-blue-700) !important;
+}
+:root[data-theme="pague"] button[class*="bg-blue-"]:focus-visible,
+:root[data-theme="pague"] a[class*=" h-"][class*="bg-blue-"]:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px white;
+}
+
+:root[data-theme="pague"] header {
+  background-image: linear-gradient(110deg, #ffffff 55%, #fff0ec 100%);
+}
+:root[data-theme="pague"] aside {
+  background-image: linear-gradient(180deg, #ffffff 60%, #fff0ec 100%);
 }

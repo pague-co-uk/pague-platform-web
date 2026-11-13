@@ -31,7 +31,7 @@ export interface ClientAction {
 }
 
 interface ClientActionSelectorProps {
-  readonly clients: readonly ClientSummary[];
+  readonly clients: readonly Pick<ClientSummary, "id" | "displayName" | "companyName" | "publicId">[];
 
   readonly actions: readonly ClientAction[];
 
@@ -221,7 +221,7 @@ export function ClientActionSelector({
   // ========================================================================
 
   function selectClient(
-    client: ClientSummary,
+    client: Pick<ClientSummary, "id" | "displayName" | "companyName" | "publicId">,
   ) {
     const name =
       client.displayName ||

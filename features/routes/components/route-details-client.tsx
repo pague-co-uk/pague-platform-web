@@ -309,15 +309,6 @@ export default function RouteDetailsClient({
                   </StatusBadge>
                 </div>
               </div>
-
-              <div>
-                <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Route ID
-                </div>
-                <div className="mt-1 break-all font-mono text-xs text-slate-600">
-                  {route.id}
-                </div>
-              </div>
             </div>
           </section>
 
@@ -346,15 +337,6 @@ export default function RouteDetailsClient({
                     </div>
                     <div className="mt-1 text-sm text-slate-700">
                       {route.client.displayName}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                      Client ID
-                    </div>
-                    <div className="mt-1 break-all font-mono text-xs text-slate-600">
-                      {route.clientId}
                     </div>
                   </div>
                 </div>

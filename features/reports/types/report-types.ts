@@ -17,6 +17,7 @@ export type RoutePerformanceReportRow = {
 };
 
 export type FloatLedgerReportRow = {
+  readonly referenceLabel?: string | null;
   readonly publicId: string;
   readonly transactionType: string;
   readonly credits: number;

@@ -70,6 +70,7 @@ export interface MessageRouteAttempt {
   };
 
   connector: {
+    name?: string;
     id: string;
 
     publicId: string;

@@ -731,3 +731,16 @@ export async function createMessage(
 
   return body.data;
 }
+export interface MessageFilterOptions {
+  clients: Array<{ id: string; publicId: string; displayName: string; companyName: string }>;
+  senderIds: Array<{ id: string; sender: string; clientId: string }>;
+}
+
+export async function getMessageFilterOptions(clientId?: string, platform = false): Promise<MessageFilterOptions> {
+  const cookieHeader = (await cookies()).getAll().map(({ name, value }) => `${name}=${value}`).join("; ");
+  const path = platform ? `/api/messages/filter-options${clientId ? `?clientId=${encodeURIComponent(clientId)}` : ""}` : `/api/clients/${encodeURIComponent(clientId!)}/messages/filter-options`;
+  const response = await fetch(`${getControlPlaneUrl()}${path}`, { headers: { Cookie: cookieHeader }, cache: "no-store" });
+  if (!response.ok) throw new Error("Unable to load message filters.");
+  const body = await response.json() as { data: MessageFilterOptions };
+  return body.data;
+}

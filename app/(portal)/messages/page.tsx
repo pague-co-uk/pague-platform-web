@@ -1,3 +1,4 @@
+import { getMessageFilterOptions } from "@/features/messages/api/server-messages-api";
 import { messagePageNumber, messagePageSize } from "@/features/messages/utils/message-pagination";
 import {
   PageContainer,
@@ -6,10 +7,6 @@ import {
 import {
   findPlatformMessages,
 } from "@/features/messages/api/server-messages-api";
-
-import {
-  findClients,
-} from "@/features/clients/api/server-clients-api";
 
 import PlatformMessagesClient from "@/features/messages/components/platform-messages-client";
 
@@ -141,15 +138,7 @@ export default async function MessagesPage({
   // Clients
   // ==========================================================================
 
-  const clients =
-    canCreateMessages
-      ? await findClients({
-        page: 1,
-        pageSize: 100,
-      })
-      : {
-        items: [],
-      };
+  const { clients: clientOptions, senderIds: senderOptions } = await getMessageFilterOptions(query.clientId, true);
 
   // ==========================================================================
   // Render
@@ -157,6 +146,7 @@ export default async function MessagesPage({
 
   return (
     <PlatformMessagesClient
+      senderIds={senderOptions}
       messages={
         messages.items
       }
@@ -167,7 +157,7 @@ export default async function MessagesPage({
         canCreateMessages
       }
       clients={
-        clients.items
+        clientOptions
       }
     />
   );

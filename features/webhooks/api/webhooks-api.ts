@@ -22,6 +22,7 @@ export interface WebhookSecretResponse
 }
 
 export interface WebhookDelivery {
+  messageReference?: string | null;
   id: string;
   webhookEndpointId: string;
   messageId: string;

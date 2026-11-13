@@ -391,9 +391,7 @@ export default function SmppAccountCreateClient({
               {clientName}
             </Link>
 
-            <p className="mt-0.5 font-mono text-[11px] text-slate-400">
-              {client.id}
-            </p>
+
           </div>
         </section>
 

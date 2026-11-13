@@ -214,10 +214,10 @@ export function CountryCurrencyDetailsClient({
 
             <div className="space-y-5 p-6">
               <DetailField
-                label="Currency ID"
+                label="Currency"
                 value={
                   <span className="break-all font-mono text-xs text-slate-700">
-                    {countryCurrency.currencyId}
+                    {countryCurrency.currencyName} ({countryCurrency.currencyCode})
                   </span>
                 }
               />

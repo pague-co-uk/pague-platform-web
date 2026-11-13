@@ -140,3 +140,43 @@ test('local date formatter waits until hydration before formatting', () => {
     assert.equal(format('date'), hydrated ? 'local: date' : '—');
   }
 });
+
+test('changing client preserves other filters and clears an incompatible sender selection', () => {
+  const navigations = [];
+  const { FilterSelect } = load('components/ui/filter-bar.tsx', {
+    'next/navigation': {
+      useSearchParams: () => new URLSearchParams('page=4&pageSize=50&status=DELIVERED&senderIdId=old-sender&createdFrom=2026-11-01'),
+      useRouter: () => ({ push: url => navigations.push(url) }),
+      usePathname: () => '/messages',
+    },
+  });
+  const element = FilterSelect({ name: 'clientId', resetParams: ['page', 'senderIdId'], placeholder: 'All clients', options: [{ value: 'client-acme', label: 'Acme Ltd' }] });
+  element.props.onChange({ target: { value: 'client-acme' } });
+  const params = new URL(navigations[0], 'http://localhost').searchParams;
+  assert.equal(params.get('clientId'), 'client-acme');
+  assert.equal(params.get('status'), 'DELIVERED');
+  assert.equal(params.get('createdFrom'), '2026-11-01');
+  assert.equal(params.get('pageSize'), '50');
+  assert.equal(params.has('senderIdId'), false);
+  assert.equal(params.has('page'), false);
+  assert.match(renderToStaticMarkup(element), />Acme Ltd<\/option>/);
+});
+
+test('sender selection composes with client, date and status filters', () => {
+  let navigation;
+  const { FilterSelect } = load('components/ui/filter-bar.tsx', {
+    'next/navigation': {
+      useSearchParams: () => new URLSearchParams('clientId=client-acme&status=SUBMITTED&createdTo=2026-11-13&page=3'),
+      useRouter: () => ({ push: url => { navigation = url; } }),
+      usePathname: () => '/messages',
+    },
+  });
+  const element = FilterSelect({ name: 'senderIdId', options: [{ value: 'sender-acme', label: 'ACME' }] });
+  element.props.onChange({ target: { value: 'sender-acme' } });
+  const params = new URL(navigation, 'http://localhost').searchParams;
+  assert.equal(params.get('senderIdId'), 'sender-acme');
+  assert.equal(params.get('clientId'), 'client-acme');
+  assert.equal(params.get('status'), 'SUBMITTED');
+  assert.equal(params.get('createdTo'), '2026-11-13');
+  assert.equal(params.has('page'), false);
+});

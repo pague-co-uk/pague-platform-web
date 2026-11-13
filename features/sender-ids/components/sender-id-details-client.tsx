@@ -358,14 +358,6 @@ export default function SenderIdDetailsClient({
                     }
                   />
                 )}
-
-              <DetailRow
-                label="Client ID"
-                value={
-                  senderId.client.id
-                }
-                mono
-              />
             </dl>
           </section>
 

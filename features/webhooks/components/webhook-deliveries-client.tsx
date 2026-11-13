@@ -226,18 +226,18 @@ export function WebhookDeliveriesClient({
       () => [
         {
           key: "messageId",
-          header: "Message ID",
+          header: "Message",
           render: (
             delivery,
           ) => (
             <span
               className="font-mono text-xs text-slate-700"
               title={
-                delivery.messageId
+                delivery.messageReference || "Message unavailable"
               }
             >
               {
-                delivery.messageId
+                delivery.messageReference || "Message unavailable"
               }
             </span>
           ),

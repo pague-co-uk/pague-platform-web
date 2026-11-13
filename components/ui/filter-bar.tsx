@@ -258,6 +258,8 @@ export interface FilterOption {
 interface FilterSelectProps {
   name: string;
 
+  resetParams?: readonly string[];
+
   options: readonly FilterOption[];
 
   placeholder?: string;
@@ -268,6 +270,7 @@ interface FilterSelectProps {
 export function FilterSelect({
   name,
   options,
+  resetParams = ["page"],
   placeholder = "All",
   className = "",
 }: FilterSelectProps) {
@@ -302,7 +305,7 @@ export function FilterSelect({
       params.delete(name);
     }
 
-    params.delete("page");
+    for (const key of resetParams) params.delete(key);
 
     router.push(
       `${pathname}?${params.toString()}`,
@@ -330,10 +333,10 @@ export function FilterSelect({
       ].join(" ")}
     >
       <option value="">
-        {placeholder}
+        {options.find(option => option.value === "")?.label ?? placeholder}
       </option>
 
-      {options.map(
+      {options.filter(option => option.value !== "").map(
         (option) => (
           <option
             key={

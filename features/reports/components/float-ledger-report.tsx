@@ -546,7 +546,7 @@ export function FloatLedgerReport({
 
             {row.referenceId && (
               <p className="mt-0.5 max-w-[220px] truncate font-mono text-xs text-slate-400">
-                {row.referenceId}
+                {row.referenceLabel ?? (row.referenceType === "MESSAGE" ? "Message unavailable" : row.referenceId)}
               </p>
             )}
           </div>

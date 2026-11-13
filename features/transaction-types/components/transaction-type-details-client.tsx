@@ -279,21 +279,11 @@ export default function TransactionTypeDetailsClient({
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Internal identifier for this
-                transaction type.
+                Code and record timestamps.
               </p>
             </div>
 
             <dl className="space-y-5">
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Transaction Type ID
-                </dt>
-
-                <dd className="mt-1 break-all font-mono text-xs leading-5 text-slate-700">
-                  {transactionType.id}
-                </dd>
-              </div>
 
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">

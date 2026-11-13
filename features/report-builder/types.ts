@@ -15,6 +15,7 @@ export interface ConnectionSettings {
   tls: boolean;
 }
 export interface Connection {
+  clientName?: string | null;
   id: string;
   name: string;
   clientId: string | null;

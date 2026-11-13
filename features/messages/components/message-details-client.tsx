@@ -396,7 +396,7 @@ export default function MessageDetailsClient({
                           <p className="mt-2 font-mono text-[11px] text-slate-400">
                             Attempt:{" "}
                             {
-                              event.attemptId
+                              message.routeAttempts.find(attempt => attempt.id === event.attemptId)?.attemptNumber ?? "Historical attempt"
                             }
                           </p>
                         )}
@@ -414,33 +414,6 @@ export default function MessageDetailsClient({
           Technical identifiers
       ===================================================================== */}
 
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-5 py-4">
-          <h2 className="text-sm font-semibold text-slate-900">
-            Technical identifiers
-          </h2>
-        </div>
-
-        <div className="grid gap-0 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-          <DetailRow
-            label="Public Message ID"
-            value={
-              <span className="break-all font-mono text-xs">
-                {message.publicId}
-              </span>
-            }
-          />
-
-          <DetailRow
-            label="Client ID"
-            value={
-              <span className="break-all font-mono text-xs">
-                {message.client.id}
-              </span>
-            }
-          />
-        </div>
-      </div>
     </PageContainer>
   );
 }
@@ -485,9 +458,7 @@ function MessageRouteAttemptCard({
           </p>
         </div>
 
-        <span className="font-mono text-[11px] text-slate-400">
-          {attempt.id}
-        </span>
+
       </div>
 
       {/* --------------------------------------------------------------------
@@ -505,7 +476,7 @@ function MessageRouteAttemptCard({
         <AttemptDetail
           label="Connector"
           value={
-            attempt.connector.publicId
+            attempt.connector.name || attempt.connector.publicId
           }
         />
 
