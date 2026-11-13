@@ -43,6 +43,8 @@ export interface Transaction {
 
   status: TransactionStatus;
 
+  accountNumber?: string | null;
+  country?: string | null;
   reference: string;
   providerReference: string | null;
 

@@ -16,6 +16,7 @@ export interface PaginationMeta {
 
 interface PaginationProps {
   meta: PaginationMeta;
+  showSummary?: boolean;
 }
 
 // ============================================================================
@@ -24,6 +25,7 @@ interface PaginationProps {
 
 export function Pagination({
   meta,
+  showSummary = true,
 }: PaginationProps) {
   const searchParams =
     useSearchParams();
@@ -83,7 +85,7 @@ export function Pagination({
           Result summary
       ================================================================== */}
 
-      <p className="text-xs text-slate-500">
+      {showSummary && <p className="text-xs text-slate-500">
         Showing{" "}
         <span className="font-medium text-slate-700">
           {start}
@@ -96,7 +98,7 @@ export function Pagination({
         <span className="font-medium text-slate-700">
           {meta.total}
         </span>
-      </p>
+      </p>}
 
       {/* ==================================================================
           Controls

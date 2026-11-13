@@ -303,6 +303,9 @@ export interface DashboardActivityItem {
 // ============================================================================
 
 export interface DashboardData {
+  networkActivity: DashboardNetworkSeries[];
+  monthlyOutcomes: DashboardMonthlyOutcomes;
+
   readonly viewer: DashboardViewer;
 
   readonly period: DashboardPeriod;
@@ -330,4 +333,13 @@ export interface DashboardData {
   readonly clients: readonly DashboardClientSummary[];
 
   readonly recentActivity: readonly DashboardActivityItem[];
+}
+export interface DashboardNetworkSeries {
+  key: string;
+  name: string;
+  points: Array<{ date: string; count: number }>;
+}
+export interface DashboardMonthlyOutcomes {
+  year: number;
+  months: Array<{ month: number; delivered: number; failed: number }>;
 }

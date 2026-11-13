@@ -104,6 +104,7 @@ async function handleResponse(
 // ============================================================================
 
 export interface GetDashboardParams {
+  readonly year?: number;
   readonly period?:
   DashboardPeriodValue;
 }
@@ -119,6 +120,8 @@ export async function getDashboard(
     params.period ??
     "30d",
   );
+
+  if (params.year !== undefined) searchParams.set("year", String(params.year));
 
   const response =
     await fetch(

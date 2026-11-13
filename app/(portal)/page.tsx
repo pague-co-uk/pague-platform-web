@@ -70,6 +70,8 @@ export default function DashboardPage() {
   const [paymentsError, setPaymentsError] =
     useState<string | null>(null);
 
+  const [monthlyYear, setMonthlyYear] = useState(new Date().getUTCFullYear());
+
   // Shared period
   const [period, setPeriod] =
     useState<DashboardPeriodValue>("30d");
@@ -80,7 +82,7 @@ export default function DashboardPage() {
     setMessagesError(null);
 
     try {
-      const result = await getDashboard({ period });
+      const result = await getDashboard({ period, year: monthlyYear });
       setDashboard(result);
     } catch (error) {
       console.error(
@@ -96,7 +98,7 @@ export default function DashboardPage() {
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [period]);
+  }, [period, monthlyYear]);
 
   // Load payment dashboard
   const loadPaymentDashboard = useCallback(async () => {
@@ -227,7 +229,7 @@ export default function DashboardPage() {
                 </ErrorState>
               </div>
             ) : dashboard ? (
-              <DashboardContent dashboard={dashboard} />
+              <DashboardContent dashboard={dashboard} onYearChange={setMonthlyYear} />
             ) : null}
           </div>
         </>

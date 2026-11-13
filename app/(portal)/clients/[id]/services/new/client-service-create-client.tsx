@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { paymentConfigurationError, paymentConfigurationTemplate } from "@/features/client-services/payment-configuration";
 
 import {
   FormEvent,
@@ -76,6 +77,8 @@ export default function ClientServiceCreateClient({
         selectedServiceCode,
     ) ?? null;
 
+  const isPaymentService = selectedService?.category === "PAYMENTS";
+
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>,
   ) {
@@ -131,6 +134,11 @@ export default function ClientServiceCreateClient({
       }
     }
 
+    if (isPaymentService) {
+      const error = paymentConfigurationError(parsedConfiguration);
+      if (error) { setFormError(error); return; }
+    }
+
     const payload:
       CreateClientServicePayload = {
       serviceCode:
@@ -165,11 +173,9 @@ export default function ClientServiceCreateClient({
         )}`,
       );
     } catch (error) {
-      showError(
-        error instanceof Error
-          ? error.message
-          : "Failed to assign service.",
-      );
+      const message = error instanceof Error ? error.message : "Failed to assign service.";
+      setFormError(message);
+      showError(message);
     } finally {
       setSubmitting(false);
     }
@@ -302,9 +308,16 @@ export default function ClientServiceCreateClient({
                 >
                   Configuration
                   <span className="ml-1 font-normal text-slate-400">
-                    (optional)
+                    {isPaymentService ? "(required for payments)" : "(optional)"}
                   </span>
                 </label>
+
+                {isPaymentService && (
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-slate-500">Define the allowed payment currencies, transaction types and limits.</p>
+                    <button type="button" disabled={submitting} onClick={() => { setConfiguration(paymentConfigurationTemplate(selectedServiceCode)); setFormError(null); }} className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">Insert payment template</button>
+                  </div>
+                )}
 
                 <textarea
                   id="configuration"
@@ -325,10 +338,9 @@ export default function ClientServiceCreateClient({
                 />
 
                 <p className="mt-2 text-xs leading-5 text-slate-500">
-                  Configuration must be a JSON
-                  object. Leave this empty if the
-                  service does not require
-                  client-specific configuration.
+                  {isPaymentService
+                    ? "Use [] for requiredFields when there are no service-specific inputs. Common accountNumber and country fields belong in payment requests. Review the template before assigning."
+                    : "Configuration must be a JSON object. Leave this empty if the service does not require client-specific configuration."}
                 </p>
               </div>
 

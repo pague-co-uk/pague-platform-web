@@ -5,6 +5,7 @@ import type { SenderId } from "@/features/sender-ids/api/sender-ids-api";
 import { useLocalDateFormatter } from "@/lib/date/use-local-date-formatter";
 
 import { RetryMessageButton } from "./retry-message-button";
+import { MessageResultCount } from "./message-result-count";
 import { MessageListControls } from "./message-list-controls";
 import { MessageRetryProgress } from "./message-retry-progress";
 
@@ -347,7 +348,9 @@ Header
       Table
   ======================================================================= */}
 
-    <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <MessageResultCount pagination={pagination} count={messages.length} />
+
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
       {messages.length ===
         0 ? (
         <EmptyState
@@ -410,6 +413,7 @@ Header
       0 && (
         <div className="mt-4">
           <Pagination
+            showSummary={false}
             meta={pagination}
           />
         </div>

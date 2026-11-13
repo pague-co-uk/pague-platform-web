@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NetworkActivityChart, MonthlyOutcomesChart } from "./messaging-activity-charts";
 import {
   useState,
   type ReactNode,
@@ -64,8 +65,10 @@ const CARD =
 
 export function DashboardContent({
   dashboard,
+  onYearChange = () => {},
 }: {
   dashboard: DashboardData;
+  onYearChange?: (year: number) => void;
 }) {
   const isPlatform =
     dashboard.viewer.scope ===
@@ -225,6 +228,9 @@ export function DashboardContent({
           )}
         />
       </section>
+
+      <NetworkActivityChart series={dashboard.networkActivity ?? []} />
+      {dashboard.monthlyOutcomes && <MonthlyOutcomesChart outcomes={dashboard.monthlyOutcomes} onYearChange={onYearChange} />}
 
       {/* ====================================================================
           Delivery status + breakdown / status codes

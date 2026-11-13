@@ -101,6 +101,14 @@ export async function GET(
     period,
   );
 
+  const year = request.nextUrl.searchParams.get("year");
+  if (year !== null) {
+    if (!/^\d{4}$/.test(year) || Number(year) < 2000 || Number(year) > 2100) {
+      return NextResponse.json({ success: false, error: { message: "Invalid dashboard year." } }, { status: 400 });
+    }
+    searchParams.set("year", year);
+  }
+
   let response: Response;
 
   try {

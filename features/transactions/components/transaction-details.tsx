@@ -158,6 +158,14 @@ export function TransactionDetails({
             {transaction.publicId}
           </DetailRow>
 
+          <DetailRow label="Account number">
+            {transaction.accountNumber ?? "Not recorded"}
+          </DetailRow>
+
+          <DetailRow label="Account country">
+            {transaction.country ?? "Not recorded"}
+          </DetailRow>
+
           <DetailRow label="Reference">
             {transaction.reference}
           </DetailRow>

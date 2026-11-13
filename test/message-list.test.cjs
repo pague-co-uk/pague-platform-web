@@ -180,3 +180,12 @@ test('sender selection composes with client, date and status filters', () => {
   assert.equal(params.get('createdTo'), '2026-11-13');
   assert.equal(params.has('page'), false);
 });
+
+test('message counts remain visible on single-page, empty, and filtered result sets', () => {
+  const { MessageResultCount } = load('features/messages/components/message-result-count.tsx');
+  const render = (page, pageSize, total, count) => renderToStaticMarkup(React.createElement(MessageResultCount, { pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) }, count })).replace(/<[^>]+>/g, '');
+  assert.equal(render(1, 20, 5, 5), 'Showing 1–5 of 5 messages');
+  assert.equal(render(1, 20, 0, 0), 'Showing 0–0 of 0 messages');
+  assert.equal(render(2, 20, 27, 7), 'Showing 21–27 of 27 messages');
+  assert.equal(render(3, 20, 27, 0), 'Showing 0–0 of 27 messages');
+});

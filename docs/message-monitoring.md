@@ -74,3 +74,22 @@ Routine displays use entity names, codes or public references. Message attempts
 use attempt numbers; ledger message references resolve in a batch within each
 entry's client. Original IDs are retained for links, API requests and financial
 reconciliation. Audit technical references remain behind a disclosure for support.
+
+## Network and monthly activity
+
+The messaging dashboard includes daily network activity for the selected dashboard
+period. Each message is attributed once, using its latest route attempt's mobile
+network; retries and failover do not multiply message volume. Network labels use
+names and country codes. Messages with no route appear as Unassigned. Network
+legend buttons show/hide individual series, and an expandable table provides exact
+counts. Days without traffic are zero-filled.
+
+Messages by month compares delivered messages with routed delivery failures for a
+selected calendar year (`GET /api/dashboard?period=30d&year=2026`). The year selector
+is independent of the daily period control. Twelve months are returned, including
+zero-activity months. Routing failures, pending states and expired messages are not
+included in the two outcome bars. The API and Next proxy validate year as 2000–2100.
+
+Both client and platform message lists show the filtered result range above their
+tables, including empty and single-page results. The pagination controls suppress
+their own repeated summary on those lists.
