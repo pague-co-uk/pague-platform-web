@@ -168,7 +168,7 @@ export function AppHeader({
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-7">
+    <header data-app-header className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b border-slate-200/80 bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-7">
 
       {/* ====================================================================
           Left side

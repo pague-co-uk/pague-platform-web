@@ -129,9 +129,9 @@ a[class*=" h-"][class*="bg-blue-"]:focus-visible {
   box-shadow: 0 0 0 2px var(--color-blue-400), 0 0 0 4px white;
 }
 
-:root[data-theme="pague"] header {
+:root[data-theme="pague"] [data-app-header] {
   background-image: linear-gradient(110deg, #ffffff 55%, #fff0ec 100%);
 }
-:root[data-theme="pague"] aside {
+:root[data-theme="pague"] [data-app-sidebar] {
   background-image: linear-gradient(180deg, #ffffff 60%, #fff0ec 100%);
 }

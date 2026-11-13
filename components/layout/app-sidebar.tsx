@@ -82,6 +82,7 @@ export function AppSidebar({
       ==================================================================== */}
 
       <aside
+        data-app-sidebar
         aria-label="Main navigation"
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-[252px] flex-col",
