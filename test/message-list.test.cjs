@@ -259,3 +259,36 @@ test('status mix distinguishes routing failures from delivery failures', () => {
   assert.match(html, /Routing failed/);
   assert.match(html, /Delivery failed/);
 });
+
+test('SMS segments tolerate absent fields from an older API without inventing zero', () => {
+  const { SmsSegmentSummary } = load('components/ui/sms-segment-summary.tsx');
+  for (const props of [{}, { totalSegments: null, breakdown: null }, { totalSegments: undefined, breakdown: [{ segmentCount: 2 }] }]) {
+    const html = renderToStaticMarkup(React.createElement(SmsSegmentSummary, { ...props, collapsible: true }));
+    assert.match(html, /SMS segments unavailable/);
+    assert.doesNotMatch(html, /No matching messages|NaN/);
+  }
+  const html = renderToStaticMarkup(React.createElement(SmsSegmentSummary, { breakdown: [{ segmentCount: 2, messageCount: 10 }], collapsible: true }));
+  assert.match(html, /SMS segments: 20/);
+  assert.match(html, /10 messages/);
+});
+
+test('the dashboard renders an older API payload without new segment fields', () => {
+  const { DashboardContent } = load('features/dashboard/components/dashboard-content.tsx', {
+    'next/link': { default: ({ children }) => children },
+    '@/components/ui/sms-segment-summary': load('components/ui/sms-segment-summary.tsx'),
+    './message-status-mix': load('features/dashboard/components/message-status-mix.tsx'),
+    './message-volume-chart': load('features/dashboard/components/message-volume-chart.tsx'),
+    './messaging-activity-charts': load('features/dashboard/components/messaging-activity-charts.tsx'),
+  });
+  const dashboard = {
+    viewer: { scope: 'PLATFORM' }, period: { start: '2026-11-13T00:00:00Z', end: '2026-11-13T12:00:00Z', days: 1 },
+    kpis: { totalMessages: 10, delivered: 8, failed: 2, deliveryRate: 80 },
+    messages: { total: 10, delivered: 8, failed: 2, submitted: 0, queued: 0, routed: 0, expired: 0 },
+    messageTrend: [], statusCodeBreakdown: [], clients: [], recentActivity: [],
+    operational: { clients: { active: 1, suspended: 0, disabled: 0 }, smppAccounts: { active: 0, suspended: 0, disabled: 0 }, senderIds: { approved: 0, pending: 0, rejected: 0, disabled: 0 }, webhooks: { active: 0, disabled: 0 } },
+  };
+  const html = renderToStaticMarkup(React.createElement(DashboardContent, { dashboard }));
+  assert.match(html, /SMS segments unavailable/);
+  assert.match(html, /Delivery trend/);
+  assert.doesNotMatch(html, /NaN/);
+});

@@ -197,7 +197,7 @@ export function DashboardContent({
 
         <KpiCard
           label="Delivery success rate"
-          value={`${dashboard.kpis.deliveryRate.toFixed(1)}%`}
+          value={formatPercent(dashboard.kpis.deliveryRate)}
           description="Among completed routed messages"
           icon="delivered"
           tone="green"
@@ -1682,23 +1682,19 @@ const compactFormat =
 function formatNumber(
   value: number,
 ): string {
-  return numberFormat.format(
-    value,
-  );
+  return Number.isFinite(value) ? numberFormat.format(value) : "—";
 }
 
 function formatCompactNumber(
   value: number,
 ): string {
-  return compactFormat
-    .format(value)
-    .replace("bn", "B");
+  return Number.isFinite(value) ? compactFormat.format(value).replace("bn", "B") : "—";
 }
 
 function formatPercent(
   value: number,
 ): string {
-  return `${value.toFixed(1)}%`;
+  return Number.isFinite(value) ? `${value.toFixed(1)}%` : "—";
 }
 
 function clampPercent(

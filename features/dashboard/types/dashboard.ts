@@ -60,8 +60,8 @@ export type DashboardClientStatus =
 // ============================================================================
 
 export interface DashboardMessageSummary {
-  readonly totalSegments: number;
-  readonly segmentBreakdown: ReadonlyArray<{ segmentCount: number; messageCount: number; totalSegments: number }>;
+  readonly totalSegments?: number;
+  readonly segmentBreakdown?: ReadonlyArray<{ segmentCount: number; messageCount: number; totalSegments: number }>;
   readonly routingFailures: number;
   readonly total: number;
 
