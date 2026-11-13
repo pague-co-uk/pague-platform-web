@@ -7,7 +7,7 @@ export function MessageVolumeChart({ label, items }: { label: string; items: rea
   const maximum = Math.max(...rows.map(row => row.messages));
   const format = (value: number) => value.toLocaleString("en-GB");
   return <div className="p-5" aria-label={label}>
-    <div className="max-h-96 overflow-y-auto pr-2">
+    <div className="h-56 overflow-y-auto pr-2">
       <ol className="space-y-4">{rows.map(row => <li key={row.key}>
         <div className="mb-1.5 flex items-start justify-between gap-3 text-xs">
           <span className="min-w-0 break-words font-medium text-slate-700">{row.name}</span>

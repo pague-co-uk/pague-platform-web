@@ -6,7 +6,7 @@ import type {
   DashboardNetworkSeries,
 } from "../types/dashboard";
 
-const CARD = "rounded-2xl border border-slate-200/70 bg-white p-5 shadow-sm";
+const CARD = "rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm";
 const format = new Intl.NumberFormat("en-GB");
 function networkColor(key: string, name: string) {
   const lower = name.toLowerCase();
@@ -46,7 +46,7 @@ export function NetworkActivityChart({
     left = 62,
     right = 22,
     top = 18,
-    bottom = 48;
+    bottom = 90;
   const plotWidth = width - left - right,
     plotHeight = height - top - bottom;
   const x = (index: number) =>
@@ -74,7 +74,7 @@ export function NetworkActivityChart({
       ) : (
         <>
           <div
-            className="my-4 flex flex-wrap justify-center gap-2"
+            className="my-3 flex max-h-16 flex-wrap justify-center gap-2 overflow-y-auto"
             aria-label="Network series"
           >
             {series.map((network) => (
@@ -105,7 +105,7 @@ export function NetworkActivityChart({
           <div className="overflow-x-auto">
             <svg
               viewBox={`0 0 ${width} ${height}`}
-              className="min-w-[600px] w-full"
+              className="h-52 w-full min-w-[420px]"
               role="img"
               aria-label="Daily message volume by network. Exact counts are available in the data table below."
             >
@@ -138,12 +138,13 @@ export function NetworkActivityChart({
                   <text
                     key={point.date}
                     x={x(index)}
-                    y={height - 20}
-                    textAnchor="middle"
+                    y={top + plotHeight + 16}
+                    transform={`rotate(-45 ${x(index)} ${top + plotHeight + 16})`}
+                    textAnchor="end"
                     fontSize="11"
                     fill="var(--color-slate-500)"
                   >
-                    {point.date.slice(5)}
+                    {point.date}
                   </text>
                 ) : null,
               )}
@@ -311,7 +312,7 @@ export function MonthlyOutcomesChart({
       <div className="overflow-x-auto">
         <svg
           viewBox="0 0 800 290"
-          className="w-full min-w-[600px]"
+          className="h-52 w-full min-w-[420px]"
           role="img"
           aria-label={`Successful and failed message counts by month for ${outcomes.year}. Exact counts are available in the data table below.`}
         >

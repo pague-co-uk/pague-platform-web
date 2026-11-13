@@ -234,3 +234,28 @@ test('activity graphs show named categories in volume order without internal ide
   const empty = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Sender activity', items: [] }));
   assert.match(empty, /No messaging activity/);
 });
+
+test('network chart uses full dates angled upward with room below the plot', () => {
+  const { NetworkActivityChart } = load('features/dashboard/components/messaging-activity-charts.tsx');
+  const html = renderToStaticMarkup(React.createElement(NetworkActivityChart, { series: [{ key: 'network', name: 'Airtel', points: [{ date: '2026-11-13', count: 12 }] }] }));
+  assert.match(html, /transform="rotate\(-45 /);
+  assert.match(html, /text-anchor="end"/);
+  assert.match(html, />2026-11-13<\/text>/);
+});
+
+test('dashboard segment details start collapsed while keeping the total visible', () => {
+  const { SmsSegmentSummary } = load('components/ui/sms-segment-summary.tsx');
+  const html = renderToStaticMarkup(React.createElement(SmsSegmentSummary, { totalSegments: 20, breakdown: [{ segmentCount: 2, messageCount: 10, totalSegments: 20 }], collapsible: true }));
+  assert.match(html, /<details/);
+  assert.doesNotMatch(html, /<details[^>]*\sopen/);
+  assert.match(html, /<summary[^>]*>SMS segments: 20/);
+  assert.match(html, /10 messages/);
+});
+
+test('status mix distinguishes routing failures from delivery failures', () => {
+  const { MessageStatusMix } = load('features/dashboard/components/message-status-mix.tsx');
+  const html = renderToStaticMarkup(React.createElement(MessageStatusMix, { messages: { delivered: 80, submitted: 0, queued: 0, routed: 0, failed: 10, routingFailures: 10, expired: 0 } }));
+  assert.match(html, /80\.0%/);
+  assert.match(html, /Routing failed/);
+  assert.match(html, /Delivery failed/);
+});

@@ -4,6 +4,7 @@ import { SmsSegmentSummary } from "@/components/ui/sms-segment-summary";
 
 
 import { MessageVolumeChart } from "./message-volume-chart";
+import { MessageStatusMix } from "./message-status-mix";
 import Link from "next/link";
 import { NetworkActivityChart, MonthlyOutcomesChart } from "./messaging-activity-charts";
 import {
@@ -158,7 +159,7 @@ export function DashboardContent({
 
       <section
         aria-label="Dashboard metrics"
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
       >
         {messagesHref ? (
           <Link
@@ -233,21 +234,13 @@ export function DashboardContent({
         />
       </section>
 
-      <SmsSegmentSummary totalSegments={dashboard.messages.totalSegments} breakdown={dashboard.messages.segmentBreakdown} />
+      <SmsSegmentSummary totalSegments={dashboard.messages.totalSegments} breakdown={dashboard.messages.segmentBreakdown} collapsible />
 
-      <NetworkActivityChart series={dashboard.networkActivity ?? []} />
-      {dashboard.monthlyOutcomes && <MonthlyOutcomesChart outcomes={dashboard.monthlyOutcomes} onYearChange={onYearChange} />}
-
-      {/* ====================================================================
-          Delivery status + breakdown / status codes
-      ==================================================================== */}
-
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.9fr)_minmax(320px,1fr)]">
-        <div className="space-y-5">
-          <section className={CARD}>
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&>section]:min-w-0">
+<section className={CARD}>
             <SectionHeader
               icon="rate"
-              title="Message delivery status"
+              title="Delivery trend"
               description="Message volume and delivery outcomes over the selected period."
             />
 
@@ -257,18 +250,41 @@ export function DashboardContent({
               />
             </div>
           </section>
+        <section className={CARD}>
+          <SectionHeader icon="rate" title="Delivery status" description="Share of messages by current state." />
+          <MessageStatusMix messages={dashboard.messages} />
+        </section>
+      </div>
 
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 [&>section]:min-w-0">
+        <NetworkActivityChart series={dashboard.networkActivity ?? []} />
+        {dashboard.monthlyOutcomes && <MonthlyOutcomesChart outcomes={dashboard.monthlyOutcomes} onYearChange={onYearChange} />}
+      </div>
 
-        </div>
+      <div className={`grid grid-cols-1 items-stretch gap-4 ${isPlatform ? "lg:grid-cols-2" : ""} [&>section]:min-w-0`}>
+<section className={CARD}>
+            <SectionHeader icon="send" title="Messages per sender ID" description="Message counts by sender over the selected period." />
+            <MessageVolumeChart label="Messages per sender ID" items={(dashboard.senderActivity ?? []).map((item, index) => ({ key: String(index), name: item.sender ?? "Unassigned sender", messages: item.messages }))} />
+          </section>
+        {isPlatform && (<section className={CARD}>
+          <SectionHeader
+            icon="clients"
+            title="Client activity"
+            description="Messaging activity across platform clients."
+          />
 
-        <div className="space-y-5">
-          <section className={CARD}>
+          <MessageVolumeChart label="Client activity" items={dashboard.clients.map(client => ({ key: client.clientId, name: client.name, messages: client.messages }))} />
+        </section>)}
+      </div>
+
+      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 [&>section]:min-w-0">
+<section className={CARD}>
             <SectionHeader
               icon="failed"
               title="Provider error causes"
             />
 
-            <div className="p-5">
+            <div className="max-h-64 overflow-y-auto p-5">
               {dashboard.statusCodeBreakdown
                 .length === 0 ? (
                 <EmptyState
@@ -288,29 +304,39 @@ export function DashboardContent({
                 </div>
               )}
             </div>
-          </section>
+          </section><section className={CARD}>
+        <SectionHeader
+          icon="list"
+          title="Recent activity"
+          description="Latest platform activity and administrative events."
+        />
 
-          <section className={CARD}>
-            <SectionHeader icon="send" title="Messages per sender ID" description="Message counts by sender over the selected period." />
-            <MessageVolumeChart label="Messages per sender ID" items={(dashboard.senderActivity ?? []).map((item, index) => ({ key: String(index), name: item.sender ?? "Unassigned sender", messages: item.messages }))} />
-          </section>
+        <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+          {dashboard.recentActivity
+            .length === 0 ? (
+            <EmptyState
+              title="No recent activity"
+              description="There are no recent activity records to display."
+            />
+          ) : (
+            dashboard.recentActivity.map(
+              (activity) => (
+                <ActivityRow
+                  key={activity.id}
+                  activity={activity}
+                />
+              ),
+            )
+          )}
         </div>
+      </section>
       </div>
 
-      {/* ====================================================================
-          Operational overview
-      ==================================================================== */}
+      {!isPlatform && <FloatOverview float={dashboard.float} trend={dashboard.floatTrend} href={floatHref} />}
 
-      <section className={CARD}>
-        <SectionHeader
-          icon="clients"
-          title="Operational overview"
-          description={
-            isPlatform
-              ? "Current platform resource status."
-              : "Current resources associated with your account."
-          }
-        />
+<details className={CARD}>
+<summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-500">Operational overview <span className="ml-2 text-xs font-normal text-slate-400">Expand resource details</span></summary>
+
 
         <div className="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
           <OperationalCard
@@ -405,66 +431,8 @@ export function DashboardContent({
             ]}
           />
         </div>
-      </section>
+      </details>
 
-      {/* ====================================================================
-          Platform client activity
-      ==================================================================== */}
-
-      {isPlatform && (
-        <section className={CARD}>
-          <SectionHeader
-            icon="clients"
-            title="Client activity"
-            description="Messaging activity across platform clients."
-          />
-
-          <MessageVolumeChart label="Client activity" items={dashboard.clients.map(client => ({ key: client.clientId, name: client.name, messages: client.messages }))} />
-        </section>
-      )}
-
-      {/* ====================================================================
-          Client float
-      ==================================================================== */}
-
-      {!isPlatform && (
-        <FloatOverview
-          float={dashboard.float}
-          trend={dashboard.floatTrend}
-          href={floatHref}
-        />
-      )}
-
-      {/* ====================================================================
-          Recent activity
-      ==================================================================== */}
-
-      <section className={CARD}>
-        <SectionHeader
-          icon="list"
-          title="Recent activity"
-          description="Latest platform activity and administrative events."
-        />
-
-        <div className="divide-y divide-slate-100">
-          {dashboard.recentActivity
-            .length === 0 ? (
-            <EmptyState
-              title="No recent activity"
-              description="There are no recent activity records to display."
-            />
-          ) : (
-            dashboard.recentActivity.map(
-              (activity) => (
-                <ActivityRow
-                  key={activity.id}
-                  activity={activity}
-                />
-              ),
-            )
-          )}
-        </div>
-      </section>
     </div>
   );
 }
@@ -559,7 +527,7 @@ function KpiCard({
     <div
       className={[
         CARD,
-        "p-5",
+        "p-3",
         clickable
           ? "h-full cursor-pointer transition hover:border-slate-300"
           : "",
@@ -567,7 +535,7 @@ function KpiCard({
     >
       <div className="flex items-center gap-3">
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${TONES[tone].tile}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${TONES[tone].tile}`}
         >
           <Icon
             type={icon}
@@ -576,7 +544,7 @@ function KpiCard({
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-xs text-slate-500">
+          <p className="text-[11px] leading-4 text-slate-500">
             {label}
           </p>
 
@@ -660,7 +628,7 @@ function Sparkline({
     <svg
       viewBox={`0 0 ${w} ${h}`}
       preserveAspectRatio="none"
-      className="mt-3 h-10 w-full"
+      className="mt-2 h-6 w-full"
       aria-hidden="true"
     >
       <defs>
@@ -1052,7 +1020,7 @@ function ChartTooltip({
         <TooltipValue
           label="Expired"
           value={item.expired}
-          color="#f97316"
+          color="#7c3aed"
         />
 
         <TooltipValue
@@ -1164,7 +1132,7 @@ function TrendChart({
     },
     {
       label: "Expired",
-      color: "#f97316",
+      color: "#7c3aed",
       d: path(
         data.map(
           (d) => d.expired,
@@ -1274,7 +1242,7 @@ function TrendChart({
                 data[hover.index]
                   .expired,
               )}
-              color="#f97316"
+              color="#7c3aed"
             />
 
             <HoverPoint
