@@ -10,7 +10,7 @@ export function MessageVolumeChart({ label, items }: { label: string; items: rea
     <div className="overflow-x-auto">
       <ol className="flex min-w-full items-start gap-4">{rows.map(row => <li key={row.key} className="w-24 shrink-0 text-center text-xs">
         <div className="flex h-56 flex-col justify-end border-b border-slate-100">
-          <span className="mb-1 tabular-nums text-slate-600">{format(row.messages)} {row.messages === 1 ? "message" : "messages"}</span>
+          <span className="mb-1 tabular-nums text-slate-600">{format(row.messages)} {row.messages === 1 ? "segment" : "segments"}</span>
           <div className="mx-auto w-10 rounded-t-md opacity-60" aria-hidden="true" style={{ height: `${row.messages / maximum * 180}px`, backgroundColor: "var(--chart-primary, #db2777)" }} />
         </div>
         <span className="mt-2 block break-words font-medium text-slate-700">{row.name}</span>

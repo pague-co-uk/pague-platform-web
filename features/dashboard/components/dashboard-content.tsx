@@ -263,17 +263,17 @@ export function DashboardContent({
 
       <div className={`grid grid-cols-1 items-stretch gap-4 ${isPlatform ? "lg:grid-cols-2" : ""} [&>section]:min-w-0`}>
 <section className={CARD}>
-            <SectionHeader icon="send" title="Messages per sender ID" description="Message counts by sender over the selected period." />
-            <MessageVolumeChart label="Messages per sender ID" items={(dashboard.senderActivity ?? []).map((item, index) => ({ key: String(index), name: item.sender ?? "Unassigned sender", messages: item.messages }))} />
+            <SectionHeader icon="send" title="SMS segments per sender ID" description="SMS segments by sender over the selected period." />
+            {(dashboard.senderActivity ?? []).some(item => item.segments == null) ? <p className="p-5 text-sm text-slate-500">Segment data unavailable.</p> : <MessageVolumeChart label="SMS segments per sender ID" items={(dashboard.senderActivity ?? []).map((item, index) => ({ key: String(index), name: item.sender ?? "Unassigned sender", messages: item.segments ?? 0 }))} />}
           </section>
         {isPlatform && (<section className={CARD}>
           <SectionHeader
             icon="clients"
             title="Client activity"
-            description="Messaging activity across platform clients."
+            description="SMS segments across platform clients."
           />
 
-          <MessageVolumeChart label="Client activity" items={dashboard.clients.map(client => ({ key: client.clientId, name: client.name, messages: client.messages }))} />
+          {dashboard.clients.some(client => client.segments == null) ? <p className="p-5 text-sm text-slate-500">Segment data unavailable.</p> : <MessageVolumeChart label="Client activity" items={dashboard.clients.map(client => ({ key: client.clientId, name: client.name, messages: client.segments ?? 0 }))} />}
         </section>)}
       </div>
 

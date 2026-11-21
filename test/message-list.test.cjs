@@ -228,7 +228,7 @@ test('activity graphs show named categories in volume order without internal ide
   const { MessageVolumeChart } = load('features/dashboard/components/message-volume-chart.tsx');
   const html = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Client activity', items: [{ key: 'hidden-client-id-1', name: 'Small client', messages: 5 }, { key: 'hidden-client-id-2', name: 'Busy client', messages: 20 }] }));
   assert.ok(html.indexOf('Busy client') < html.indexOf('Small client'));
-  assert.match(html, /20 messages/);
+  assert.match(html, /20 segments/);
   assert.match(html, /height:45px/);
   assert.doesNotMatch(html, /hidden-client-id/);
   const empty = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Sender activity', items: [] }));

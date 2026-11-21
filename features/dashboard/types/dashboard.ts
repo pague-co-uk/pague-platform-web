@@ -268,6 +268,7 @@ export interface DashboardClientSummary {
   readonly status: DashboardClientStatus;
 
   readonly messages: number;
+  readonly segments?: number;
 
   readonly delivered: number;
 
@@ -323,7 +324,7 @@ export interface DashboardData {
 
   readonly statusCodeBreakdown: readonly DashboardStatusCodeBreakdown[];
 
-  readonly senderActivity: ReadonlyArray<{ sender: string | null; messages: number }>;
+  readonly senderActivity: ReadonlyArray<{ sender: string | null; messages: number; segments?: number }>;
 
   readonly float: DashboardFloatSummary;
 
