@@ -12,8 +12,14 @@ export function MessageStatusMix({ messages }: { messages: DashboardMessageSumma
   ].filter(state => state.count > 0);
   const total = states.reduce((sum, state) => sum + state.count, 0);
   if (!total) return <p className="px-5 pb-5 text-sm text-slate-500">No messages for the selected period.</p>;
+  let cumulative = 0;
+  const segments = states.map(state => {
+    const start = cumulative / total * 100;
+    cumulative += state.count;
+    return `${state.color} ${start}% ${cumulative / total * 100}%`;
+  });
   return <div className="px-5 pb-5">
-    <div className="mb-5 flex h-7 overflow-hidden rounded-lg bg-slate-50" aria-hidden="true">{states.map(state => <div key={state.label} style={{ width: `${state.count / total * 100}%`, backgroundColor: state.color }} />)}</div>
+    <div className="mx-auto mb-5 size-48 rounded-full" style={{ background: `conic-gradient(${segments.join(", ")})` }} aria-hidden="true" />
     <ul className="max-h-56 space-y-3 overflow-y-auto text-xs">{states.map(state => <li key={state.label} className="flex items-center gap-2" title={`${state.count.toLocaleString("en-GB")} messages`}>
       <span className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: state.color }} aria-hidden="true" />
       <span className="text-slate-600">{state.label}</span><span className="ml-auto font-medium tabular-nums text-slate-800">{(state.count / total * 100).toFixed(1)}%</span>

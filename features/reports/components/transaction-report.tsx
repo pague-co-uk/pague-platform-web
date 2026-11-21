@@ -71,6 +71,7 @@ interface TransactionReportProps {
 const PAGE_SIZE = 25;
 
 const TRANSACTION_STATUSES = [
+  { value: "UNKNOWN", label: "Unknown" },
   {
     value: "PENDING",
     label: "Pending",
@@ -168,6 +169,7 @@ function TransactionStatusBadge({
       | "neutral";
     }
   > = {
+    UNKNOWN: { label: "Unknown", tone: "warning" },
     PENDING: {
       label: "Pending",
       tone: "warning",

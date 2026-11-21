@@ -229,7 +229,7 @@ test('activity graphs show named categories in volume order without internal ide
   const html = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Client activity', items: [{ key: 'hidden-client-id-1', name: 'Small client', messages: 5 }, { key: 'hidden-client-id-2', name: 'Busy client', messages: 20 }] }));
   assert.ok(html.indexOf('Busy client') < html.indexOf('Small client'));
   assert.match(html, /20 messages/);
-  assert.match(html, /width:25%/);
+  assert.match(html, /height:45px/);
   assert.doesNotMatch(html, /hidden-client-id/);
   const empty = renderToStaticMarkup(React.createElement(MessageVolumeChart, { label: 'Sender activity', items: [] }));
   assert.match(empty, /No messaging activity/);
@@ -256,6 +256,7 @@ test('status mix distinguishes routing failures from delivery failures', () => {
   const { MessageStatusMix } = load('features/dashboard/components/message-status-mix.tsx');
   const html = renderToStaticMarkup(React.createElement(MessageStatusMix, { messages: { delivered: 80, submitted: 0, queued: 0, routed: 0, failed: 10, routingFailures: 10, expired: 0 } }));
   assert.match(html, /80\.0%/);
+  assert.match(html, /conic-gradient\(#6ee7b7 0% 80%, #fca5a5 80% 90%, #f9a8d4 90% 100%\)/);
   assert.match(html, /Routing failed/);
   assert.match(html, /Delivery failed/);
 });

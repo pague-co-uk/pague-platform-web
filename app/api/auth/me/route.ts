@@ -126,13 +126,8 @@ export async function GET(
   // This is important if /me refreshes or rotates authentication cookies.
   // ==========================================================================
 
-  const setCookie =
-    response.headers.get(
-      "set-cookie",
-    );
-
-  if (setCookie) {
-    nextResponse.headers.set(
+  for (const setCookie of response.headers.getSetCookie()) {
+    nextResponse.headers.append(
       "set-cookie",
       rewriteSetCookie(
         setCookie,

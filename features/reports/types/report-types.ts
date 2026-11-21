@@ -62,6 +62,7 @@ export type FloatLedgerReportResponse = {
 // ============================================================================
 
 export type TransactionStatus =
+  | "UNKNOWN"
   | "PENDING"
   | "PROCESSING"
   | "SUCCESS"

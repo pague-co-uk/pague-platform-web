@@ -1,6 +1,7 @@
 import { PaymentProviderStatus } from "@/features/payment-providers/types/payment-provider.types";
 
 export const TRANSACTION_STATUSES = {
+  UNKNOWN: "UNKNOWN",
   PENDING: "PENDING",
   PROCESSING: "PROCESSING",
   SUCCESS: "SUCCESS",
